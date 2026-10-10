@@ -89,3 +89,42 @@ Central governance should cover organization verification, account/role assignme
 - Managed recruitment and HR consultancy services
 
 Pricing shown publicly must be clearly labelled as proposed until billing, terms, support and service fulfilment are operational.
+
+
+## Expanded competitive benchmark — October 2026
+
+Public BrighterMonday Kenya pages describe candidate profiles, personalised job alerts, CV generation, application tracking, employer profiles, vacancy publishing, applicant tracking, candidate pools, relevance-based matching, skills assessments and recruiter-led screening. These are benchmark observations, not NEXORA capabilities unless implemented and tested.
+
+### NEXORA product direction
+
+**Candidate experience**
+- Guided profile completion with CV upload and a generated, downloadable CV.
+- Saved jobs, application timeline, interview invitations and job-alert preferences.
+- Clear employer verification indicators and scam-reporting workflow.
+- Explicit consent controls for consultancy discovery and private document access.
+
+**Employer and recruitment experience**
+- Vacancy editor with required fields and moderation status.
+- Applicant pipeline with configurable stages, notes, interview scheduling and candidate communications.
+- Searchable candidate pools with access controls and export audit logs.
+- Skills/qualification screening and explainable match signals; do not label a simple keyword filter as AI.
+
+**Consultancy workspace**
+- Client organisation and recruitment project management.
+- Candidate shortlists, consent requests, screening records and hiring milestones.
+- Clear separation of each consultancy's clients, candidate access and documents.
+
+**Workforce management**
+- Employee directory and onboarding checklists.
+- Leave requests and approvals, attendance, shift planning, performance reviews and HR reporting.
+- Payroll preparation and payslip access only after statutory rules, calculations, access controls and audit trails have been validated for the target jurisdiction.
+
+**Platform quality**
+- Responsive and accessible design, keyboard support, clear empty/loading/error states, and mobile-first job search.
+- Verified organisation controls, job moderation, abuse reporting and duplicate vacancy checks.
+- Private file storage, short-lived signed links, row-level security and tested consent revocation.
+- Transparent pricing and no fabricated platform statistics, employer endorsements or AI claims.
+
+### Release gates
+
+Do not advertise a feature as live until it has been implemented end-to-end and tested against a non-production Supabase project. Before production, verify authentication and email confirmation, role isolation, RLS, candidate file privacy, application status transitions, employer verification, moderation, notification delivery, consent revocation, accessibility and mobile layouts. Migrations and Edge Functions must be deployed separately from GitHub Pages and checked in the actual Supabase project.
