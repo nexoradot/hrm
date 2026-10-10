@@ -1,0 +1,3 @@
+# admin-user-admin Edge Function
+
+Deploy with the Supabase CLI after reviewing the function. Configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` as server-side secrets. Never copy the service-role key into browser code or commit it to Git. The function checks the caller's active `platform_admins` record before allowing privileged Auth operations. Test invite, suspend, unsuspend and user-list actions with a non-production project first.
