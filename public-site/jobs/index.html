@@ -16,4 +16,16 @@ document.getElementById('showLogin').addEventListener('click',()=>{document.getE
 document.getElementById('showSignup').addEventListener('click',()=>{document.getElementById('portalLogin').hidden=true;document.getElementById('candidateSignup').hidden=false;document.getElementById('showLogin').setAttribute('aria-pressed','false');document.getElementById('showSignup').setAttribute('aria-pressed','true')});
 document.getElementById('closeJobModal').addEventListener('click',()=>document.getElementById('jobModal').classList.remove('open'));
 document.getElementById('jobModal').addEventListener('click',e=>{if(e.target.id==='jobModal')e.currentTarget.classList.remove('open')});
+</script><script>
+window.addEventListener('DOMContentLoaded',()=>{
+  const params=new URLSearchParams(window.location.search);
+  const q=params.get('q')||'';
+  const locationTerm=params.get('location')||'';
+  const search=document.getElementById('jobSearch');
+  if(search&&(q||locationTerm)){
+    search.value=[q,locationTerm].filter(Boolean).join(' ');
+    search.dispatchEvent(new Event('input',{bubbles:true}));
+    document.querySelector('.hero h1')?.scrollIntoView({block:'start',behavior:'auto'});
+  }
+});
 </script></body></html>
