@@ -71,4 +71,6 @@ $("#announcementForm")?.addEventListener("submit",e=>{e.preventDefault();const t
  }catch(err){console.error("NEXORA startup diagnostic:",err);loginTrace("Startup check: "+(err.message||String(err)));}
  finally{if(button)button.disabled=false;updateConnection();updateHealth();}
 })();
+window.__nexoraAppBooted = true;
+loginTrace("NEXORA application initialized. Supabase startup check is running.");
 })();
