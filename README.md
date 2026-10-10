@@ -1,47 +1,45 @@
 # NEXORA — Human Resources & Workforce Management
 
-**Brand:** NEXORA  
 **Tagline:** Intelligence for Every Workforce
 
-NEXORA is being developed as a multi-workspace HR and recruitment platform. This repository currently hosts the GitHub Pages Super Admin entry point and shared portal JavaScript. The structure is being expanded carefully so public marketing pages, jobs, candidate tools, consultancy workflows, employer workspaces and platform administration can grow without being mixed together.
+NEXORA is a multi-workspace HR and recruitment platform foundation being developed with HTML, inline CSS, browser JavaScript, Supabase and GitHub Pages.
 
-## Live deployment
+## Live site
+- Production base: https://nexoradot.github.io/hrm/
+- Main branch: `main`
+- Public site (after merge/deployment): `/hrm/public-site/`
+- Jobs marketplace: `/hrm/public-site/jobs/`
+- Candidate portal: `/hrm/candidate-portal/`
+- Consultancy portal: `/hrm/consultancy-portal/`
+- Company portal: `/hrm/company-portal/`
+- Current Super Admin entry: `/hrm/`
 
-- GitHub Pages base URL: https://nexoradot.github.io/hrm/
-- Production branch: `main`
-- Default branch: `main`
+## Repository map
+- `index.html`, `app.js`: existing Super Admin dashboard and runtime
+- `public-site/`: public NEXORA pages and job listings
+- `candidate-portal/`: candidate account, profile and document workflows
+- `consultancy-portal/`: authorised candidate discovery and matching
+- `company-portal/`: employer workspace and vacancy management
+- `super-admin/`: reserved for a future dedicated admin route; production entry remains at repository root for now
+- `js/`: shared Supabase browser configuration and portal helpers
+- `assets/`: shared image, icon and font assets
+- `supabase/migrations/`: versioned schema and policy changes
+- `supabase/functions/`: trusted server-side functions
+- `docs/`: architecture and deployment checklists
 
-## Current repository status
+## Important implementation notes
+- The root Super Admin runtime has been restored separately from the portal runtime. `portal.js` is for public/candidate/consultancy/company pages; `app.js` is for the root Super Admin dashboard.
+- `js/platform-operations.js` adds browser-only convenience controls. Module preferences and announcement drafts in that helper are local to the browser; they do not publish announcements or change database entitlements.
+- The browser configuration contains only the Supabase public anon key. Never add a service-role key or database password to browser files.
+- The Supabase migrations are newly versioned repository sources and have **not** been verified or applied as part of the GitHub change. Review them in a development Supabase project first and test all RLS policies before production.
+- Candidate CVs and identity documents must remain in private storage and must not be shared without explicit consent.
+- This is a foundation, not a complete production HR/payroll system. Payments, payroll, attendance, leave, full tenant lifecycle, notifications, privacy/legal review, backups and security testing require further implementation.
 
-The current `main` branch contains a small set of root-level files. Before moving or renaming runtime files, we must first verify their script references and test the existing Super Admin login. See [Repository structure and migration plan](docs/REPOSITORY-STRUCTURE.md).
+## Development workflow
+1. Make changes on a feature branch.
+2. Review changed files and script paths.
+3. Test login, logout, portal navigation, RLS and privacy controls.
+4. Merge to `main` only after review.
+5. Verify the deployed GitHub Pages URLs after Actions completes.
 
-## Planned application areas
-
-| Area | Responsibility |
-|---|---|
-| `public-site/` | NEXORA marketing pages, services, pricing and public jobs marketplace |
-| `candidate-portal/` | Candidate profiles, CV/document management and applications |
-| `consultancy-portal/` | Candidate review, consent-based matching and placement workflows |
-| `company-portal/` | Employer workspace, vacancies and recruitment pipeline |
-| `super-admin/` | Platform-wide organisations, access, plans, modules and audit operations |
-| `assets/` | Shared brand assets, images, icons and fonts |
-| `js/` | Shared browser utilities and portal-specific JavaScript |
-| `supabase/` | Database migrations, Edge Functions and backend documentation |
-| `docs/` | Architecture, deployment and operational notes |
-
-These directories are being introduced as a migration plan; their presence does not imply every portal feature is already implemented.
-
-## Development principles
-
-1. Keep the current live entry point working while changes are prepared on feature branches.
-2. Use small pull requests and review the changed-file list before merging to `main`.
-3. Keep CSS inline in each HTML page where appropriate, while using separate JavaScript files for application logic.
-4. JavaScript must be deployed with a browser-executable `.js` extension. A `.js.txt` copy is source/reference material only unless renamed during deployment.
-5. Never put Supabase service-role keys, database passwords or other server secrets in browser code.
-6. Enforce permissions with Supabase Row Level Security and trusted server-side functions; hiding a UI element is not access control.
-7. Candidate CVs and personal documents must remain private unless the candidate has granted the required sharing consent.
-8. Use relative links that work under the GitHub Pages base path `/hrm/`.
-
-## Deployment caution
-
-Do not merge a structure-only change as a replacement for working application code. Runtime files should only be moved after all references, authentication and the live deployment have been tested.
+See [repository structure](docs/REPOSITORY-STRUCTURE.md) and [deployment checklist](docs/DEPLOYMENT-CHECKLIST.md).

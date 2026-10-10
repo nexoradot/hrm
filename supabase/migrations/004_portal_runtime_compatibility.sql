@@ -2,6 +2,7 @@
 -- Review and apply only after migrations 001-003 have been reviewed in a test project.
 
 alter table public.candidate_profiles add column if not exists country_code text not null default 'KE';
+alter table public.candidate_profiles alter column skills type text[] using case when skills is null or btrim(skills)='' then '{}'::text[] else string_to_array(skills, ',') end;
 alter table public.candidate_profiles add column if not exists experience_years numeric;
 alter table public.candidate_profiles add column if not exists consultancy_discovery_opt_in boolean not null default false;
 alter table public.candidate_profiles add column if not exists completed_profile boolean not null default false;
