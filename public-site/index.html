@@ -48,8 +48,102 @@
 @media(max-width:760px){.hero-grid{width:calc(100% - 32px);grid-template-columns:1fr;gap:0}.hero-copy{padding:50px 0 25px}.hero h1{font-size:clamp(44px,12vw,65px);letter-spacing:-2.5px}.hero-visual{min-height:390px;padding:0 0 22px}.hero-photo{inset:0 0 22px;height:calc(100% - 22px);object-position:center 25%}.hero-visual:after{inset:0 0 22px}.job-float{left:10px;bottom:42px}.hrm-float{right:8px;top:18px}.hero-search{grid-template-columns:1fr;gap:2px}.hero-search label{border-bottom:1px solid #edf0f6}.hero-search button{padding:13px}.category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.persona-section{padding:26px 0 44px}}
 @media(max-width:480px){.topbar .wrap{font-size:10px}.brand-logo{max-width:52vw}.hero h1{font-size:44px}.hero p{font-size:15px}.hero-visual{min-height:330px}.float-card{padding:11px 12px}.job-float{width:190px;left:2px;bottom:34px}.hrm-float{width:165px;right:0;top:10px}.float-card strong{font-size:13px}.hrm-float .mini-row{font-size:10px}.category-grid{gap:7px}.category-link{font-size:11px;padding:11px 5px}.persona-card{grid-template-columns:34% 66%}.persona-copy{padding:14px 12px}.persona-copy h3{font-size:16px}.persona-copy p{font-size:11px}}
 
+
+/* Homepage refinement: stronger hierarchy, clearer navigation and responsive polish */
+:root{--purple:#5f50e8;--violet:#9584ff;--navy:#101a33;--mint:#79e5d0}
+.top{box-shadow:0 4px 24px #0d183009}
+.top .wrap{width:min(1440px,calc(100% - 64px))}
+.brand-logo{width:252px;max-width:27vw}
+.links{gap:clamp(14px,1.7vw,27px);font-size:14px;font-weight:550}
+.links a{padding:10px 0;position:relative}
+.links a:after{content:"";position:absolute;left:0;right:100%;bottom:3px;height:2px;background:var(--purple);transition:right .2s ease}
+.links a:hover:after,.links a:focus-visible:after{right:0}
+.top .actions .btn{min-height:46px;padding-inline:20px}
+.mobile-nav-toggle{display:none;align-items:center;justify-content:center;gap:8px;border:1px solid #e1e5f0;background:#fff;color:#17223b;border-radius:11px;padding:11px 13px;font-weight:800;cursor:pointer}
+.hero-grid{width:min(1440px,calc(100% - 64px));grid-template-columns:minmax(0,1.04fr) minmax(430px,.96fr);gap:clamp(28px,4vw,64px);min-height:610px}
+.hero-copy{padding:62px 0 54px}
+.hero .eyebrow{display:flex;align-items:center;gap:10px}
+.hero .eyebrow:before{content:"";display:inline-block;width:24px;height:2px;background:var(--mint);border-radius:3px}
+.hero h1{font-size:clamp(52px,5.6vw,82px);letter-spacing:-4.1px;max-width:740px}
+.hero p{font-size:clamp(16px,1.25vw,19px);max-width:630px}
+.hero-search{border:1px solid #e8eaf4;box-shadow:0 16px 44px #03091945}
+.hero-search label:focus-within{color:var(--purple)}
+.hero-search input:focus-visible{outline:2px solid #8f83ff;outline-offset:3px;border-radius:4px}
+.hero-search button{transition:background .2s,transform .2s}
+.hero-search button:hover{background:#4c3bd1;transform:translateY(-1px)}
+.hero-visual{min-height:610px;padding:27px 0}
+.hero-photo{inset:27px 0;height:calc(100% - 54px);object-position:55% 32%;transition:transform .5s ease}
+.hero-visual:hover .hero-photo{transform:scale(1.012)}
+.hero-visual:after{inset:27px 0;background:linear-gradient(90deg,#101a3370 0%,#101a3312 42%,transparent 72%),linear-gradient(0deg,#101a3370,transparent 42%)}
+.float-card{border-radius:17px;box-shadow:0 20px 54px #0710263d}
+.hrm-float{right:-14px;top:57px;width:224px;padding:18px}
+.job-float{left:-26px;bottom:72px;width:250px;padding:18px}
+.float-card strong{font-size:17px}
+.float-card .tag{font-size:11px}
+.category-strip{padding:22px 0 30px}
+.category-link{min-height:100px;border-color:#e7e9f5;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.category-link:hover{transform:translateY(-4px);box-shadow:0 12px 26px #25215a12;border-color:#c5bfff}
+.section{padding:88px 0}
+.center{margin-bottom:42px}
+.center h2{letter-spacing:-1.7px}
+.card,.aud,.step{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.card:hover,.aud:hover,.step:hover{transform:translateY(-3px);box-shadow:0 15px 34px #1b285112;border-color:#d2cdfd}
+.card .icon{font-size:23px}
+.cta{box-shadow:0 20px 55px #342c8730}
+footer .brand{color:#fff}
+a:focus-visible,button:focus-visible{outline:3px solid #9e93ff;outline-offset:3px}
+@media(max-width:1050px){
+ .top .wrap{width:calc(100% - 36px)}
+ .hero-grid{width:calc(100% - 44px);grid-template-columns:minmax(0,1fr) minmax(360px,.85fr);gap:24px}
+ .hero h1{font-size:clamp(46px,6vw,65px);letter-spacing:-3px}
+ .brand-logo{width:220px}
+ .links{gap:13px;font-size:12px}
+ .top .actions .btn{padding-inline:14px}
+ .hrm-float{right:-7px}
+ .job-float{left:-8px}
+}
+@media(max-width:900px){
+ .top .wrap{min-height:74px;flex-wrap:wrap}
+ .mobile-nav-toggle{display:inline-flex}
+ .top .links{display:none}
+ .top .links.is-open{display:flex;position:absolute;left:0;right:0;top:calc(100% - 1px);padding:15px 18px 18px;background:#fff;border:1px solid var(--line);border-radius:0 0 16px 16px;box-shadow:0 18px 30px #101a331c;flex-direction:column;align-items:stretch;gap:4px;z-index:30}
+ .top .links.is-open a{padding:10px 8px}
+ .top .links.is-open a:after{display:none}
+ .top .actions{margin-left:auto!important}
+ .hero-grid{grid-template-columns:1fr;gap:0}
+ .hero-copy{padding:52px 0 28px}
+ .hero-visual{min-height:490px}
+ .hero h1{max-width:800px}
+}
+@media(max-width:600px){
+ .topbar .wrap{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+ .topbar-right{gap:13px}
+ .top .wrap{width:calc(100% - 28px);gap:10px}
+ .brand-logo{width:180px;max-width:48vw}
+ .top .actions .btn{font-size:11px;min-height:40px;padding:9px 10px}
+ .mobile-nav-toggle{font-size:12px;padding:10px}
+ .hero-grid{width:calc(100% - 28px)}
+ .hero-copy{padding:42px 0 24px}
+ .hero h1{font-size:clamp(42px,12vw,58px);letter-spacing:-2.8px}
+ .hero p{font-size:15px}
+ .hero .proof{display:grid;gap:7px}
+ .hero-visual{min-height:360px;padding:0 0 20px}
+ .hero-photo{inset:0 0 20px;height:calc(100% - 20px);object-position:55% 25%}
+ .hero-visual:after{inset:0 0 20px}
+ .hrm-float{right:6px;top:12px;width:165px;padding:12px}
+ .job-float{left:5px;bottom:31px;width:196px;padding:12px}
+ .float-card strong{font-size:13px}
+ .float-card small{font-size:10px}
+ .float-card .tag{font-size:9px}
+ .hrm-float .mini-row{font-size:10px}
+ .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .section{padding:58px 0}
+ .cta{padding:27px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+
 </style></head><body>
-<div class="topbar"><div class="wrap"><span>✉ hello@nexora.co.ke &nbsp; · &nbsp; Workforce intelligence for a changing world</span><div class="topbar-right"><a href="./jobs/">For job seekers</a><a href="../company-portal/">For employers</a><a href="../consultancy-portal/">For HR consultancies</a></div></div></div><header class="top"><div class="wrap nav"><a class="brand" href="./" aria-label="NEXORA home"><img class="brand-logo" src="./assets/nexora-logo.svg" alt="NEXORA — Intelligence for every workforce"></a><nav class="links" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#solutions">Solutions</a><a href="#how-it-works">How it works</a><a href="./jobs/">Find jobs</a><a href="./pricing.html">Pricing</a><a href="./about.html">About</a></nav><div class="actions" style="margin:0"><a class="btn light" href="../candidate-portal/">Sign in</a><a class="btn" href="./jobs/">Find a job ↗</a></div></div></header>
+<div class="topbar"><div class="wrap"><span>✉ hello@nexora.co.ke &nbsp; · &nbsp; Workforce intelligence for a changing world</span><div class="topbar-right"><a href="./jobs/">For job seekers</a><a href="../company-portal/">For employers</a><a href="../consultancy-portal/">For HR consultancies</a></div></div></div><header class="top"><div class="wrap nav"><a class="brand" href="./" aria-label="NEXORA home"><img class="brand-logo" src="./assets/nexora-logo.svg" alt="NEXORA — Intelligence for every workforce"></a><nav class="links" id="mainNavigation" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#solutions">Solutions</a><a href="#how-it-works">How it works</a><a href="./jobs/">Find jobs</a><a href="./pricing.html">Pricing</a><a href="./about.html">About</a></nav><button class="mobile-nav-toggle" type="button" id="mobileNavToggle" aria-expanded="false" aria-controls="mainNavigation"><span aria-hidden="true">☰</span> Menu</button><div class="actions" style="margin:0"><a class="btn light" href="../candidate-portal/">Sign in</a><a class="btn" href="./jobs/">Find a job ↗</a></div></div></header>
 <main>
 <section class="hero"><div class="wrap hero-grid"><div class="hero-copy"><div class="eyebrow">Human resources · Recruitment · Workforce intelligence</div><h1>Better hiring.<br><span>Smarter work.</span></h1><p>Discover your next opportunity, find exceptional talent and manage your people—all in one connected workforce platform built for modern organisations.</p><form class="hero-search" id="heroJobSearch" action="./jobs/" method="get"><label aria-label="Job title or keyword">⌕ <input name="q" type="search" placeholder="Job title, skill or company"></label><label aria-label="Location">⌖ <input name="location" type="text" placeholder="City or remote"></label><button type="submit">Search jobs ↗</button></form><div class="actions"><a class="btn light" href="../company-portal/">Hire talent</a><a class="btn" href="../candidate-portal/">Create candidate profile</a></div><div class="proof"><span>✓ Candidate-first job discovery</span><span>✓ Recruitment tools for employers</span><span>✓ Connected HR workflows</span></div></div><div class="hero-visual" aria-label="Professional workforce photography and product previews"><img class="hero-photo" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=85" alt="Professional woman in a modern workplace" fetchpriority="high"><div class="float-card hrm-float"><small>NEXORA · WORKFORCE</small><strong>One connected team.</strong><div class="mini-row"><span>People operations</span><b>01</b></div><div class="mini-row"><span>Talent pipeline</span><b>02</b></div><div class="mini-row"><span>Employee journey</span><b>03</b></div><span class="tag">People · Process · Progress</span></div><div class="float-card job-float"><small>OPPORTUNITY SPOTLIGHT</small><strong>Make your next move count.</strong><small>Find roles that match your skills and ambitions.</small><a class="tag" href="./jobs/">Explore opportunities ↗</a></div></div></div></section>
 <section class="category-strip" aria-label="Explore job categories"><div class="wrap"><div class="category-grid"><a class="category-link" href="./jobs/?category=healthcare"><span class="category-icon">✚</span>Healthcare</a><a class="category-link" href="./jobs/?category=technology"><span class="category-icon">⌘</span>IT & Technology</a><a class="category-link" href="./jobs/?category=finance"><span class="category-icon">▤</span>Finance</a><a class="category-link" href="./jobs/?category=education"><span class="category-icon">⌂</span>Education</a><a class="category-link" href="./jobs/?category=administration"><span class="category-icon">▣</span>Administration</a><a class="category-link" href="./jobs/"><span class="category-icon">＋</span>All opportunities</a></div></div></section>
@@ -59,4 +153,22 @@
 <section class="section soft"><div class="wrap"><div class="cta"><div><h2>Build a better workforce with NEXORA.</h2><p>Explore opportunities or open the workspace designed for your role.</p></div><div class="actions" style="margin:0"><a class="btn" href="./jobs/">Search jobs</a><a class="btn" href="../company-portal/">For employers</a></div></div></div></section>
 </main>
 <footer><div class="wrap"><div class="foot"><div><a class="brand" href="./"><span class="mark">N</span><span>NEXORA<small style="color:#9ea8c4">INTELLIGENCE FOR EVERY WORKFORCE</small></span></a><p style="max-width:390px;color:#bdc5db">Human Resources & Workforce Management. Connecting talent, recruitment and people operations.</p></div><div><b>Explore</b><div class="foot-links" style="margin-top:10px"><a href="./jobs/">Find jobs</a><a href="../candidate-portal/">Candidate portal</a><a href="../company-portal/">Employer portal</a><a href="../consultancy-portal/">Consultancy portal</a></div></div><div><b>Company</b><div class="foot-links" style="margin-top:10px"><a href="./about.html">About NEXORA</a><a href="./services.html">Solutions</a><a href="./pricing.html">Pricing</a><a href="./contact.html">Contact & support</a></div></div></div><div class="legal">© <span id="year"></span> NEXORA · Human Resources & Workforce Management. Interface previews may describe planned capabilities; availability depends on deployed modules and configuration.</div></div></footer>
-<script>document.getElementById('year').textContent=new Date().getFullYear();</script></body></html>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+<script>
+(()=> {
+ const toggle=document.getElementById('mobileNavToggle');
+ const nav=document.getElementById('mainNavigation');
+ if(!toggle||!nav)return;
+ const close=()=>{nav.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<span aria-hidden="true">☰</span> Menu';};
+ toggle.addEventListener('click',()=>{
+   const opening=!nav.classList.contains('is-open');
+   nav.classList.toggle('is-open',opening);
+   toggle.setAttribute('aria-expanded',String(opening));
+   toggle.innerHTML=opening?'<span aria-hidden="true">✕</span> Close':'<span aria-hidden="true">☰</span> Menu';
+ });
+ nav.querySelectorAll('a').forEach(link=>link.addEventListener('click',close));
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
+ window.addEventListener('resize',()=>{if(window.innerWidth>900)close();});
+})();
+</script>
+</body></html>
