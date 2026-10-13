@@ -16,6 +16,8 @@ Important:
 - Confirm storage bucket policies and candidate consent behavior before using real CVs or identity documents.
 - For migration 005, test with at least two separate organisations and accounts. Verify employee, department, leave, attendance, review and payroll-item links cannot cross organisation boundaries.
 - Payroll calculations and Kenyan statutory processing are not implemented by migration 005; do not use its totals as calculated payroll.
+- Migration 006 enables employee self-service only for employees whose `hr_employees.user_id` is linked to their authenticated account. Test own-record access and attempts to read another employee's profile, leave, attendance, reviews and payroll items.
+- Migration 006 operational registers do not publish vacancies, submit statutory remittances, collect payments, calculate statutory payroll or enforce a configurable approval engine.
 - Migration 006 adds a general operational register, not external integrations: it does not publish vacancies, submit statutory remittances, collect payments, calculate payroll, or enforce a configurable approval engine.
 - Test migration 006 with at least two organisations, including attempts to attach a record to an employee from another organisation. Confirm all operations are rejected or isolated by RLS and the employee-link trigger.
 - `supabase/schema.sql` is a non-destructive note/entry point, not a substitute for these migrations.
