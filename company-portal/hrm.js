@@ -189,6 +189,51 @@ async function loadOrganizations(){const [m,o,a]=await Promise.all([db.from('org
 async function start(session){user=session.user;$('#authScreen').hidden=true;$('#appShell').hidden=false;$('#userAvatar').textContent=initials(user.email);$('#welcomeTitle').textContent='Welcome back, '+(user.user_metadata?.full_name||user.email?.split('@')[0]||'HR manager')+'.';try{await loadOrganizations();await loadAll()}catch(e){notify(e.message||'Unable to load your workspace.',true)}}
 async function init(){ensureExpansionSections();if(!window.supabase||!window.NEXORA_CONFIG){showAuth('Secure connection configuration is missing. Please contact the platform administrator.',true);return}db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey);$('#attendanceDate').value=today();$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const b=e.currentTarget.querySelector('button');b.disabled=true;b.textContent='Signing in…';showAuth('');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;await start(r.data.session)}catch(err){showAuth(err.message||'Sign in failed.',true)}finally{b.disabled=false;b.textContent='Sign in securely'}});$('#logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();user=null;orgs=[];orgId='';$('#appShell').hidden=true;$('#authScreen').hidden=false;showAuth('You have signed out.')});$('#organizationSelect').addEventListener('change',async e=>{orgId=e.target.value;role=orgs.find(o=>o.id===orgId)?.role||role;await loadAll()});$('#mainNav').addEventListener('click',e=>{const b=e.target.closest('[data-section]');if(b)section(b.dataset.section)});document.addEventListener('click',async e=>{const g=e.target.closest('[data-goto]');if(g)section(g.dataset.goto);const a=e.target.closest('[data-action]');if(a){const action=a.dataset.action;if(action==='add-employee')addEmployee();if(action==='add-department')addDepartment();if(action==='record-attendance')addAttendance();if(action==='add-review')addReview();if(action==='add-payroll')addPayroll();if(action==='add-payroll-item')addPayrollItem();if(action==='add-operation')addOperation(a.dataset.module);if(action==='export-employees')exportEmployees();if(action==='export-operations')exportOperations()}const editOp=e.target.closest('[data-edit-operation]');if(editOp){const rec=operations.find(x=>x.id===editOp.dataset.editOperation);if(rec)addOperation(rec.module_key,rec)}const deleteOp=e.target.closest('[data-delete-operation]');if(deleteOp){const rec=operations.find(x=>x.id===deleteOp.dataset.deleteOperation);if(rec&&confirm('Delete this '+(operationModules[rec.module_key]?.title||'HR')+' record?')){deleteOp.disabled=true;try{const out=await db.from('hr_operations_records').delete().eq('id',rec.id).eq('organization_id',orgId);if(out.error)throw out.error;await loadAll();notify('Record deleted.')}catch(err){deleteOp.disabled=false;notify(err.message||'Delete failed.',true)}}}const nextOp=e.target.closest('[data-op-status]');if(nextOp){const rec=operations.find(x=>x.id===nextOp.dataset.opStatus),cfg=operationModules[nextOp.dataset.module];if(rec&&cfg){const idx=cfg.statuses.indexOf(rec.status),next=cfg.statuses[(idx+1+cfg.statuses.length)%cfg.statuses.length];try{await update('hr_operations_records',rec.id,{status:next,updated_by:user.id});await loadAll();notify('Status changed to '+nice(next)+'.')}catch(err){notify(err.message||'Status update failed.',true)}}}const l=e.target.closest('[data-leave]');if(l){l.disabled=true;try{await update('hr_leave_requests',l.dataset.leave,{status:l.dataset.status,decided_by:user.id,decided_at:new Date().toISOString()});await loadAll();notify('Leave request '+l.dataset.status+'.')}catch(err){l.disabled=false;notify(err.message,true)}}const edit=e.target.closest('[data-edit-employee]');if(edit){const emp=employees.find(x=>x.id===edit.dataset.editEmployee);if(!emp)return;openModal('Edit employee',formField('Full name','full_name','text',true)+formField('Work email','email','email')+formField('Phone','phone')+formField('Employee number','employee_number')+formField('Job title','job_title','text',true)+formField('Department','department_id','text',false,[['','Unassigned'],...departments.map(d=>[d.id,d.name])])+formField('Employment type','employment_type','text',false,[['full_time','Full time'],['part_time','Part time'],['contract','Contract'],['internship','Internship']])+formField('Start date','start_date','date')+formField('Employment status','employment_status','text',true,[['active','Active'],['probation','Probation'],['on_leave','On leave'],['inactive','Inactive'],['terminated','Terminated']]),'Update employee',async d=>update('hr_employees',emp.id,{...d,department_id:d.department_id||null,email:d.email||null,phone:d.phone||null,employee_number:d.employee_number||null,start_date:d.start_date||null}));const form=$('#recordForm');if(form){Object.entries(emp).forEach(([k,v])=>{const el=form.elements.namedItem(k);if(el&&v!=null)el.value=String(v)})}}});Object.keys(operationModules).forEach(k=>{const s=$('#search-'+k),f=$('#filter-'+k);if(s)s.addEventListener('input',()=>renderOperations(k));if(f)f.addEventListener('change',()=>renderOperations(k))});$('#employeeSearch').addEventListener('input',renderEmployees);$('#employeeStatusFilter').addEventListener('change',renderEmployees);$('#leaveStatusFilter').addEventListener('change',renderLeave);$('#refreshAttendance').addEventListener('click',renderAttendance);$('#attendanceDate').addEventListener('change',renderAttendance);$('#refreshDashboard')?.addEventListener('click',async()=>{const b=$('#refreshDashboard');b.disabled=true;b.textContent='Refreshing…';try{await loadAll();notify('Workforce dashboard refreshed.')}catch(err){notify(err.message||'Could not refresh dashboard.',true)}finally{b.disabled=false;b.textContent='↻ Refresh data'}});const {data:{session}}=await db.auth.getSession();if(session)await start(session)}
 
+/* Fast global navigation search / command palette. */
+(function(){
+ function initSearch(){
+  const trigger=document.getElementById('globalSearchTrigger'),dialog=document.getElementById('globalSearchDialog'),input=document.getElementById('globalSearchInput'),results=document.getElementById('globalSearchResults');
+  if(!trigger||!dialog||!input||!results||trigger.dataset.ready==='true')return;
+  trigger.dataset.ready='true';
+  let activeIndex=0,current=[];
+  const iconFor=(label)=>label.toLowerCase().includes('payroll')?'▤':label.toLowerCase().includes('employee')?'♙':label.toLowerCase().includes('leave')?'◷':label.toLowerCase().includes('report')?'▥':label.toLowerCase().includes('setting')?'⚙':label.toLowerCase().includes('attendance')?'✓':'↗';
+  function collect(){
+   return [...document.querySelectorAll('#mainNav button[data-section],#mainNav a')].map(el=>{
+    const label=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();
+    return {label,section:el.dataset.section||'',href:el.getAttribute('href')||'',search:(label+' '+(el.dataset.section||'')).toLowerCase()};
+   }).filter(x=>x.label);
+  }
+  function choose(item){
+   dialog.close();
+   if(item.section&&typeof section==='function')section(item.section);
+   else if(item.href)window.location.href=new URL(item.href,window.location.href).href;
+  }
+  function paint(){
+   const q=input.value.trim().toLowerCase();
+   current=collect().filter(x=>!q||x.search.includes(q));
+   activeIndex=0;
+   if(!current.length){results.innerHTML='<div class="global-search-empty">No navigation matches. Try “leave”, “payroll”, “employees” or “reports”.</div>';return}
+   results.innerHTML=current.slice(0,12).map((item,i)=>'<button type="button" class="global-search-result" data-result="'+i+'"><span class="result-icon">'+iconFor(item.label)+'</span><span class="result-copy"><strong>'+esc(item.label)+'</strong><small>'+(item.section?'HR workspace module':'Open page')+'</small></span><span class="result-arrow">↗</span></button>').join('');
+   syncActive();
+  }
+  function syncActive(){results.querySelectorAll('[data-result]').forEach((el,i)=>{el.style.background=i===activeIndex?'#eefafb':'';el.setAttribute('aria-selected',i===activeIndex?'true':'false')});const selected=results.querySelector('[data-result="'+activeIndex+'"]');if(selected)selected.scrollIntoView({block:'nearest'});}
+  function open(){if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');input.value='';paint();setTimeout(()=>input.focus(),0)}
+  trigger.addEventListener('click',open);
+  document.getElementById('globalSearchClose')?.addEventListener('click',()=>dialog.close());
+  input.addEventListener('input',paint);
+  results.addEventListener('click',e=>{const btn=e.target.closest('[data-result]');if(btn&&current[Number(btn.dataset.result)])choose(current[Number(btn.dataset.result)])});
+  input.addEventListener('keydown',e=>{
+   if(e.key==='ArrowDown'){e.preventDefault();activeIndex=Math.min(activeIndex+1,Math.min(current.length,12)-1);syncActive()}
+   else if(e.key==='ArrowUp'){e.preventDefault();activeIndex=Math.max(0,activeIndex-1);syncActive()}
+   else if(e.key==='Enter'){e.preventDefault();if(current[activeIndex])choose(current[activeIndex])}
+   else if(e.key==='Escape'){e.preventDefault();dialog.close()}
+  });
+  dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(dialog.open)dialog.close();else open()}});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initSearch,{once:true});else initSearch();
+})();
+
 /* Accessible mobile navigation drawer for the HR workspace. */
 (function(){
  function setup(){
