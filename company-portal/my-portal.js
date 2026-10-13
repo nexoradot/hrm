@@ -45,7 +45,22 @@ async function init(){
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),b=e.currentTarget.querySelector('button');b.disabled=true;msg('Signing in…');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed.',true)}finally{b.disabled=false}});
  $('#logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();user=null;employee=null;$('#appSection').hidden=true;$('#authSection').hidden=false;$('#logoutBtn').hidden=true;msg('You have signed out.')});
  $('#portalNav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)tab(b.dataset.tab)});
- $('#leaveForm').addEventListener('submit',async e=>{e.preventDefault();if(!employee||!user)return;const f=new FormData(e.currentTarget),start=f.get('start_date'),end=f.get('end_date'),days=Number(f.get('days_requested'));if(end<start||days<=0){msg('Check the leave dates and number of days.',true);return}const b=e.currentTarget.querySelector('button');b.disabled=true;try{const result=await db.from('hr_leave_requests').insert({organization_id:employee.organization_id,employee_id:employee.id,leave_type:f.get('leave_type'),start_date:start,end_date:end,days_requested:days,reason:f.get('reason'),requested_by:user.id,status:'pending'});if(result.error)throw result.error;e.currentTarget.reset();await load();tab('leave');msg('Leave request submitted to HR for review.')}catch(err){msg(err.message||'Could not submit leave request.',true)}finally{b.disabled=false}});
+ $('#leaveForm').addEventListener('submit',async e=>{
+  e.preventDefault();if(!employee||!user)return;
+  const form=e.currentTarget;if(!form.reportValidity())return;
+  const f=new FormData(form),start=String(f.get('start_date')||''),end=String(f.get('end_date')||''),days=Number(f.get('days_requested'));
+  if(!start||!end||end<start||!Number.isFinite(days)||days<=0){msg('Check the leave dates and enter a number of days greater than zero.',true);return}
+  const b=form.querySelector('button[type="submit"]');if(b.disabled)return;
+  b.disabled=true;const originalLabel=b.textContent;b.textContent='Submitting…';
+  try{
+   const result=await db.from('hr_leave_requests').insert({organization_id:employee.organization_id,employee_id:employee.id,leave_type:f.get('leave_type'),start_date:start,end_date:end,days_requested:days,reason:f.get('reason'),requested_by:user.id,status:'pending'});
+   if(result.error)throw result.error;
+   form.reset();msg('Leave request submitted successfully. Refreshing your records…');
+   try{await load();tab('leave');msg('Leave request submitted to HR for review.')}
+   catch(refreshError){msg('Your leave request was submitted, but the portal could not refresh your records. Use the page again later; do not submit the same request twice. '+(refreshError.message||''),true)}
+  }catch(err){msg(err.message||'Could not submit leave request. Please review the form and try again.',true)}
+  finally{b.disabled=false;b.textContent=originalLabel}
+ });
  const {data:{session}}=await db.auth.getSession();if(session){user=session.user;try{await load()}catch(err){msg(err.message||'Could not load your employee records.',true)}}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
