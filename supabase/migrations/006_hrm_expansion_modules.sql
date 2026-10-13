@@ -4,7 +4,7 @@ create table if not exists public.hr_operations_records (
  id uuid primary key default gen_random_uuid(),
  organization_id uuid not null references public.organizations(id) on delete cascade,
  module_key text not null check(module_key in (
-  'recruitment','onboarding','offboarding','shifts','benefits','compliance',
+  'recruitment','onboarding','offboarding','documents','training','timesheets','shifts','benefits','compliance',
   'remittance','approvals','billing','simulator','wage_tracker','settings','go_live'
  )),
  title text not null,
