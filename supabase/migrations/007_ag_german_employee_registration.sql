@@ -94,3 +94,7 @@ create policy hr_employee_docs_delete_own_or_hr on storage.objects for delete to
  ));
 
 comment on table public.hr_employee_registrations is 'Confidential employee onboarding submissions matching AG German Institute registration form. Contains highly sensitive identity, tax, bank and beneficiary details; expose only to the submitter and authorised HR managers.';
+
+drop policy if exists hr_employee_registrations_own_delete on public.hr_employee_registrations;
+create policy hr_employee_registrations_own_delete on public.hr_employee_registrations
+ for delete to authenticated using(submitted_by=auth.uid() and status='submitted');
