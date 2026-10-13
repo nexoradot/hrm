@@ -54,11 +54,6 @@ create table if not exists public.hr_employees (
  unique(organization_id,employee_number),
  constraint hr_employees_department_same_org foreign key(department_id) references public.hr_departments(id) on delete set null
 );
-do $$ begin
- alter table public.hr_employees add constraint hr_employees_department_org_fk
- foreign key(organization_id,department_id) references public.hr_departments(organization_id,id) on delete set null;
-exception when duplicate_object then null; end $$;
-
 create table if not exists public.hr_leave_requests (
  id uuid primary key default gen_random_uuid(),
  organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -182,6 +177,23 @@ begin
 end $$;
 drop trigger if exists hr_employee_department_tenant_guard on public.hr_employees;
 create trigger hr_employee_department_tenant_guard before insert or update of organization_id,department_id on public.hr_employees for each row execute function public.validate_hr_employee_links();
+
+-- Ensure all child records reference an employee from the same tenant.
+create or replace function public.validate_hr_child_employee_tenant()
+returns trigger language plpgsql security invoker set search_path=public
+as $
+begin
+ if not exists(select 1 from public.hr_employees e where e.id=new.employee_id and e.organization_id=new.organization_id) then
+  raise exception 'Employee must belong to the same organisation';
+ end if;
+ return new;
+end $;
+drop trigger if exists hr_leave_employee_tenant_guard on public.hr_leave_requests;
+create trigger hr_leave_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_leave_requests for each row execute function public.validate_hr_child_employee_tenant();
+drop trigger if exists hr_attendance_employee_tenant_guard on public.hr_attendance_records;
+create trigger hr_attendance_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_attendance_records for each row execute function public.validate_hr_child_employee_tenant();
+drop trigger if exists hr_review_employee_tenant_guard on public.hr_performance_reviews;
+create trigger hr_review_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_performance_reviews for each row execute function public.validate_hr_child_employee_tenant();
 
 create or replace function public.validate_hr_payroll_links()
 returns trigger language plpgsql security invoker set search_path=public
