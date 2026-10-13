@@ -73,12 +73,15 @@ drop policy if exists hr_employee_docs_insert_own on storage.objects;
 create policy hr_employee_docs_insert_own on storage.objects for insert to authenticated
  with check(bucket_id='hr-employee-documents'
   and (storage.foldername(name))[2]=auth.uid()::text
-  and case when (storage.foldername(name))[1] ~* '^[0-9a-f-]{36}
+  and case when (storage.foldername(name))[1] ~* '^[0-9a-f-]{36}$' then
+   exists(select 1 from public.organization_members m
+    where m.organization_id=((storage.foldername(name))[1])::uuid and m.user_id=auth.uid() and m.status='active')
+   else false end);
 drop policy if exists hr_employee_docs_read_own_or_hr on storage.objects;
 create policy hr_employee_docs_read_own_or_hr on storage.objects for select to authenticated
  using(bucket_id='hr-employee-documents' and (
   (storage.foldername(name))[2]=auth.uid()::text
-  or case when (storage.foldername(name))[1] ~* '^[0-9a-f-]{36}
+  or case when (storage.foldername(name))[1] ~* '^[0-9a-f-]{36}$' then public.can_manage_hr(((storage.foldername(name))[1])::uuid) else false end
  ));
 drop policy if exists hr_employee_docs_update_own on storage.objects;
 create policy hr_employee_docs_update_own on storage.objects for update to authenticated
@@ -88,7 +91,7 @@ drop policy if exists hr_employee_docs_delete_own_or_hr on storage.objects;
 create policy hr_employee_docs_delete_own_or_hr on storage.objects for delete to authenticated
  using(bucket_id='hr-employee-documents' and (
   (storage.foldername(name))[2]=auth.uid()::text
-  or ((storage.foldername(name))[1] ~* '^[0-9a-f-]{36}$' and public.can_manage_hr(((storage.foldername(name))[1])::uuid))
+  or case when (storage.foldername(name))[1] ~* '^[0-9a-f-]{36}$' then public.can_manage_hr(((storage.foldername(name))[1])::uuid) else false end
  ));
 
 comment on table public.hr_employee_registrations is 'Confidential employee onboarding submissions matching AG German Institute registration form. Contains highly sensitive identity, tax, bank and beneficiary details; expose only to the submitter and authorised HR managers.';
