@@ -47,39 +47,22 @@ Deno.serve(async (req: Request) => {
 
   const { data: existing } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   const already = existing?.users?.find((u) => (u.email || "").toLowerCase() === email);
+  if (already) return respond({ error: "This email already has a NEXORA account. Ask the employee to sign in or use account recovery; no duplicate account was created." }, 409);
+
   const appUrl = String(body.redirect_url || "").trim();
   const allowedRedirect = appUrl.startsWith("https://nexoradot.github.io/hrm/") ? appUrl : "https://nexoradot.github.io/hrm/company-portal/employee-registration.html";
-  let employeeUserId: string;
-  if (already) {
-    employeeUserId = already.id;
-    const { data: existingMember, error: existingMemberError } = await admin.from("organization_members")
-      .select("user_id,status").eq("organization_id", organizationId).eq("user_id", employeeUserId).maybeSingle();
-    if (existingMemberError) return respond({ error: existingMemberError.message }, 500);
-    if (existingMember?.status === "active") return respond({ error: "This email already has an active membership in the selected organisation." }, 409);
-    if (existingMember) {
-      const { error } = await admin.from("organization_members").update({ status: "active", role: "employee" })
-        .eq("organization_id", organizationId).eq("user_id", employeeUserId);
-      if (error) return respond({ error: error.message }, 500);
-    } else {
-      const { error } = await admin.from("organization_members").insert({ organization_id: organizationId, user_id: employeeUserId, role: "employee", status: "active" });
-      if (error) return respond({ error: error.message }, 500);
-    }
-    const { error: resetError } = await admin.auth.admin.generateLink({ type: "recovery", email, options: { redirectTo: allowedRedirect } });
-    if (resetError) return respond({ error: "Membership was created, but account setup email could not be sent: " + resetError.message }, 502);
-  } else {
-    const { data: invite, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: allowedRedirect,
-      data: { first_name: firstName, last_name: lastName, organization_id: organizationId, department: body.department || null, job_title: body.job_title || null, invited_by: caller.id }
-    });
-    if (inviteError || !invite.user) return respond({ error: inviteError?.message || "Could not create the employee account invitation." }, 502);
-    employeeUserId = invite.user.id;
-    const { error: memberInsertError } = await admin.from("organization_members").insert({
-      organization_id: organizationId, user_id: employeeUserId, role: "employee", status: "active"
-    });
-    if (memberInsertError) {
-      await admin.auth.admin.deleteUser(employeeUserId);
-      return respond({ error: "Invitation membership could not be created: " + memberInsertError.message }, 500);
-    }
+  const { data: invite, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: allowedRedirect,
+    data: { first_name: firstName, last_name: lastName, organization_id: organizationId, department: body.department || null, job_title: body.job_title || null, invited_by: caller.id }
+  });
+  if (inviteError || !invite.user) return respond({ error: inviteError?.message || "Could not create the employee account invitation." }, 502);
+  const employeeUserId = invite.user.id;
+  const { error: memberInsertError } = await admin.from("organization_members").insert({
+    organization_id: organizationId, user_id: employeeUserId, role: "employee", status: "active"
+  });
+  if (memberInsertError) {
+    await admin.auth.admin.deleteUser(employeeUserId);
+    return respond({ error: "Invitation membership could not be created: " + memberInsertError.message }, 500);
   }
 
   return respond({
