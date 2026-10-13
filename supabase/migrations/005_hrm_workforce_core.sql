@@ -188,13 +188,13 @@ create trigger hr_employee_department_tenant_guard before insert or update of or
 -- Employee foreign keys must remain inside the same organisation for every HR module.
 create or replace function public.validate_hr_employee_tenant_link()
 returns trigger language plpgsql security invoker set search_path=public
-as $
+as $$
 begin
  if not exists(select 1 from public.hr_employees e where e.id=new.employee_id and e.organization_id=new.organization_id) then
   raise exception 'Employee must belong to the same organisation';
  end if;
  return new;
-end $;
+end $$;
 
 drop trigger if exists hr_leave_employee_tenant_guard on public.hr_leave_requests;
 create trigger hr_leave_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_leave_requests for each row execute function public.validate_hr_employee_tenant_link();
