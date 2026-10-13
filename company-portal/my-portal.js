@@ -49,3 +49,19 @@ async function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
+
+/* Global search for employee self-service navigation. */
+(function(){
+ const trigger=document.getElementById('dashSearchTrigger'),dialog=document.getElementById('dashSearchDialog'),input=document.getElementById('dashSearchInput'),results=document.getElementById('dashSearchResults');
+ if(!trigger||!dialog||!input||!results||trigger.dataset.ready==='true')return;
+ trigger.dataset.ready='true';let items=[],active=0;
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function collect(){return [...document.querySelectorAll('#portalNav button[data-tab]')].map(el=>{const label=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();return {label,el,search:(label+' '+(el.dataset.tab||'')).toLowerCase()}}).filter(x=>x.label)}
+ function sync(){results.querySelectorAll('[data-result]').forEach((b,i)=>{b.style.background=i===active?'#eefafb':'';b.setAttribute('aria-selected',i===active?'true':'false')});results.querySelector('[data-result="'+active+'"]')?.scrollIntoView({block:'nearest'})}
+ function paint(){const q=input.value.trim().toLowerCase();items=collect().filter(x=>!q||x.search.includes(q)).slice(0,15);active=0;if(!items.length){results.innerHTML='<div class="dash-search-empty">No matching destinations. Try another keyword.</div>';return}results.innerHTML=items.map((x,i)=>'<button type="button" class="dash-search-result" data-result="'+i+'"><span class="dash-search-icon">⌕</span><span class="dash-search-copy"><strong>'+esc(x.label)+'</strong><small>Open employee portal tab</small></span><span aria-hidden="true">↗</span></button>').join('');sync()}
+ function open(){if(dialog.showModal)dialog.showModal();else dialog.setAttribute('open','');input.value='';paint();setTimeout(()=>input.focus(),0)}
+ function choose(i){const item=items[i];if(!item)return;dialog.close();item.el.click()}
+ trigger.addEventListener('click',open);document.getElementById('dashSearchClose')?.addEventListener('click',()=>dialog.close());input.addEventListener('input',paint);results.addEventListener('click',e=>{const b=e.target.closest('[data-result]');if(b)choose(Number(b.dataset.result))});
+ input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,items.length-1);sync()}else if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(0,active-1);sync()}else if(e.key==='Enter'){e.preventDefault();choose(active)}else if(e.key==='Escape'){e.preventDefault();dialog.close()}});
+ dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();dialog.open?dialog.close():open()}});
+})();
