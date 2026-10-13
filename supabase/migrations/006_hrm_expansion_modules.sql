@@ -54,3 +54,47 @@ create trigger hr_operations_employee_tenant_guard
 
 comment on table public.hr_operations_records is
  'Tenant-scoped operational register for recruitment tracking, onboarding/offboarding tasks, shifts, benefits, compliance, remittance, approvals, billing, simulator assumptions, wage tracking and settings. Amounts are records only, not payroll calculations.';
+
+-- Employee self-service policies. Employees must be explicitly linked by hr_employees.user_id.
+-- These policies expose only the signed-in employee's own records; HR manager policies remain in place.
+drop policy if exists hr_employees_self_read on public.hr_employees;
+create policy hr_employees_self_read on public.hr_employees
+ for select to authenticated using(user_id=auth.uid());
+
+drop policy if exists hr_leave_requests_self_read on public.hr_leave_requests;
+create policy hr_leave_requests_self_read on public.hr_leave_requests
+ for select to authenticated using(exists(
+  select 1 from public.hr_employees e where e.id=employee_id and e.user_id=auth.uid() and e.organization_id=hr_leave_requests.organization_id
+ ));
+drop policy if exists hr_leave_requests_self_insert on public.hr_leave_requests;
+create policy hr_leave_requests_self_insert on public.hr_leave_requests
+ for insert to authenticated with check(
+  requested_by=auth.uid() and status='pending' and exists(
+   select 1 from public.hr_employees e where e.id=employee_id and e.user_id=auth.uid() and e.organization_id=hr_leave_requests.organization_id
+  )
+);
+
+drop policy if exists hr_attendance_records_self_read on public.hr_attendance_records;
+create policy hr_attendance_records_self_read on public.hr_attendance_records
+ for select to authenticated using(exists(
+  select 1 from public.hr_employees e where e.id=employee_id and e.user_id=auth.uid() and e.organization_id=hr_attendance_records.organization_id
+ ));
+
+drop policy if exists hr_performance_reviews_self_read on public.hr_performance_reviews;
+create policy hr_performance_reviews_self_read on public.hr_performance_reviews
+ for select to authenticated using(exists(
+  select 1 from public.hr_employees e where e.id=employee_id and e.user_id=auth.uid() and e.organization_id=hr_performance_reviews.organization_id
+ ));
+
+drop policy if exists hr_payroll_items_self_read on public.hr_payroll_items;
+create policy hr_payroll_items_self_read on public.hr_payroll_items
+ for select to authenticated using(exists(
+  select 1 from public.hr_employees e where e.id=employee_id and e.user_id=auth.uid() and e.organization_id=hr_payroll_items.organization_id
+ ));
+
+drop policy if exists hr_payroll_periods_self_read on public.hr_payroll_periods;
+create policy hr_payroll_periods_self_read on public.hr_payroll_periods
+ for select to authenticated using(exists(
+  select 1 from public.hr_payroll_items i join public.hr_employees e on e.id=i.employee_id
+  where i.payroll_period_id=hr_payroll_periods.id and i.organization_id=hr_payroll_periods.organization_id and e.user_id=auth.uid()
+ ));
