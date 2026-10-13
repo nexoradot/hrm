@@ -45,7 +45,43 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .global-search-trigger{display:inline-flex;align-items:center;gap:9px;border:1px solid #e1e7f0;background:#f8faff;color:#53627a;border-radius:11px;padding:9px 11px;font-size:12px;font-weight:700;white-space:nowrap}.global-search-trigger>span:first-child{font-size:19px;color:#078895;line-height:1}.global-search-trigger kbd{font:600 10px/1 ui-monospace,monospace;padding:4px 5px;border:1px solid #e0e6ef;border-radius:5px;background:#fff;color:#8390a3}.global-search-trigger:hover{border-color:#8edee3;background:#f1fcfc}.global-search-dialog{width:min(560px,calc(100vw - 28px));max-width:560px;border:1px solid #e5eaf2;border-radius:18px;padding:0;box-shadow:0 28px 90px #07122555;overflow:hidden;color:var(--ink)}.global-search-dialog::backdrop{background:#071225a6;backdrop-filter:blur(3px)}.global-search-form{padding:15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.global-search-form .search-icon{font-size:22px;color:#078895}.global-search-form input{border:0;outline:0;box-shadow:none!important;flex:1;min-width:0;padding:9px 0;font-size:15px;background:transparent;color:var(--ink)}.global-search-form button{border:0;background:#eef2f8;border-radius:8px;padding:7px 9px;color:#5e6d82}.global-search-hint{padding:10px 17px 4px;color:#8995a8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:800}.global-search-results{padding:5px 9px 12px;max-height:min(55vh,430px);overflow:auto}.global-search-result{display:flex;width:100%;align-items:center;gap:11px;border:0;background:#fff;text-align:left;padding:12px;border-radius:10px;color:var(--ink)}.global-search-result:hover,.global-search-result:focus-visible{background:#eefafb;outline:0}.global-search-result .result-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px;background:#e9f8fa;color:#087f8c;font-size:16px}.global-search-result .result-copy{flex:1;min-width:0}.global-search-result strong{display:block;font-size:12px}.global-search-result small{display:block;font-size:10px;color:#8995a8;margin-top:2px}.global-search-result .result-arrow{color:#8a98ad}.global-search-empty{padding:28px 14px;text-align:center;color:#8793a6;font-size:12px}.global-search-footer{display:flex;justify-content:space-between;gap:8px;padding:10px 16px;border-top:1px solid var(--line);font-size:10px;color:#8793a6;background:#fbfcfe}.global-search-footer kbd{font:600 10px ui-monospace,monospace;background:#fff;border:1px solid #e0e6ef;border-radius:4px;padding:2px 4px}@media(max-width:680px){.topbar{gap:7px!important}.global-search-trigger{width:42px;height:42px;justify-content:center;padding:0;gap:0;flex:0 0 42px}.global-search-trigger .search-trigger-label,.global-search-trigger kbd{display:none}.topbar>div:first-of-type{flex:1;min-width:0}.topbar h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-tools{gap:5px!important}.global-search-form{padding:12px}.global-search-form input{font-size:14px}}
 
 /* Additional premium finish for the HR command centre */.content{padding-top:32px}.welcome h2{font-size:clamp(26px,3vw,34px);letter-spacing:-1.1px}.stat,.panel{box-shadow:0 10px 32px #1429440a;transition:transform .2s ease,box-shadow .2s ease}.stat{background:linear-gradient(145deg,#fff,#fbfdff);border-radius:18px;padding:21px}.stat strong{font-size:31px;letter-spacing:-1px}.stat:hover{transform:translateY(-3px);box-shadow:0 16px 35px #14294413}.panel{border-radius:18px}.trend-chart{min-height:205px}.chart-key{margin-top:8px}.dept-track{height:9px;background:#edf2f8}.dept-fill{box-shadow:0 2px 8px #0f9baa26}.hero-strip{box-shadow:0 16px 32px #10213c15}.topbar{backdrop-filter:blur(14px);background:#ffffffed}.nav button{transition:background .18s,color .18s,transform .18s}.nav button:hover{transform:translateX(2px)}tbody tr:hover{background:#fafcff}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #82dfe4;outline-offset:3px}@media(max-width:680px){.content{padding-top:18px}.stat{padding:15px}.stat strong{font-size:26px}.trend-chart{min-height:160px}}
-</style></head>
+</style><style id="nexora-enterprise-polish">
+/* Enterprise refinement: clearer hierarchy, accessible focus, data-first surfaces. */
+:root{--nexora-shadow:0 12px 32px rgba(20,37,65,.055);--nexora-ring:rgba(67,213,223,.22)}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+.stat,.panel,.module-metric,.docs-card{box-shadow:var(--nexora-shadow);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.panel:hover,.module-metric:hover,.docs-card:hover{border-color:#d9e4f0;box-shadow:0 16px 38px rgba(20,37,65,.075)}
+.panel-head{align-items:flex-start}
+.panel-head>div{min-width:0}
+.panel-head p{line-height:1.65}
+.stat-top{gap:10px}
+.stat strong{font-variant-numeric:tabular-nums}
+.table-wrap{border-radius:11px}
+table{font-variant-numeric:tabular-nums}
+tbody tr{transition:background .15s ease}
+td{line-height:1.55}
+.field input:focus,.field select:focus,.field textarea:focus,.toolbar input:focus,.toolbar select:focus{border-color:#55cbd5;outline:3px solid var(--nexora-ring);outline-offset:0}
+.btn:focus-visible,.quick-actions button:focus-visible,.nav button:focus-visible{outline:3px solid #62d8df;outline-offset:2px}
+.pill{white-space:nowrap}
+.hero-strip{box-shadow:0 14px 30px rgba(12,31,55,.12)}
+.hero-strip p{max-width:720px;line-height:1.7}
+.action-item,.activity-row{gap:13px}
+.action-copy strong,.activity-copy strong{line-height:1.45}
+.module-description{line-height:1.7}
+.empty{border:1px dashed #e1e8f1;border-radius:12px;background:#fbfcff;line-height:1.7}
+@media(max-width:680px){
+ .panel,.stat{box-shadow:0 5px 18px rgba(20,37,65,.045)}
+ .panel-head{align-items:flex-start}
+ .panel-head>.btn,.panel-head>button{flex-shrink:0}
+ .stats{align-items:stretch}
+ .stat{min-width:0}
+ .stat strong{overflow-wrap:anywhere}
+ .table-wrap{margin:0 -2px}
+ .hero-strip h3{line-height:1.35}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
 <body>
 <div id="authScreen" class="auth-wrap">
  <form id="loginForm" class="auth-card">
