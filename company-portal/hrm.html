@@ -33,6 +33,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 @media(max-width:390px){.user-tools{gap:5px}.org-select{max-width:115px}.user-tools .btn{padding:8px;font-size:10px}.quick-actions{grid-template-columns:1fr}.stat strong{font-size:24px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
+
+/* Expansion modules navigation */
+.nav-group-label{font-size:9px;color:#8294b2;letter-spacing:1.6px;font-weight:850;padding:12px 12px 2px;margin-top:2px}.nav button{min-height:37px}.module-description{color:var(--muted);font-size:12px;max-width:760px}.module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}.module-metric{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px}.module-metric small{display:block;color:var(--muted);font-size:11px}.module-metric strong{display:block;font-size:23px;margin-top:5px}.module-table td{vertical-align:top}.module-actions{display:flex;gap:6px}.module-actions .btn{padding:6px 8px;font-size:10px}.module-note{background:#eff8fa;border:1px solid #d7eff1;padding:13px 15px;border-radius:12px;color:#35556a;font-size:12px;margin-bottom:16px}.docs-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.docs-card{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fff}.docs-card h3{margin:0 0 7px}.docs-card p{color:var(--muted);font-size:12px;margin:0;line-height:1.7}@media(max-width:680px){.nav-group-label{display:none}.module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.docs-grid{grid-template-columns:1fr}}
 </style></head>
 <body>
 <div id="authScreen" class="auth-wrap">
@@ -50,13 +53,38 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
  <aside>
   <a class="brand" href="../public-site/"><div class="brand-mark">N</div><div><strong>NEXORA</strong><small>WORKFORCE INTELLIGENCE</small></div></a>
   <div><div class="nav-label">WORKSPACE</div><nav class="nav" id="mainNav">
-   <button class="active" data-section="overview"><span class="ico">◫</span>Overview</button>
+   <div class="nav-group-label">CORE WORKSPACE</div>
+   <button class="active" data-section="overview"><span class="ico">◫</span>Dashboard</button>
    <button data-section="employees"><span class="ico">♙</span>Employees</button>
    <button data-section="departments"><span class="ico">▦</span>Departments</button>
-   <button data-section="leave"><span class="ico">◷</span>Leave requests</button>
-   <button data-section="attendance"><span class="ico">◷</span>Attendance</button>
-   <button data-section="performance"><span class="ico">↗</span>Performance</button>
+   <button data-section="recruitment"><span class="ico">⌕</span>Recruitment</button>
+   <button data-section="onboarding"><span class="ico">↗</span>Onboarding</button>
+   <button data-section="offboarding"><span class="ico">↘</span>Offboarding</button>
+   <button data-section="documents"><span class="ico">▤</span>Documents register</button>
+   <button data-section="training"><span class="ico">◇</span>Training & development</button>
+   <div class="nav-group-label">FINANCE & BENEFITS</div>
    <button data-section="payroll"><span class="ico">▤</span>Payroll</button>
+   <button data-section="simulator"><span class="ico">◉</span>Payroll simulator</button>
+   <button data-section="billing"><span class="ico">▧</span>Billing & subscriptions</button>
+   <button data-section="benefits"><span class="ico">♡</span>Benefits</button>
+   <button data-section="wage_tracker"><span class="ico">◈</span>Wage tracker</button>
+   <div class="nav-group-label">WORKFORCE</div>
+   <button data-section="attendance"><span class="ico">◷</span>Attendance</button>
+   <button data-section="shifts"><span class="ico">⇄</span>Shifts & rosters</button>
+   <button data-section="timesheets"><span class="ico">◷</span>Timesheets & overtime</button>
+   <button data-section="leave"><span class="ico">◷</span>Leave management</button>
+   <button data-section="approvals"><span class="ico">☑</span>Approvals</button>
+   <button data-section="performance"><span class="ico">↗</span>Performance</button>
+   <div class="nav-group-label">GOVERNANCE</div>
+   <button data-section="compliance"><span class="ico">♧</span>Compliance</button>
+   <button data-section="remittance"><span class="ico">▤</span>Remittance tracker</button>
+   <button data-section="reports"><span class="ico">▥</span>Reports & exports</button>
+   <button data-section="settings"><span class="ico">⚙</span>Settings</button>
+   <button data-section="go_live"><span class="ico">✓</span>Go-live checklist</button>
+   <div class="nav-group-label">SUPPORT</div>
+   <button data-section="my_portal"><span class="ico">♙</span>My Portal</button>
+   <button data-section="api_docs"><span class="ico">&lt;/&gt;</span>API docs</button>
+   <button data-section="help_center"><span class="ico">?</span>Help center</button>
   </nav></div>
   <div class="aside-foot"><b>Secure company workspace</b>Organisation data is isolated by database policies.<br><br>© NEXORA HR</div>
  </aside>
@@ -90,7 +118,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
    <section id="section-leave" class="section"><div class="welcome"><div><div class="eyebrow">TIME AWAY</div><h2>Leave management</h2><div class="muted">Review leave requests and record decisions.</div></div></div><div class="panel"><div class="toolbar"><select id="leaveStatusFilter"><option value="">All requests</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div><div id="leaveTable" class="table-wrap"></div></div></section>
    <section id="section-attendance" class="section"><div class="welcome"><div><div class="eyebrow">TIME & ATTENDANCE</div><h2>Attendance register</h2><div class="muted">Record attendance for the selected day.</div></div><button class="btn primary" data-action="record-attendance">＋ Record attendance</button></div><div class="panel"><div class="toolbar"><label class="field">Date<input id="attendanceDate" type="date"></label><button class="btn ghost" id="refreshAttendance">Refresh register</button></div><div id="attendanceTable" class="table-wrap"></div></div></section>
    <section id="section-performance" class="section"><div class="welcome"><div><div class="eyebrow">GROWTH & ACCOUNTABILITY</div><h2>Performance reviews</h2><div class="muted">Document review cycles, ratings and development actions.</div></div><button class="btn primary" data-action="add-review">＋ New review</button></div><div class="panel"><div id="performanceTable" class="table-wrap"></div></div></section>
-   <section id="section-payroll" class="section"><div class="welcome"><div><div class="eyebrow">COMPENSATION</div><h2>Payroll workspace</h2><div class="muted">Prepare payroll periods and maintain controlled payroll records.</div></div><button class="btn primary" data-action="add-payroll">＋ New payroll period</button></div><div class="message">Payroll is a controlled workflow. Validate Kenyan PAYE, NSSF, SHIF, housing levy, employer rules and current statutory rates before calculating or releasing salaries.</div><div class="panel"><div id="payrollTable" class="table-wrap"></div></div></section>
+   <section id="section-payroll" class="section"><div class="welcome"><div><div class="eyebrow">COMPENSATION</div><h2>Payroll workspace</h2><div class="muted">Prepare periods and maintain employee payroll line items.</div></div><div class="module-actions"><button class="btn ghost" data-action="add-payroll-item">＋ Add payroll line</button><button class="btn primary" data-action="add-payroll">＋ New period</button></div></div><div class="message">Amounts for PAYE, NSSF, SHIF, housing levy and other deductions are entered for review; NEXORA does not yet calculate statutory deductions. Approve and pay only after independent validation.</div><div class="panel"><div class="panel-head"><div><h3>Payroll periods</h3><p>Period dates, approval state and recorded totals</p></div></div><div id="payrollTable" class="table-wrap"></div></div><div class="panel"><div class="panel-head"><div><h3>Employee payroll lines</h3><p>Manually entered amounts and arithmetic gross/net totals</p></div></div><div id="payrollItemsTable" class="table-wrap"></div></div></section>
    <p class="footer-note">NEXORA · Intelligence for Every Workforce · A Nalis Consultancy product</p>
   </div>
  </main>
