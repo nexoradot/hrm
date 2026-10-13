@@ -205,7 +205,7 @@ async function init(){ensureExpansionSections();if(!window.supabase||!window.NEX
   }
   function choose(item){
    dialog.close();
-   if(item.section&&typeof section==='function')section(item.section);
+   if(item.section){const navButton=document.querySelector('#mainNav button[data-section="'+item.section+'"]');if(navButton)navButton.click();}
    else if(item.href)window.location.href=new URL(item.href,window.location.href).href;
   }
   function paint(){
