@@ -12,7 +12,8 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 - Public website: https://nexoradot.github.io/hrm/public-site/
 - Jobs marketplace: https://nexoradot.github.io/hrm/public-site/jobs/
 - Candidate portal: https://nexoradot.github.io/hrm/candidate-portal/
-- Employer recruitment portal: https://nexoradot.github.io/hrm/company-portal/\n- HRM workspace (requires Supabase migration 005 and an active owner/HR-manager membership): https://nexoradot.github.io/hrm/company-portal/hrm.html
+- Employer recruitment portal: https://nexoradot.github.io/hrm/company-portal/
+- HRM workspace (requires Supabase migration 005 and an active owner/HR-manager membership): https://nexoradot.github.io/hrm/company-portal/hrm.html
 - Consultancy portal: https://nexoradot.github.io/hrm/consultancy-portal/
 
 ## Product areas
