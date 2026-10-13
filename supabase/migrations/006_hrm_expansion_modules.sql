@@ -57,6 +57,12 @@ comment on table public.hr_operations_records is
 
 -- Employee self-service policies. Employees must be explicitly linked by hr_employees.user_id.
 -- These policies expose only the signed-in employee's own records; HR manager policies remain in place.
+drop policy if exists hr_departments_self_read on public.hr_departments;
+create policy hr_departments_self_read on public.hr_departments
+ for select to authenticated using(exists(
+  select 1 from public.hr_employees e where e.user_id=auth.uid() and e.organization_id=hr_departments.organization_id
+ ));
+
 drop policy if exists hr_employees_self_read on public.hr_employees;
 create policy hr_employees_self_read on public.hr_employees
  for select to authenticated using(user_id=auth.uid());
