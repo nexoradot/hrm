@@ -43,7 +43,7 @@ function formField(label,name,type='text',required=false,options=null,wide=false
 function openModal(title,fields,submitLabel,callback){
 const host=$('#modalHost');
 host.innerHTML='<div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="recordForm" novalidate><div class="modal-head"><h2>'+esc(title)+'</h2><button type="button" class="icon-btn" id="closeModal" aria-label="Close dialog">✕</button></div><div class="form-grid">'+fields+'</div><div class="modal-actions"><button type="button" class="btn ghost" id="cancelModal">Cancel</button><button class="btn primary" type="submit">'+esc(submitLabel)+'</button></div></form></div>';
-const form=$('#recordForm'),backdrop=$('#modalBackdrop'),submit=form.querySelector('button[type="submit]');
+const form=$('#recordForm'),backdrop=$('#modalBackdrop'),submit=form.querySelector('button[type="submit"]');
 let saving=false;
 const close=()=>{if(saving)return;host.replaceChildren();document.removeEventListener('keydown',onKeyDown)};
 const onKeyDown=e=>{if(e.key==='Escape'){e.preventDefault();close()}};
