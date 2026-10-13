@@ -12,7 +12,8 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 - Public website: https://nexoradot.github.io/hrm/public-site/
 - Jobs marketplace: https://nexoradot.github.io/hrm/public-site/jobs/
 - Candidate portal: https://nexoradot.github.io/hrm/candidate-portal/
-- Employer portal: https://nexoradot.github.io/hrm/company-portal/
+- Employer recruitment portal: https://nexoradot.github.io/hrm/company-portal/
+- HRM workspace (requires migration 005 and an active owner/HR-manager membership): https://nexoradot.github.io/hrm/company-portal/hrm.html
 - Consultancy portal: https://nexoradot.github.io/hrm/consultancy-portal/
 
 ## Product areas
@@ -22,7 +23,7 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 3. **Candidate portal:** candidate profile, application history, private candidate-document workflows and consent-based consultancy discovery/sharing.
 4. **Employer portal:** organization workspace, vacancy submission for moderation and applicant status management.
 5. **Consultancy portal:** candidate discovery for opted-in profiles, consent requests and approved document access.
-6. **Company HRM:** intended expansion into employee records, onboarding, leave, attendance, performance and payroll workflows. Treat each module as available only when its backend and permissions have been implemented and tested.
+6. **Company HRM:** workforce core portal for employee records, departments, leave requests, attendance, performance reviews and draft payroll periods. It requires migration 005 and tenant-isolation testing; payroll calculation and statutory processing are not yet implemented.
 7. **Super Admin:** central organization, user, verification, moderation and platform governance functions, subject to the deployed code and database policies.
 
 ## Technology and architecture
