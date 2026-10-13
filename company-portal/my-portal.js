@@ -21,7 +21,7 @@ function render(){
  $('#recentActivity').innerHTML=table(['Activity','Date','Status'],recent.map(x=>'<tr><td>'+esc(x.title)+'</td><td>'+esc(x.date||'—')+'</td><td>'+pill(x.status)+'</td></tr>'));
 }
 async function load(){
- const p=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();if(p.error)throw p.error;
+ const p=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();if(p.error){if(p.error.code==='PGRST205'||/could not find the table .*hr_employees.*schema cache/i.test(p.error.message||'')){throw new Error('Employee portal setup is incomplete: Supabase cannot find public.hr_employees. Ask the platform administrator to compare the live database with supabase/migrations/005_hrm_workforce_core.sql, safely apply any missing schema after backup, and refresh the Supabase API schema cache. This is a database setup issue, not a password problem.')}throw p.error;}
  if(!p.data){employee=null;$('#authSection').hidden=false;$('#appSection').hidden=true;msg('Your account is signed in, but HR has not linked it to an employee record yet. Ask your HR administrator to set the employee record’s user account.',true);return}
  employee=p.data;
  const [d,l,a,r,pi]=await Promise.all([
