@@ -54,10 +54,9 @@ create table if not exists public.hr_employees (
  unique(organization_id,employee_number),
  constraint hr_employees_department_same_org foreign key(department_id) references public.hr_departments(id) on delete set null
 );
-do $$ begin
- alter table public.hr_employees add constraint hr_employees_department_org_fk
- foreign key(organization_id,department_id) references public.hr_departments(organization_id,id) on delete set null;
-exception when duplicate_object then null; end $$;
+-- Department and manager organisation membership is enforced by the tenant guard
+-- trigger below. A composite FK to (organization_id,id) is deliberately avoided
+-- because the referenced table does not declare that exact composite key.
 
 create table if not exists public.hr_leave_requests (
  id uuid primary key default gen_random_uuid(),
@@ -178,10 +177,33 @@ begin
  if new.department_id is not null and not exists(select 1 from public.hr_departments d where d.id=new.department_id and d.organization_id=new.organization_id) then
   raise exception 'Department must belong to the same organisation';
  end if;
+ if new.manager_employee_id is not null and not exists(select 1 from public.hr_employees m where m.id=new.manager_employee_id and m.organization_id=new.organization_id) then
+  raise exception 'Manager must belong to the same organisation';
+ end if;
  return new;
 end $$;
 drop trigger if exists hr_employee_department_tenant_guard on public.hr_employees;
-create trigger hr_employee_department_tenant_guard before insert or update of organization_id,department_id on public.hr_employees for each row execute function public.validate_hr_employee_links();
+create trigger hr_employee_department_tenant_guard before insert or update of organization_id,department_id,manager_employee_id on public.hr_employees for each row execute function public.validate_hr_employee_links();
+
+-- Employee foreign keys must remain inside the same organisation for every HR module.
+create or replace function public.validate_hr_employee_tenant_link()
+returns trigger language plpgsql security invoker set search_path=public
+as $
+begin
+ if not exists(select 1 from public.hr_employees e where e.id=new.employee_id and e.organization_id=new.organization_id) then
+  raise exception 'Employee must belong to the same organisation';
+ end if;
+ return new;
+end $;
+
+drop trigger if exists hr_leave_employee_tenant_guard on public.hr_leave_requests;
+create trigger hr_leave_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_leave_requests for each row execute function public.validate_hr_employee_tenant_link();
+
+drop trigger if exists hr_attendance_employee_tenant_guard on public.hr_attendance_records;
+create trigger hr_attendance_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_attendance_records for each row execute function public.validate_hr_employee_tenant_link();
+
+drop trigger if exists hr_review_employee_tenant_guard on public.hr_performance_reviews;
+create trigger hr_review_employee_tenant_guard before insert or update of organization_id,employee_id on public.hr_performance_reviews for each row execute function public.validate_hr_employee_tenant_link();
 
 create or replace function public.validate_hr_payroll_links()
 returns trigger language plpgsql security invoker set search_path=public
