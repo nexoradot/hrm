@@ -13,7 +13,7 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 - Jobs marketplace: https://nexoradot.github.io/hrm/public-site/jobs/
 - Candidate portal: https://nexoradot.github.io/hrm/candidate-portal/
 - Employer recruitment portal: https://nexoradot.github.io/hrm/company-portal/
-- HRM workspace (requires migration 005 and an active owner/HR-manager membership): https://nexoradot.github.io/hrm/company-portal/hrm.html
+- HRM workspace (requires migrations 005–006 and authorised organisation access): https://nexoradot.github.io/hrm/company-portal/hrm.html
 - Consultancy portal: https://nexoradot.github.io/hrm/consultancy-portal/
 
 ## Product areas
@@ -23,7 +23,7 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 3. **Candidate portal:** candidate profile, application history, private candidate-document workflows and consent-based consultancy discovery/sharing.
 4. **Employer portal:** organization workspace, vacancy submission for moderation and applicant status management.
 5. **Consultancy portal:** candidate discovery for opted-in profiles, consent requests and approved document access.
-6. **Company HRM:** workforce core portal for employee records, departments, leave requests, attendance, performance reviews and draft payroll periods. It requires migration 005 and tenant-isolation testing; payroll calculation and statutory processing are not yet implemented.
+6. **Company HRM:** workforce command centre with employee/department management, leave, attendance, performance, payroll-period preparation, operational registers for recruitment tracking, onboarding/offboarding, shifts, benefits, compliance, remittance, approvals, billing, wage tracking and go-live tasks, plus CSV reporting. Migrations 005–006 require development-project application and tenant-isolation testing. Employee self-service, statutory payroll calculations, remittance submission, payment collection and external integrations are not yet production-ready.
 7. **Super Admin:** central organization, user, verification, moderation and platform governance functions, subject to the deployed code and database policies.
 
 ## Technology and architecture
