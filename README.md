@@ -71,3 +71,10 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 ## Development workflow
 
 The marketplace changes are prepared on `feature/nexora-marketplace-upgrade`. Review the pull request and test against a non-production Supabase project before merging. Do not run unverified migrations against the live project.
+
+
+## AG German Institute employee onboarding
+- Employee form: `company-portal/employee-registration.html`
+- HR review queue: `company-portal/employee-registration-review.html`
+- Requires migrations 005–007 to be reviewed and applied in the target Supabase project.
+- Form fields follow the AG German Institute Google Form supplied by the project owner. Files use a private storage bucket and short-lived signed URLs in the HR review screen.
