@@ -40,8 +40,30 @@ function person(e){return '<div class="person"><span class="person-avatar">'+esc
 function canManage(){return ['owner','hr_manager'].includes(role)}
 function section(name){if(!titles[name])return;$$('.section').forEach(x=>x.classList.toggle('active',x.id==='section-'+name));$$('#mainNav button').forEach(x=>x.classList.toggle('active',x.dataset.section===name));$('#pageTitle').textContent=titles[name];if(name==='employees')renderEmployees();if(name==='departments')renderDepartments();if(name==='leave')renderLeave();if(name==='attendance')renderAttendance();if(name==='performance')renderReviews();if(name==='payroll')renderPayroll();if(operationModules[name])renderOperations(name);if(name==='reports')renderReports();if(infoModules[name])renderInfo(name);window.scrollTo({top:0,behavior:'smooth'})}
 function formField(label,name,type='text',required=false,options=null,wide=false){let input=options?'<select name="'+name+'" '+(required?'required':'')+'>'+options.map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>':'<input name="'+name+'" type="'+type+'" '+(required?'required':'')+(type==='number'?' min="0"':'')+'>';return '<label class="field '+(wide?'wide':'')+'">'+label+input+'</label>'}
-function openModal(title,fields,submitLabel,callback){$('#modalHost').innerHTML='<div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="recordForm"><div class="modal-head"><h2>'+esc(title)+'</h2><button type="button" class="icon-btn" id="closeModal" aria-label="Close">✕</button></div><div class="form-grid">'+fields+'</div><div class="modal-actions"><button type="button" class="btn ghost" id="cancelModal">Cancel</button><button class="btn primary" type="submit">'+esc(submitLabel)+'</button></div></form></div>';
-const close=()=>$('#modalHost').replaceChildren();$('#closeModal').onclick=close;$('#cancelModal').onclick=close;$('#modalBackdrop').addEventListener('click',e=>{if(e.target.id==='modalBackdrop')close()});$('#recordForm').addEventListener('submit',async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget).entries());const button=e.currentTarget.querySelector('button[type=submit]');button.disabled=true;button.textContent='Saving…';try{await callback(data);close();await loadAll();notify('Record saved successfully.')}catch(err){button.disabled=false;button.textContent=submitLabel;notify(err.message||'Could not save record.',true)}})}
+function openModal(title,fields,submitLabel,callback){
+const host=$('#modalHost');
+host.innerHTML='<div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="recordForm" novalidate><div class="modal-head"><h2>'+esc(title)+'</h2><button type="button" class="icon-btn" id="closeModal" aria-label="Close dialog">✕</button></div><div class="form-grid">'+fields+'</div><div class="modal-actions"><button type="button" class="btn ghost" id="cancelModal">Cancel</button><button class="btn primary" type="submit">'+esc(submitLabel)+'</button></div></form></div>';
+const form=$('#recordForm'),backdrop=$('#modalBackdrop'),submit=form.querySelector('button[type="submit]');
+let saving=false;
+const close=()=>{if(saving)return;host.replaceChildren();document.removeEventListener('keydown',onKeyDown)};
+const onKeyDown=e=>{if(e.key==='Escape'){e.preventDefault();close()}};
+$('#closeModal').onclick=close;$('#cancelModal').onclick=close;
+backdrop.addEventListener('click',e=>{if(e.target===backdrop)close()});
+document.addEventListener('keydown',onKeyDown);
+const first=form.querySelector('input:not([type="hidden"]),select,textarea,button');if(first)first.focus();
+form.addEventListener('submit',async e=>{
+e.preventDefault();if(saving)return;
+if(!form.reportValidity())return;
+const data=Object.fromEntries(new FormData(form).entries());
+saving=true;submit.disabled=true;submit.textContent='Saving…';form.setAttribute('aria-busy','true');
+try{
+ await callback(data);
+ saving=false;host.replaceChildren();document.removeEventListener('keydown',onKeyDown);
+ notify('Record saved. Refreshing workspace…');
+ try{await loadAll();notify('Record saved successfully.')}catch(refreshError){notify('The record was saved, but the workspace could not refresh. Use Refresh data and check the connection. '+(refreshError.message||''),true)}
+}catch(err){saving=false;submit.disabled=false;submit.textContent=submitLabel;form.removeAttribute('aria-busy');notify(err.message||'Could not save record. Please review the form and try again.',true)}
+});
+}
 async function insert(tableName,data){const result=await db.from(tableName).insert({...data,organization_id:orgId}).select().single();if(result.error)throw result.error;return result.data}
 async function update(tableName,id,data){const result=await db.from(tableName).update(data).eq('id',id).eq('organization_id',orgId).select().single();if(result.error)throw result.error;return result.data}
 function addEmployee(){const deptOptions=[['','Unassigned'],...departments.map(d=>[d.id,d.name])];openModal('Add employee',formField('Full name','full_name','text',true)+formField('Work email','email','email')+formField('Phone','phone')+formField('Employee number','employee_number')+formField('Job title','job_title','text',true)+formField('Department','department_id','text',false,deptOptions)+formField('Employment type','employment_type','text',false,[['full_time','Full time'],['part_time','Part time'],['contract','Contract'],['internship','Internship']])+formField('Start date','start_date','date')+formField('Employment status','employment_status','text',true,[['active','Active'],['probation','Probation'],['on_leave','On leave'],['inactive','Inactive'],['terminated','Terminated']]),'Save employee',async d=>insert('hr_employees',{...d,department_id:d.department_id||null,email:d.email||null,phone:d.phone||null,employee_number:d.employee_number||null,start_date:d.start_date||null}))}
