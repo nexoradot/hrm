@@ -1,5 +1,5 @@
 // NEXORA privileged user-management Edge Function.
-// Deploy only with SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY configured as server secrets.
+// Deploy with SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY as server secrets.
 // Never expose the service-role key to browser code.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -16,12 +16,13 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return response({ error: "POST required" }, 405);
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !serviceKey) return response({ error: "Server configuration is incomplete." }, 500);
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!url || !serviceKey || !anonKey) return response({ error: "Server configuration is incomplete. Configure SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY." }, 500);
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return response({ error: "Authentication required." }, 401);
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY") || "", {
+  const caller = createClient(url, anonKey, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -37,23 +38,44 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return response({ error: "Valid JSON body required." }, 400); }
   const action = String(body.action || "");
   if (action === "list") {
-    const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    if (error) return response({ error: error.message }, 400);
-    return response({ users: (data.users || []).map(u => ({ id: u.id, email: u.email, created_at: u.created_at, last_sign_in_at: u.last_sign_in_at, banned_until: u.banned_until, email_confirmed_at: u.email_confirmed_at })) });
+    const users = [];
+    for (let page = 1; page <= 20; page++) {
+      const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) return response({ error: error.message }, 400);
+      const batch = data.users || [];
+      users.push(...batch.map(u => ({
+        id: u.id, email: u.email, created_at: u.created_at, last_sign_in_at: u.last_sign_in_at,
+        banned_until: u.banned_until, email_confirmed_at: u.email_confirmed_at
+      })));
+      if (batch.length < 1000) break;
+    }
+    return response({ users });
   }
   if (action === "invite") {
     const email = String(body.email || "").trim().toLowerCase();
+    const organizationId = String(body.organizationId || "");
+    const role = String(body.role || "hr_manager");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return response({ error: "A valid email is required." }, 400);
+    if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "Choose a valid workspace." }, 400);
+    if (!["owner","hr_manager","recruiter","consultant","member","viewer"].includes(role)) return response({ error: "Unsupported workspace role." }, 400);
+    const { data: org, error: orgError } = await admin.from("organizations").select("id,status").eq("id", organizationId).maybeSingle();
+    if (orgError || !org) return response({ error: "Workspace not found." }, 404);
+    if (org.status !== "active") return response({ error: "Activate the workspace before inviting its users." }, 409);
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: String(body.redirectTo || "") || undefined });
     if (error) return response({ error: error.message }, 400);
-    return response({ user: { id: data.user?.id, email: data.user?.email }, invited: true });
+    const userId = data.user?.id;
+    if (!userId) return response({ error: "Invitation was requested but no user ID was returned." }, 502);
+    const { error: memberError } = await admin.from("organization_members").upsert({
+      organization_id: organizationId, user_id: userId, role, status: "pending", invited_by: callerData.user.id
+    }, { onConflict: "organization_id,user_id" });
+    if (memberError) return response({ error: "Invitation was sent, but workspace membership could not be prepared: " + memberError.message, invited: true, userId }, 500);
+    return response({ user: { id: userId, email: data.user?.email }, invited: true, membershipStatus: "pending" });
   }
   if (action === "suspend" || action === "unsuspend") {
     const userId = String(body.userId || "");
     if (!/^[0-9a-f-]{36}$/i.test(userId)) return response({ error: "Valid userId required." }, 400);
-    const { data, error } = await admin.auth.admin.updateUserById(userId, {
-      ban_duration: action === "suspend" ? "876000h" : "none",
-    });
+    if (userId === callerData.user.id && action === "suspend") return response({ error: "You cannot suspend your own active administrator session." }, 409);
+    const { data, error } = await admin.auth.admin.updateUserById(userId, { ban_duration: action === "suspend" ? "876000h" : "none" });
     if (error) return response({ error: error.message }, 400);
     return response({ user: { id: data.user.id, email: data.user.email }, suspended: action === "suspend" });
   }
