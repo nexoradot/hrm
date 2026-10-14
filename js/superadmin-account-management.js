@@ -55,15 +55,41 @@
         return;
       }
       const client = getClient();
-      const [userResult, workspaceResult] = await Promise.all([
-        privileged({ action: "list" }),
-        privileged({ action: "list-workspaces" })
-      ]);
+
+      // Keep the account directory and workspace selector independent: a missing or
+      // outdated Edge Function must not silently leave the workspace dropdown empty.
+      const userResult = await privileged({ action: "list" });
       accounts = userResult.users || [];
-      organizations = workspaceResult.organizations || [];
-      memberships = workspaceResult.memberships || [];
+
+      let workspaceLoadError = "";
+      try {
+        const workspaceResult = await privileged({ action: "list-workspaces" });
+        organizations = workspaceResult.organizations || [];
+        memberships = workspaceResult.memberships || [];
+      } catch (edgeError) {
+        // Safe fallback: use the signed-in platform admin's Supabase session and
+        // rely on the project's platform-admin RLS policies for these reads.
+        const [orgResult, memberResult] = await Promise.all([
+          client.from("organizations").select("id,name,status,plan").order("name", { ascending: true }),
+          client.from("organization_members").select("id,organization_id,user_id,role,status,created_at").order("created_at", { ascending: false })
+        ]);
+        if (orgResult.error || memberResult.error) {
+          workspaceLoadError = [
+            orgResult.error && "organizations: " + orgResult.error.message,
+            memberResult.error && "organization memberships: " + memberResult.error.message
+          ].filter(Boolean).join("; ");
+          organizations = [];
+          memberships = [];
+        } else {
+          organizations = orgResult.data || [];
+          memberships = memberResult.data || [];
+          workspaceLoadError = "Loaded workspace data directly because the admin-user-admin Edge Function failed: " + (edgeError?.message || String(edgeError));
+        }
+      }
+
       populateOrganizations(); render();
-      statusText("Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.");
+      const summary = "Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.";
+      statusText(workspaceLoadError ? summary + " Workspace note: " + workspaceLoadError : summary);
     } catch (error) {
       authorized = false; accounts = []; organizations = []; memberships = []; render();
       statusText("Live account directory unavailable: " + (error?.message || String(error)));
