@@ -45,6 +45,16 @@ jobs:
           grep -q "admin-user-admin" js/superadmin-account-management.js
           grep -q "organization_members" js/superadmin-account-management.js
           grep -q "action === \"invite\"" supabase/functions/admin-user-admin/index.ts
+
+      - name: Verify settings and core HR actions are wired
+        run: |
+          grep -q "hr_workspace_settings" company-portal/hrm.js
+          grep -q "create table if not exists public.hr_workspace_settings" supabase/migrations/010_hr_workspace_settings.sql
+          grep -q "data-action=\"add-leave\"" company-portal/hrm.html
+          grep -q "function editDepartment" company-portal/hrm.js
+          grep -q "function editAttendance" company-portal/hrm.js
+          grep -q "function editReview" company-portal/hrm.js
+          grep -q "function editPayrollItem" company-portal/hrm.js
       - name: Verify payroll workflow RPC and UI wiring
         run: |
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
