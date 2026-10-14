@@ -40,7 +40,7 @@
     var timer = window.setTimeout(function () {
       if (!settled) { settled = true; fail('The employer portal script is taking too long to load. Check your connection and refresh.'); }
     }, 5000);
-    app.src = './employer-portal.js?v=20261014-employerfix12';
+    app.src = './employer-portal.js?v=20261014-employerfix13';
     app.onload = function () {
       if (settled) return;
       settled = true;
@@ -95,7 +95,7 @@
   }
   show('Loading NEXORA connection settings…');
   var config = document.createElement('script');
-  config.src = '../js/supabase-config.js?v=20261014-employerfix12';
+  config.src = '../js/supabase-config.js?v=20261014-employerfix13';
   config.onload = function () { show('Connection settings loaded. Preparing secure sign-in…'); loadSdk(0); };
   config.onerror = function () {
     fail('NEXORA connection settings could not load from GitHub Pages. Please refresh and try again.');
