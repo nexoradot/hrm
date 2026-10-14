@@ -5,9 +5,55 @@
 <meta name="theme-color" content="#101a33"><meta name="description" content="NEXORA employer workspace for recruitment and workforce management.">
 <title>Employer HRM Workspace | NEXORA</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase-config.js"></script>
-<script defer src="../portal.js?v=20261014-employerfix3"></script>
+<script src="../js/supabase-config.js?v=20261014-employerfix4"></script>
+<script>
+(function(){
+  var status=function(text){
+    var el=document.getElementById('loginMessage');
+    if(el){el.textContent=text;el.style.color='#a21d1d';el.setAttribute('aria-live','polite');}
+  };
+  var sources=[
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+    'https://unpkg.com/@supabase/supabase-js@2'
+  ];
+  function loadPortal(){
+    if(!window.supabase||typeof window.supabase.createClient!=='function'){
+      status('Supabase library loaded incorrectly. Reload the page or try another network.');
+      return;
+    }
+    var app=document.createElement('script');
+    app.src='../portal.js?v=20261014-employerfix4';
+    app.onload=function(){
+      window.setTimeout(function(){
+        var el=document.getElementById('loginMessage');
+        if(el&&/Connecting securely|did not finish initializing/i.test(el.textContent)){
+          status('The portal script loaded but did not initialize. Open browser Console and share the first red error.');
+        }
+      },2500);
+    };
+    app.onerror=function(){status('NEXORA portal.js could not load from GitHub Pages. Refresh and try again.');};
+    document.head.appendChild(app);
+  }
+  function loadSdk(index){
+    if(index>=sources.length){status('Could not load Supabase from either CDN. Check your connection, ad blocker, or network filtering.');return;}
+    var script=document.createElement('script');
+    script.src=sources[index];
+    script.onload=function(){
+      if(window.supabase&&typeof window.supabase.createClient==='function')loadPortal();
+      else {script.remove();loadSdk(index+1);}
+    };
+    script.onerror=function(){script.remove();loadSdk(index+1);};
+    document.head.appendChild(script);
+  }
+  window.setTimeout(function(){
+    var el=document.getElementById('loginMessage');
+    if(el&&/Connecting securely/i.test(el.textContent)){
+      status('Still initializing. Testing the Supabase connection library; if this persists, the page will show a specific loading error.');
+    }
+  },8000);
+  loadSdk(0);
+})();
+</script>
 <script>
 // Keep the sign-in screen usable and explain stalled third-party scripts.
 (function(){setTimeout(function(){var el=document.getElementById('loginMessage');if(el&&/Connecting securely/i.test(el.textContent)){el.textContent='Portal scripts did not finish initializing. Try a hard refresh. If this message remains, the JavaScript file or Supabase CDN may be blocked; open DevTools Console for the exact error.';el.style.color='#a21d1d';}},8000);})();
