@@ -9,6 +9,7 @@
 /* Reliable employer portal bootstrap: bounded waits and visible failures. */
 (function () {
   'use strict';
+  function startPortalBootstrap() {
   var finished = false;
   var sdkSources = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
@@ -99,6 +100,12 @@
     if (!finished) fail('Portal startup timed out. The page is still available, but a required script or network connection is not responding.');
   }, 20000);
   document.head.appendChild(config);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startPortalBootstrap, { once: true });
+  } else {
+    startPortalBootstrap();
+  }
 })();
 </script>
 <style>
