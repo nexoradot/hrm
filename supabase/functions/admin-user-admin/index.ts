@@ -51,6 +51,15 @@ Deno.serve(async (req) => {
     }
     return response({ users });
   }
+  if (action === "list-workspaces") {
+    const [orgResult, memberResult] = await Promise.all([
+      admin.from("organizations").select("id,name,status,plan").order("name"),
+      admin.from("organization_members").select("id,organization_id,user_id,role,status,created_at").order("created_at", { ascending: false })
+    ]);
+    if (orgResult.error) return response({ error: "Could not load workspaces: " + orgResult.error.message }, 400);
+    if (memberResult.error) return response({ error: "Could not load workspace memberships: " + memberResult.error.message }, 400);
+    return response({ organizations: orgResult.data || [], memberships: memberResult.data || [] });
+  }
   if (action === "invite") {
     const email = String(body.email || "").trim().toLowerCase();
     const organizationId = String(body.organizationId || "");
