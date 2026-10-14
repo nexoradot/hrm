@@ -8,6 +8,10 @@ on:
       - "company-portal/*invitation*.js"
       - "company-portal/employee-registration.js"
       - "company-portal/employee-registration-review.js"
+      - "app.js"
+      - "index.html"
+      - "js/superadmin-account-management.js"
+      - "supabase/functions/admin-user-admin/**"
       - "supabase/migrations/**"
       - ".github/workflows/hrm-validation.yml"
   push:
@@ -16,6 +20,10 @@ on:
       - "company-portal/hrm.js"
       - "company-portal/hrm.html"
       - "supabase/migrations/**"
+      - "app.js"
+      - "index.html"
+      - "js/superadmin-account-management.js"
+      - "supabase/functions/admin-user-admin/**"
       - ".github/workflows/hrm-validation.yml"
 
 jobs:
@@ -28,6 +36,15 @@ jobs:
           node-version: "22"
       - name: Check HR workspace JavaScript syntax
         run: node --check company-portal/hrm.js
+      - name: Check Super Admin JavaScript syntax
+        run: |
+          node --check app.js
+          node --check js/superadmin-account-management.js
+      - name: Verify Super Admin account controls are wired
+        run: |
+          grep -q "admin-user-admin" js/superadmin-account-management.js
+          grep -q "organization_members" js/superadmin-account-management.js
+          grep -q "action === \"invite\"" supabase/functions/admin-user-admin/index.ts
       - name: Verify payroll workflow RPC and UI wiring
         run: |
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
