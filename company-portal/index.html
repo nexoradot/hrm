@@ -5,58 +5,101 @@
 <meta name="theme-color" content="#101a33"><meta name="description" content="NEXORA employer workspace for recruitment and workforce management.">
 <title>Employer HRM Workspace | NEXORA</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-<script src="../js/supabase-config.js?v=20261014-employerfix4"></script>
 <script>
-(function(){
-  var status=function(text){
-    var el=document.getElementById('loginMessage');
-    if(el){el.textContent=text;el.style.color='#a21d1d';el.setAttribute('aria-live','polite');}
-  };
-  var sources=[
+/* Reliable employer portal bootstrap: bounded waits and visible failures. */
+(function () {
+  'use strict';
+  var finished = false;
+  var sdkSources = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
     'https://unpkg.com/@supabase/supabase-js@2'
   ];
-  function loadPortal(){
-    if(!window.supabase||typeof window.supabase.createClient!=='function'){
-      status('Supabase library loaded incorrectly. Reload the page or try another network.');
+  function show(text) {
+    var el = document.getElementById('loginMessage');
+    if (el) {
+      el.textContent = text;
+      el.style.color = '#a21d1d';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+    }
+  }
+  function fail(text) { if (!finished) { finished = true; show(text); } }
+  function loadPortal() {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      fail('The secure connection library did not initialize. Check your network or content blocker, then refresh.');
       return;
     }
-    var app=document.createElement('script');
-    app.src='../portal.js?v=20261014-employerfix4';
-    app.onload=function(){
-      window.setTimeout(function(){
-        var el=document.getElementById('loginMessage');
-        if(el&&/Connecting securely|did not finish initializing/i.test(el.textContent)){
-          status('The portal script loaded but did not initialize. Open browser Console and share the first red error.');
+    if (!window.NEXORA_CONFIG || !window.NEXORA_CONFIG.url || !window.NEXORA_CONFIG.anonKey) {
+      fail('NEXORA configuration did not load. Please refresh; if this continues, report a configuration loading error.');
+      return;
+    }
+    var app = document.createElement('script');
+    var settled = false;
+    var timer = window.setTimeout(function () {
+      if (!settled) { settled = true; fail('The employer portal script is taking too long to load. Check your connection and refresh.'); }
+    }, 10000);
+    app.src = '../portal.js?v=20261014-employerfix5';
+    app.onload = function () {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      window.setTimeout(function () {
+        var el = document.getElementById('loginMessage');
+        if (el && /Connecting securely|did not finish initializing/i.test(el.textContent)) {
+          fail('The portal script loaded but could not finish initializing. Check the browser Console for the first error.');
         }
-      },2500);
+      }, 2500);
     };
-    app.onerror=function(){status('NEXORA portal.js could not load from GitHub Pages. Refresh and try again.');};
+    app.onerror = function () {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      fail('Could not load the NEXORA portal script from GitHub Pages. Refresh and check your connection.');
+    };
     document.head.appendChild(app);
   }
-  function loadSdk(index){
-    if(index>=sources.length){status('Could not load Supabase from either CDN. Check your connection, ad blocker, or network filtering.');return;}
-    var script=document.createElement('script');
-    script.src=sources[index];
-    script.onload=function(){
-      if(window.supabase&&typeof window.supabase.createClient==='function')loadPortal();
-      else {script.remove();loadSdk(index+1);}
+  function loadSdk(index) {
+    if (finished) return;
+    if (index >= sdkSources.length) {
+      fail('Could not load the secure connection library from either CDN. Check your connection, VPN, or content blocker.');
+      return;
+    }
+    var script = document.createElement('script');
+    var settled = false;
+    var timer = window.setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      script.remove();
+      loadSdk(index + 1);
+    }, 7000);
+    script.src = sdkSources[index];
+    script.onload = function () {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      if (window.supabase && typeof window.supabase.createClient === 'function') loadPortal();
+      else loadSdk(index + 1);
     };
-    script.onerror=function(){script.remove();loadSdk(index+1);};
+    script.onerror = function () {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      script.remove();
+      loadSdk(index + 1);
+    };
     document.head.appendChild(script);
   }
-  window.setTimeout(function(){
-    var el=document.getElementById('loginMessage');
-    if(el&&/Connecting securely/i.test(el.textContent)){
-      status('Still initializing. Testing the Supabase connection library; if this persists, the page will show a specific loading error.');
-    }
-  },8000);
-  loadSdk(0);
+  var config = document.createElement('script');
+  config.src = '../js/supabase-config.js?v=20261014-employerfix5';
+  config.onload = function () { loadSdk(0); };
+  config.onerror = function () {
+    fail('NEXORA connection settings could not load from GitHub Pages. Please refresh and try again.');
+  };
+  window.setTimeout(function () {
+    if (!finished) fail('Portal startup timed out. The page is still available, but a required script or network connection is not responding.');
+  }, 20000);
+  document.head.appendChild(config);
 })();
-</script>
-<script>
-// Keep the sign-in screen usable and explain stalled third-party scripts.
-(function(){setTimeout(function(){var el=document.getElementById('loginMessage');if(el&&/Connecting securely/i.test(el.textContent)){el.textContent='Portal scripts did not finish initializing. Try a hard refresh. If this message remains, the JavaScript file or Supabase CDN may be blocked; open DevTools Console for the exact error.';el.style.color='#a21d1d';}},8000);})();
 </script>
 <style>
 :root{--navy:#101a33;--ink:#192642;--muted:#73809a;--purple:#6254e8;--violet:#a99bff;--line:#e7eaf2;--soft:#f5f6fc;--green:#148461;--amber:#a56815;--red:#b54747;--white:#fff}
