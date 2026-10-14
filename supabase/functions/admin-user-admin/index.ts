@@ -70,15 +70,47 @@ Deno.serve(async (req) => {
     const { data: org, error: orgError } = await admin.from("organizations").select("id,status").eq("id", organizationId).maybeSingle();
     if (orgError || !org) return response({ error: "Workspace not found." }, 404);
     if (org.status !== "active") return response({ error: "Activate the workspace before inviting its users." }, 409);
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: String(body.redirectTo || "") || undefined });
-    if (error) return response({ error: error.message }, 400);
-    const userId = data.user?.id;
-    if (!userId) return response({ error: "Invitation was requested but no user ID was returned." }, 502);
+    // Reuse an existing Auth account when the email is already registered.
+    // inviteUserByEmail is only for new accounts; existing accounts should be
+    // linked to the workspace instead of failing with "User already registered".
+    let existingUser: { id: string; email?: string } | null = null;
+    for (let page = 1; page <= 20; page++) {
+      const { data: pageData, error: pageError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (pageError) return response({ error: "Could not check existing Auth accounts: " + pageError.message }, 400);
+      const batch = pageData.users || [];
+      const match = batch.find((u) => (u.email || "").toLowerCase() === email);
+      if (match) { existingUser = { id: match.id, email: match.email }; break; }
+      if (batch.length < 1000) break;
+    }
+
+    let userId = existingUser?.id || "";
+    let userEmail = existingUser?.email || email;
+    let invited = false;
+    if (!existingUser) {
+      const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: String(body.redirectTo || "") || undefined });
+      if (error) return response({ error: error.message }, 400);
+      userId = data.user?.id || "";
+      userEmail = data.user?.email || email;
+      invited = true;
+      if (!userId) return response({ error: "Invitation was requested but no user ID was returned." }, 502);
+    }
+
     const { error: memberError } = await admin.from("organization_members").upsert({
       organization_id: organizationId, user_id: userId, role, status: "pending", invited_by: callerData.user.id
     }, { onConflict: "organization_id,user_id" });
-    if (memberError) return response({ error: "Invitation was sent, but workspace membership could not be prepared: " + memberError.message, invited: true, userId }, 500);
-    return response({ user: { id: userId, email: data.user?.email }, invited: true, membershipStatus: "pending" });
+    if (memberError) return response({
+      error: (invited ? "Invitation was sent" : "Existing Auth account was found") + ", but workspace membership could not be prepared: " + memberError.message,
+      invited, userId
+    }, 500);
+    return response({
+      user: { id: userId, email: userEmail },
+      invited,
+      existingAccount: !!existingUser,
+      membershipStatus: "pending",
+      message: existingUser
+        ? "Existing account linked to the workspace. Membership is pending activation."
+        : "Invitation sent. Membership is pending activation."
+    });
   }
   if (action === "suspend" || action === "unsuspend") {
     const userId = String(body.userId || "");
