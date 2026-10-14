@@ -5,6 +5,9 @@ on:
     paths:
       - "company-portal/hrm.js"
       - "company-portal/hrm.html"
+      - "company-portal/*invitation*.js"
+      - "company-portal/employee-registration.js"
+      - "company-portal/employee-registration-review.js"
       - "supabase/migrations/**"
       - ".github/workflows/hrm-validation.yml"
   push:
@@ -30,3 +33,4 @@ jobs:
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
           grep -q "data-action=\"export-payroll\"" company-portal/hrm.html
+          grep -q "create or replace function public.redeem_hr_employee_invitation" supabase/migrations/008_hr_employee_invitations.sql
