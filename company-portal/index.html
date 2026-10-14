@@ -39,16 +39,16 @@
     var timer = window.setTimeout(function () {
       if (!settled) { settled = true; fail('The employer portal script is taking too long to load. Check your connection and refresh.'); }
     }, 10000);
-    app.src = '../portal.js?v=20261014-employerfix5';
+    app.src = '../portal.js?v=20261014-employerfix6';
     app.onload = function () {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
-      window.clearTimeout(startupTimer);
       window.setTimeout(function () {
         var el = document.getElementById('loginMessage');
-        if (el && /Connecting securely|did not finish initializing/i.test(el.textContent)) {
-          fail('The portal script loaded but could not finish initializing. Check the browser Console for the first error.');
+        var text = el ? (el.textContent || '').trim() : '';
+        if (!finished && (!text || /Connecting securely|did not finish initializing/i.test(text))) {
+          fail('The portal script downloaded but did not complete startup. Reload the page; if this persists, the browser Console will show the underlying JavaScript error.');
         }
       }, 2500);
     };
@@ -92,7 +92,7 @@
     document.head.appendChild(script);
   }
   var config = document.createElement('script');
-  config.src = '../js/supabase-config.js?v=20261014-employerfix5';
+  config.src = '../js/supabase-config.js?v=20261014-employerfix6';
   config.onload = function () { loadSdk(0); };
   config.onerror = function () {
     fail('NEXORA connection settings could not load from GitHub Pages. Please refresh and try again.');
