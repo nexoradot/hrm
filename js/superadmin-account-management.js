@@ -55,18 +55,15 @@
         return;
       }
       const client = getClient();
-      const [userResult, orgResult, memberResult] = await Promise.all([
+      const [userResult, workspaceResult] = await Promise.all([
         privileged({ action: "list" }),
-        client.from("organizations").select("id,name,status,plan").order("name"),
-        client.from("organization_members").select("id,organization_id,user_id,role,status,created_at").order("created_at", { ascending: false })
+        privileged({ action: "list-workspaces" })
       ]);
-      if (orgResult.error) throw orgResult.error;
-      if (memberResult.error) throw memberResult.error;
       accounts = userResult.users || [];
-      organizations = orgResult.data || [];
-      memberships = memberResult.data || [];
+      organizations = workspaceResult.organizations || [];
+      memberships = workspaceResult.memberships || [];
       populateOrganizations(); render();
-      statusText("Live directory loaded · " + accounts.length + " Auth accounts · " + memberships.length + " company memberships.");
+      statusText("Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.");
     } catch (error) {
       authorized = false; accounts = []; organizations = []; memberships = []; render();
       statusText("Live account directory unavailable: " + (error?.message || String(error)));
@@ -76,9 +73,20 @@
     const select = $("#inviteOrganization");
     if (!select) return;
     const previous = select.value;
-    select.innerHTML = '<option value="">Select an active workspace…</option>' +
-      organizations.filter(org => org.status === "active").map(org => '<option value="'+esc(org.id)+'">'+esc(org.name)+'</option>').join("");
-    if ([...select.options].some(option => option.value === previous)) select.value = previous;
+    const active = organizations.filter(org => org.status === "active");
+    select.innerHTML = '<option value="">'+(organizations.length ? (active.length ? "Select an active workspace…" : "No active workspaces available") : "No workspaces found")+'</option>' +
+      organizations.map(org => {
+        const enabled = org.status === "active";
+        const label = String(org.name || "Unnamed workspace") + (enabled ? " · Active" : " · " + String(org.status || "unknown").replace(/_/g, " "));
+        return '<option value="'+esc(org.id)+'"'+(enabled ? "" : " disabled")+ '>'+esc(label)+'</option>';
+      }).join("");
+    if ([...select.options].some(option => option.value === previous && !option.disabled)) select.value = previous;
+    const hint = $("#inviteWorkspaceHint");
+    if (hint) hint.textContent = active.length
+      ? active.length + " active workspace" + (active.length === 1 ? "" : "s") + " available. Inactive workspaces must be activated under Companies before inviting users."
+      : organizations.length
+        ? "Workspaces were found, but none are active. Open Companies, activate a workspace, then refresh this list."
+        : "No workspace records were returned. Create a workspace under Companies, then refresh this list.";
   }
   function render() {
     const host = $("#userRows");
