@@ -26,6 +26,7 @@
   }
   function fail(text) { if (!finished) { finished = true; show(text); } }
   function loadPortal() {
+    show('Secure library loaded. Starting employer portal…');
     if (!window.supabase || typeof window.supabase.createClient !== 'function') {
       fail('The secure connection library did not initialize. Check your network or content blocker, then refresh.');
       return;
@@ -39,7 +40,7 @@
     var timer = window.setTimeout(function () {
       if (!settled) { settled = true; fail('The employer portal script is taking too long to load. Check your connection and refresh.'); }
     }, 10000);
-    app.src = '../portal.js?v=20261014-employerfix7';
+    app.src = '../portal.js?v=20261014-employerfix8';
     app.onload = function () {
       if (settled) return;
       settled = true;
@@ -62,6 +63,7 @@
   }
   function loadSdk(index) {
     if (finished) return;
+    show(index === 0 ? 'Loading secure sign-in service…' : 'Trying backup secure sign-in service…');
     if (index >= sdkSources.length) {
       fail('Could not load the secure connection library from either CDN. Check your connection, VPN, or content blocker.');
       return;
@@ -91,15 +93,16 @@
     };
     document.head.appendChild(script);
   }
+  show('Loading NEXORA connection settings…');
   var config = document.createElement('script');
-  config.src = '../js/supabase-config.js?v=20261014-employerfix7';
-  config.onload = function () { loadSdk(0); };
+  config.src = '../js/supabase-config.js?v=20261014-employerfix8';
+  config.onload = function () { show('Connection settings loaded. Preparing secure sign-in…'); loadSdk(0); };
   config.onerror = function () {
     fail('NEXORA connection settings could not load from GitHub Pages. Please refresh and try again.');
   };
   var startupTimer = window.setTimeout(function () {
-    if (!finished) fail('Portal startup timed out. The page is still available, but a required script or network connection is not responding.');
-  }, 20000);
+    if (!finished) fail('Startup timed out. The last step did not finish. Please send a screenshot of this message to NEXORA support.');
+  }, 15000);
   document.head.appendChild(config);
   }
   if (document.readyState === 'loading') {
