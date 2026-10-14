@@ -50,7 +50,9 @@
     statusText("Verifying administrator access and loading live Supabase accounts…");
     try {
       if (!await verifyAdmin()) {
-        accounts = []; organizations = []; memberships = []; render();
+        accounts = []; organizations = []; memberships = [];
+        populateOrganizations("Sign in as an active platform administrator to load workspaces.");
+        render();
         statusText("Sign in as an active platform administrator to view live accounts.");
         return;
       }
@@ -91,16 +93,19 @@
       const summary = "Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.";
       statusText(workspaceLoadError ? summary + " Workspace note: " + workspaceLoadError : summary);
     } catch (error) {
-      authorized = false; accounts = []; organizations = []; memberships = []; render();
+      authorized = false; accounts = []; organizations = []; memberships = [];
+      populateOrganizations("Workspace list unavailable. Check the status message above and refresh.");
+      render();
       statusText("Live account directory unavailable: " + (error?.message || String(error)));
     } finally { loading = false; }
   }
-  function populateOrganizations() {
+  function populateOrganizations(emptyMessage = "") {
     const select = $("#inviteOrganization");
     if (!select) return;
     const previous = select.value;
     const active = organizations.filter(org => org.status === "active");
-    select.innerHTML = '<option value="">'+(organizations.length ? (active.length ? "Select an active workspace…" : "No active workspaces available") : "No workspaces found")+'</option>' +
+    const emptyLabel = emptyMessage || (organizations.length ? (active.length ? "Select an active workspace…" : "No active workspaces available") : "No workspaces found");
+    select.innerHTML = '<option value="">'+esc(emptyLabel)+'</option>' +
       organizations.map(org => {
         const enabled = org.status === "active";
         const label = String(org.name || "Unnamed workspace") + (enabled ? " · Active" : " · " + String(org.status || "unknown").replace(/_/g, " "));
