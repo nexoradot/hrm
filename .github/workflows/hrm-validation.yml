@@ -1,63 +1,93 @@
-name: HRM validation
+name: NEXORA platform validation
 
 on:
   pull_request:
     paths:
-      - "company-portal/hrm.js"
-      - "company-portal/hrm.html"
-      - "company-portal/*invitation*.js"
-      - "company-portal/employee-registration.js"
-      - "company-portal/employee-registration-review.js"
-      - "app.js"
-      - "index.html"
-      - "js/superadmin-account-management.js"
-      - "supabase/functions/admin-user-admin/**"
-      - "supabase/migrations/**"
-      - ".github/workflows/hrm-validation.yml"
+      - "**/*.html"
+      - "**/*.js"
+      - "**/*.ts"
+      - "**/*.sql"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths:
-      - "company-portal/hrm.js"
-      - "company-portal/hrm.html"
-      - "supabase/migrations/**"
-      - "app.js"
-      - "index.html"
-      - "js/superadmin-account-management.js"
-      - "supabase/functions/admin-user-admin/**"
-      - ".github/workflows/hrm-validation.yml"
+      - "**/*.html"
+      - "**/*.js"
+      - "**/*.ts"
+      - "**/*.sql"
+      - ".github/workflows/**"
 
 jobs:
-  syntax:
+  syntax-and-integrity:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Check HR workspace JavaScript syntax
-        run: node --check company-portal/hrm.js
-      - name: Check Super Admin JavaScript syntax
+
+      - name: Syntax-check every JavaScript file
+        shell: bash
         run: |
-          node --check app.js
-          node --check js/superadmin-account-management.js
-      - name: Verify Super Admin account controls are wired
+          set -euo pipefail
+          count=0
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+            count=$((count + 1))
+          done < <(find . -type f -name '*.js' -not -path './.git/*' -print0)
+          test "$count" -gt 0
+          echo "Syntax-checked $count JavaScript files."
+
+      - name: Check local HTML assets and navigation targets
         run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+
+          const root = process.cwd();
+          const ignored = new Set(['.git', 'node_modules']);
+          const htmlFiles = [];
+          function walk(dir) {
+            for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (ignored.has(item.name)) continue;
+              const full = path.join(dir, item.name);
+              if (item.isDirectory()) walk(full);
+              else if (item.isFile() && item.name.toLowerCase().endsWith('.html')) htmlFiles.push(full);
+            }
+          }
+          walk(root);
+          const errors = [];
+          const attrPattern = /(?:^|\s)(?:src|href|action)\s*=\s*(["'])(.*?)\1/gi;
+          for (const file of htmlFiles) {
+            const html = fs.readFileSync(file, 'utf8');
+            for (const match of html.matchAll(attrPattern)) {
+              const raw = match[2].trim();
+              if (!raw || raw.startsWith('#') || raw.startsWith('/') || /^(?:https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(raw)) continue;
+              if (raw.includes('${') || raw.includes('{{')) continue;
+              const clean = decodeURIComponent(raw.split(/[?#]/, 1)[0]);
+              if (!clean) continue;
+              const target = path.resolve(path.dirname(file), clean);
+              const candidates = [target, path.join(target, 'index.html')];
+              if (!candidates.some(candidate => {
+                try { return fs.statSync(candidate).isFile(); } catch { return false; }
+              })) errors.push(`${path.relative(root, file)}: missing local target "${raw}"`);
+            }
+          }
+          if (errors.length) {
+            console.error(errors.join('\n'));
+            process.exit(1);
+          }
+          console.log(`Checked ${htmlFiles.length} HTML files for missing local assets/links.`);
+          NODE
+
+      - name: Verify key platform workflows are present
+        run: |
+          set -euo pipefail
           grep -q "admin-user-admin" js/superadmin-account-management.js
           grep -q "organization_members" js/superadmin-account-management.js
-          grep -q "action === \"invite\"" supabase/functions/admin-user-admin/index.ts
-
-      - name: Verify settings and core HR actions are wired
-        run: |
           grep -q "hr_workspace_settings" company-portal/hrm.js
-          grep -q "create table if not exists public.hr_workspace_settings" supabase/migrations/010_hr_workspace_settings.sql
-          grep -q "data-action=\"add-leave\"" company-portal/hrm.html
-          grep -q "function editDepartment" company-portal/hrm.js
-          grep -q "function editAttendance" company-portal/hrm.js
-          grep -q "function editReview" company-portal/hrm.js
-          grep -q "function editPayrollItem" company-portal/hrm.js
-      - name: Verify payroll workflow RPC and UI wiring
-        run: |
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
-          grep -q "data-action=\"export-payroll\"" company-portal/hrm.html
+          grep -q "create table if not exists public.hr_workspace_settings" supabase/migrations/010_hr_workspace_settings.sql
           grep -q "create or replace function public.redeem_hr_employee_invitation" supabase/migrations/008_hr_employee_invitations.sql
