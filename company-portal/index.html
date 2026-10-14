@@ -44,6 +44,7 @@
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
+      window.clearTimeout(startupTimer);
       window.setTimeout(function () {
         var el = document.getElementById('loginMessage');
         if (el && /Connecting securely|did not finish initializing/i.test(el.textContent)) {
@@ -96,7 +97,7 @@
   config.onerror = function () {
     fail('NEXORA connection settings could not load from GitHub Pages. Please refresh and try again.');
   };
-  window.setTimeout(function () {
+  var startupTimer = window.setTimeout(function () {
     if (!finished) fail('Portal startup timed out. The page is still available, but a required script or network connection is not responding.');
   }, 20000);
   document.head.appendChild(config);
