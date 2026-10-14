@@ -55,15 +55,41 @@
         return;
       }
       const client = getClient();
-      const [userResult, workspaceResult] = await Promise.all([
-        privileged({ action: "list" }),
-        privileged({ action: "list-workspaces" })
-      ]);
+      // Load the account directory independently so a workspace endpoint failure
+      // cannot hide accounts or leave the selector silently empty.
+      const userResult = await privileged({ action: "list" });
       accounts = userResult.users || [];
-      organizations = workspaceResult.organizations || [];
-      memberships = workspaceResult.memberships || [];
+
+      let workspaceLoadError = "";
+      try {
+        const workspaceResult = await privileged({ action: "list-workspaces" });
+        organizations = workspaceResult.organizations || [];
+        memberships = workspaceResult.memberships || [];
+      } catch (edgeError) {
+        // Use the current signed-in session as a safe fallback; database RLS must
+        // still authorize platform-admin reads. Never use a service-role key here.
+        const client = getClient();
+        const [orgResult, memberResult] = await Promise.all([
+          client.from("organizations").select("id,name,status,plan").order("name", { ascending: true }),
+          client.from("organization_members").select("id,organization_id,user_id,role,status,created_at").order("created_at", { ascending: false })
+        ]);
+        if (orgResult.error || memberResult.error) {
+          workspaceLoadError = [
+            orgResult.error && "organizations: " + orgResult.error.message,
+            memberResult.error && "memberships: " + memberResult.error.message
+          ].filter(Boolean).join("; ");
+          organizations = [];
+          memberships = [];
+        } else {
+          organizations = orgResult.data || [];
+          memberships = memberResult.data || [];
+          workspaceLoadError = "Workspace service fallback used: " + (edgeError?.message || String(edgeError));
+        }
+      }
+
       populateOrganizations(); render();
-      statusText("Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.");
+      const summary = "Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.";
+      statusText(workspaceLoadError ? summary + " Workspace note: " + workspaceLoadError : summary);
     } catch (error) {
       authorized = false; accounts = []; organizations = []; memberships = []; render();
       statusText("Live account directory unavailable: " + (error?.message || String(error)));
