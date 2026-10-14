@@ -57,10 +57,17 @@
         return;
       }
       const client = getClient();
-      // Load the account directory independently so a workspace endpoint failure
-      // cannot hide accounts or leave the selector silently empty.
-      const userResult = await privileged({ action: "list" });
-      accounts = userResult.users || [];
+      // Keep workspace loading independent from the Auth account directory. If the
+      // Edge Function is missing/unreachable, direct reads can still populate the
+      // selector under the signed-in administrator's database RLS permissions.
+      let accountLoadError = "";
+      try {
+        const userResult = await privileged({ action: "list" });
+        accounts = userResult.users || [];
+      } catch (edgeError) {
+        accounts = [];
+        accountLoadError = "Auth account directory unavailable: " + (edgeError?.message || String(edgeError));
+      }
 
       let workspaceLoadError = "";
       try {
@@ -68,8 +75,6 @@
         organizations = workspaceResult.organizations || [];
         memberships = workspaceResult.memberships || [];
       } catch (edgeError) {
-        // Use the current signed-in session as a safe fallback; database RLS must
-        // still authorize platform-admin reads. Never use a service-role key here.
         const client = getClient();
         const [orgResult, memberResult] = await Promise.all([
           client.from("organizations").select("id,name,status,plan").order("name", { ascending: true }),
@@ -90,8 +95,9 @@
       }
 
       populateOrganizations(); render();
-      const summary = "Live directory loaded · " + accounts.length + " Auth accounts · " + organizations.length + " workspaces · " + memberships.length + " company memberships.";
-      statusText(workspaceLoadError ? summary + " Workspace note: " + workspaceLoadError : summary);
+      const summary = "Workspace access loaded · " + organizations.length + " workspaces · " + memberships.length + " company memberships.";
+      const notes = [accountLoadError, workspaceLoadError].filter(Boolean).join(" · ");
+      statusText(notes ? summary + " " + notes : summary);
     } catch (error) {
       authorized = false; accounts = []; organizations = []; memberships = [];
       populateOrganizations("Workspace list unavailable. Check the status message above and refresh.");
