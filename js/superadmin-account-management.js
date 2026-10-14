@@ -160,8 +160,10 @@
         const email = $("#inviteUserEmail").value.trim().toLowerCase();
         const organizationId = $("#inviteOrganization").value, role = $("#inviteRole").value;
         if (!organizationId) throw new Error("Choose an active workspace before inviting a user.");
-        await privileged({ action:"invite", email, organizationId, role, redirectTo:location.origin + location.pathname.replace(/index\.html$/, "") + "company-portal/accept-employee-invitation.html" });
-        toast("Invitation sent. The new workspace membership is pending until activated.", "success");
+        const inviteResult = await privileged({ action:"invite", email, organizationId, role, redirectTo:location.origin + location.pathname.replace(/index\.html$/, "") + "company-portal/accept-employee-invitation.html" });
+        toast(inviteResult.message || (inviteResult.existingAccount
+          ? "Existing account linked. Activate its workspace membership to grant access."
+          : "Invitation sent. The new workspace membership is pending until activated."), "success");
         form.reset(); await load();
       } catch (error) { toast(error?.message || "Invitation failed.", "error"); }
       finally { button.disabled = false; button.textContent = original; }
