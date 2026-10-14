@@ -1,0 +1,32 @@
+name: HRM validation
+
+on:
+  pull_request:
+    paths:
+      - "company-portal/hrm.js"
+      - "company-portal/hrm.html"
+      - "supabase/migrations/**"
+      - ".github/workflows/hrm-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "company-portal/hrm.js"
+      - "company-portal/hrm.html"
+      - "supabase/migrations/**"
+      - ".github/workflows/hrm-validation.yml"
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check HR workspace JavaScript syntax
+        run: node --check company-portal/hrm.js
+      - name: Verify payroll workflow RPC and UI wiring
+        run: |
+          grep -q "advance_hr_payroll_period" company-portal/hrm.js
+          grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
+          grep -q "data-action=\"export-payroll\"" company-portal/hrm.html
