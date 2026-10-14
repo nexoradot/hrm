@@ -4,12 +4,18 @@
   const $ = (s, root=document) => root.querySelector(s);
   const esc = (v='') => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt = v => v ? new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-  const message = (txt, error=false) => {const el=$('#portalMessage');if(el){el.textContent=txt;el.style.color=error?'#a21d1d':'#4941b8';}};
+  const message = (txt, error=false) => {
+    ['#portalMessage','#loginMessage'].forEach(selector=>{
+      const el=$(selector);
+      if(el){el.textContent=txt;el.style.color=error?'#a21d1d':'#4941b8';el.setAttribute('aria-live','polite');}
+    });
+  };
   const config=window.NEXORA_CONFIG;
   let sb=null,user=null,orgs=[],jobsCache=[],candidateCache=[];
   const portal=document.body.dataset.portal;
   if(!window.supabase?.createClient||!config?.url||!config?.anonKey){message('Supabase client could not initialize. Check network access and public configuration.',true);return;}
   sb=window.supabase.createClient(config.url,config.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  message('Connection ready. Sign in with your work email and password.');
   const errText=e=>e?.message||String(e||'Unknown error');
   async function run(fn){try{await fn();}catch(e){console.error('NEXORA portal:',e);message(errText(e),true);}}
   async function getUser(){const r=await sb.auth.getUser();if(r.error)throw r.error;user=r.data.user||null;return user;}
@@ -44,5 +50,5 @@
   $('#jobSearch')?.addEventListener('input',()=>renderJobs());$('#jobCountry')?.addEventListener('change',()=>renderJobs());$('#jobType')?.addEventListener('change',()=>renderJobs());$('#jobWorkplace')?.addEventListener('change',()=>renderJobs());$('#modalApply')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.apply;if(id)run(()=>apply(id));$('#jobModal')?.classList.remove('open');});$('#consultancySearch')?.addEventListener('input',renderDiscovery);
   $('#year')&&($('#year').textContent=new Date().getFullYear());
   if(portal==='public')renderJobs();
-  sb.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user){setTimeout(()=>run(onSignedIn),0);}else{const w=$('#candidateWorkspace')||$('#consultancyWorkspace')||$('#companyWorkspace');if(w)w.hidden=true;const auth=$('#portalAuth');if(auth)auth.hidden=false;const b=$('#publicLogout');if(b)b.hidden=true;}});
+  sb.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user){setTimeout(()=>run(onSignedIn),0);}else{const w=$('#candidateWorkspace')||$('#consultancyWorkspace')||$('#companyWorkspace');if(w)w.hidden=true;const auth=$('#portalAuth');if(auth)auth.hidden=false;const b=$('#publicLogout');if(b)b.hidden=true;if(portal==='company')message('Connection ready. Sign in with your work email and password.');}});
 })();
