@@ -9,8 +9,10 @@ Review and apply migrations in numeric order in a development Supabase project b
 5. `005_hrm_workforce_core.sql` — tenant-scoped departments, employee records, leave requests, attendance, performance reviews and draft payroll periods.
 6. `006_hrm_expansion_modules.sql` — tenant-scoped operations register for recruitment tracking, onboarding/offboarding, shift planning, benefits, compliance, remittance, approvals, billing, wage tracking and go-live tasks.
 7. `007_ag_german_employee_registration.sql` — exact AG German Institute onboarding fields, private document bucket, submission workflow, HR review and employee record creation.
+8. `009_atomic_payroll_workflow.sql` — atomic payroll-period status transitions and line status synchronisation; requires migration 005 and does not calculate statutory deductions or send payments.
 
 ## Deployment safety
+- Migration 009 must be tested with draft, processing, review, approved and paid periods, including empty periods, held lines, missing payment dates, invalid transitions, and users from a different organisation.
 - These files were added to version control after the live project had already been configured manually. The migration ledger in Supabase may not match this folder. Never blindly rerun migrations against production.
 - Apply and test migrations 005–007 in a development project first; compare live schema and back up data before production changes.
 - Migration 005–006 tests: use at least two organisations and separate accounts; verify all cross-organisation employee/department/leave/attendance/review/payroll/operations links are rejected or isolated.
