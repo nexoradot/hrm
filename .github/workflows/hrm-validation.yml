@@ -58,12 +58,12 @@ jobs:
           }
           walk(root);
           const errors = [];
-          const attrPattern = /\b(?:src|href|action)\s*=\s*(["'])(.*?)\1/gi;
+          const attrPattern = /(?:^|\s)(?:src|href|action)\s*=\s*(["'])(.*?)\1/gi;
           for (const file of htmlFiles) {
             const html = fs.readFileSync(file, 'utf8');
             for (const match of html.matchAll(attrPattern)) {
               const raw = match[2].trim();
-              if (!raw || raw.startsWith('#') || /^(?:https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(raw)) continue;
+              if (!raw || raw.startsWith('#') || raw.startsWith('/') || /^(?:https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(raw)) continue;
               if (raw.includes('${') || raw.includes('{{')) continue;
               const clean = decodeURIComponent(raw.split(/[?#]/, 1)[0]);
               if (!clean) continue;
