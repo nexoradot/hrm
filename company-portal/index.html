@@ -7,10 +7,10 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/supabase-config.js"></script>
-<script defer src="../portal.js?v=20261014-employerfix2"></script>
+<script defer src="../portal.js?v=20261014-employerfix3"></script>
 <script>
 // Keep the sign-in screen usable and explain stalled third-party scripts.
-(function(){var timer=setTimeout(function(){var el=document.getElementById('loginMessage');if(el&&/Connecting securely/i.test(el.textContent)){el.textContent='The secure login library is taking too long to load. Check your connection or allow cdn.jsdelivr.net, then refresh this page.';el.style.color='#a21d1d';}},8000);window.addEventListener('load',function(){clearTimeout(timer);},{once:true});})();
+(function(){setTimeout(function(){var el=document.getElementById('loginMessage');if(el&&/Connecting securely/i.test(el.textContent)){el.textContent='Portal scripts did not finish initializing. Try a hard refresh. If this message remains, the JavaScript file or Supabase CDN may be blocked; open DevTools Console for the exact error.';el.style.color='#a21d1d';}},8000);})();
 </script>
 <style>
 :root{--navy:#101a33;--ink:#192642;--muted:#73809a;--purple:#6254e8;--violet:#a99bff;--line:#e7eaf2;--soft:#f5f6fc;--green:#148461;--amber:#a56815;--red:#b54747;--white:#fff}
