@@ -39,6 +39,7 @@ as $$
 declare
  v_inv public.hr_employee_invitations%rowtype;
  v_email text;
+ v_member_role text;
 begin
  if auth.uid() is null then raise exception 'Sign in or create your account before accepting this invitation.'; end if;
  select lower(email) into v_email from auth.users where id = auth.uid();
@@ -53,11 +54,20 @@ begin
  if v_inv.expires_at <= now() then raise exception 'This invitation has expired. Contact HR for a new link.'; end if;
  if lower(v_inv.email) <> v_email then raise exception 'Sign in using the email address this invitation was issued to.'; end if;
 
- update public.organization_members
- set status = 'active', role = 'employee'
- where organization_id = v_inv.organization_id and user_id = auth.uid();
+ select role::text into v_member_role
+ from public.organization_members
+ where organization_id = v_inv.organization_id and user_id = auth.uid()
+ for update;
 
- if not found then
+ if found then
+   -- Never downgrade an existing owner, HR manager, or other elevated member.
+   if v_member_role <> 'employee' then
+     raise exception 'This account already has an organisation role. Contact the organisation administrator to link the employee profile safely.';
+   end if;
+   update public.organization_members
+   set status = 'active'
+   where organization_id = v_inv.organization_id and user_id = auth.uid();
+ else
    insert into public.organization_members(organization_id,user_id,role,status)
    values(v_inv.organization_id,auth.uid(),'employee','active');
  end if;
