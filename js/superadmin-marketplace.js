@@ -25,6 +25,7 @@ async function init(){
  let cfg;try{cfg=JSON.parse(localStorage.getItem("nexora_supabase_public_config_v1")||"null")}catch{}
  if(!cfg?.url||!cfg?.key){say("Supabase connection settings are missing. Reopen the Super Admin dashboard and reconnect.",true);return}
  sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ sb.auth.onAuthStateChange((event,session)=>{if(session&&!ready)setTimeout(()=>init().catch(e=>say("Marketplace startup failed: "+(e.message||e),true)),0);if(!session){ready=false;rows=[];audit=[];render();$("#marketLiveState").textContent="SIGN-IN REQUIRED";say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);}});
  const {data:{session},error:se}=await sb.auth.getSession();if(se)throw se;
  if(!session?.user){say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);$("#marketLiveState").textContent="SIGN-IN REQUIRED";return}
  const {data:pa,error:pe}=await sb.from("platform_admins").select("user_id,role,status").eq("user_id",session.user.id).maybeSingle();
