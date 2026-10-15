@@ -317,7 +317,7 @@ async function init(){ensureExpansionSections();$('#workspaceSettingsForm')?.add
   overlay.addEventListener('click',close);
   side.addEventListener('click',e=>{if(e.target.closest('button[data-section],button[data-view],button.nav,a'))close();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-  window.addEventListener('resize',()=>{if(window.innerWidth>680)close();});
+  window.addEventListener('resize',()=>{if(window.innerWidth>820)close();});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
 })();
