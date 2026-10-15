@@ -231,6 +231,46 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 @media(max-width:1050px){#view-overview>.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#view-overview .analytics-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:520px){#view-overview>.dashboard-kpis{gap:10px}#view-overview .kpi-card{padding:16px 13px 13px}#view-overview .kpi-label{font-size:10px}#view-overview .kpi-card>strong{margin:13px 0 11px;font-size:27px}#view-overview .kpi-revenue>strong{font-size:21px}#view-overview .kpi-foot{align-items:flex-start;flex-direction:column;gap:5px}}
 @media(prefers-reduced-motion:reduce){#view-overview .kpi-track i{transition:none}}
+
+/* Dashboard clarity pass: stronger hierarchy, readable mobile KPIs, less empty chart space */
+#view-overview>.dashboard-kpis{gap:17px;margin-bottom:22px}
+#view-overview .kpi-card{min-height:158px;padding:22px 21px 17px;border-radius:17px;box-shadow:0 8px 24px rgba(20,43,74,.065)}
+#view-overview .kpi-card:after{content:"";position:absolute;right:-27px;top:-35px;width:105px;height:105px;border-radius:50%;background:var(--kpi);opacity:.055;pointer-events:none}
+#view-overview .kpi-label{font-size:12px;color:#53657d}
+#view-overview .kpi-card>strong{position:relative;z-index:1;font-size:clamp(30px,2.5vw,38px);margin:19px 0 15px;letter-spacing:-1.3px}
+#view-overview .kpi-revenue>strong{font-size:clamp(23px,2vw,31px)}
+#view-overview .kpi-pill{font-size:10px;padding:5px 9px}
+#view-overview .kpi-track{height:5px;margin-top:16px;background:#edf2f8}
+#view-overview>.analytics-grid{gap:17px;margin-bottom:20px}
+#view-overview .analytics-panel{padding:23px;border-radius:17px}
+#view-overview .analytics-title{font-size:18px;margin-top:5px}
+#view-overview .analytics-sub{font-size:12px;line-height:1.5;max-width:460px}
+#view-overview .chart-legend{font-size:11px;margin-top:12px}
+#view-overview>.grid{gap:17px;margin-bottom:20px}
+#view-overview .panel{padding:22px;border-radius:17px}
+#view-overview .panel-head h2{font-size:16px}
+#view-overview .panel-head p{font-size:12px;line-height:1.5}
+#view-overview .health b,#view-overview .quick b{font-size:12px}
+#view-overview .health small,#view-overview .quick small{font-size:11px}
+@media(max-width:760px){
+ #view-overview>.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+ #view-overview .kpi-card{min-height:148px;padding:17px 14px 14px;border-radius:14px}
+ #view-overview .kpi-label{align-items:flex-start;font-size:11px}
+ #view-overview .kpi-card>strong{font-size:clamp(26px,6vw,33px);margin:17px 0 13px}
+ #view-overview .kpi-revenue>strong{font-size:clamp(20px,4.8vw,27px)}
+ #view-overview .kpi-foot{align-items:flex-start;flex-direction:column;gap:6px}
+ #view-overview .kpi-foot small{font-size:10px;line-height:1.35}
+ #view-overview .analytics-panel,#view-overview .panel{padding:17px 15px}
+ #view-overview .analytics-title{font-size:16px}
+ #view-overview .analytics-sub{font-size:11px}
+ #view-overview .plan-analytics{grid-template-columns:minmax(90px,.75fr) minmax(0,1fr);gap:10px}
+ #view-overview .plan-donut{width:100%;max-width:125px}
+}
+@media(max-width:360px){
+ #view-overview>.dashboard-kpis{grid-template-columns:minmax(0,1fr)!important}
+ #view-overview .kpi-card{min-height:0}
+ #view-overview .kpi-foot{flex-direction:row;flex-wrap:wrap;align-items:center}
+}
 </style>
 </head>
 <body class="auth-locked"><section class="login-gate visible" id="loginGate" aria-labelledby="loginTitle"><div class="login-card"><div class="login-brand"><span class="login-mark">N</span><span><strong>NEXORA</strong><small>INTELLIGENCE FOR EVERY WORKFORCE</small></span></div><p class="eyebrow">SECURE PLATFORM ACCESS</p><h1 id="loginTitle">Super Admin sign in</h1><p class="login-intro">Sign in with your authorized NEXORA platform administrator account to continue.</p><form id="loginGateForm" class="form-stack"><label>Administrator email<input id="loginGateEmail" type="email" autocomplete="username" required placeholder="admin@yourdomain.com"></label><label>Password<input id="loginGatePassword" type="password" autocomplete="current-password" required minlength="8" placeholder="Enter your password"></label><button class="btn primary" id="loginGateButton" type="submit">Sign in securely</button><p id="loginGateMessage" class="login-message" role="status" aria-live="polite">Initializing secure sign-in…</p><details class="login-debug" open><summary>Sign-in diagnostics</summary><pre id="loginDebugOutput" aria-live="polite">Waiting for Supabase initialization…</pre><small>If sign-in appears stuck, copy these messages when asking for help. Passwords and keys are never displayed here.</small></details></form><p class="login-security">Protected access · NEXORA HRM · Human Resources &amp; Workforce Management</p></div></section><aside class="sidebar" id="sidebar"><a class="brand" href="#"><b class="mark">N</b><span><strong>NEXORA</strong><small>INTELLIGENCE FOR EVERY WORKFORCE</small><em>Human Resources &amp; Workforce Management</em></span></a><p class="side-label">PLATFORM WORKSPACE</p><nav><button class="nav active" data-view="overview">▦　Overview</button><button class="nav" data-view="companies">▣　Companies <i id="companyCount">0</i></button><button class="nav" data-view="users">♙　Platform users</button><button class="nav" data-view="subscriptions">◇　Subscriptions</button><button class="nav" data-view="modules">▤　Modules & features</button><button class="nav" data-view="billing">＄　Billing controls</button><button class="nav" data-view="marketplace">⌕　Jobs marketplace</button><button class="nav" data-view="support">✉　Support centre</button><button class="nav" data-view="security">⬡　Security & access</button><button class="nav" data-view="activity">↗　Audit activity</button><button class="nav" data-view="settings">⚙　Platform settings</button></nav><p class="side-label">ECOSYSTEM PORTALS</p><div class="portal-shortcuts"><a href="public-site/index.html" target="_blank" rel="noopener">↗ Public jobs marketplace</a><a href="candidate-portal/index.html" target="_blank" rel="noopener">♙ Candidate portal</a><a href="consultancy-portal/index.html" target="_blank" rel="noopener">▣ HR consultancy portal</a><a href="company-portal/index.html" target="_blank" rel="noopener">▦ Employer workspace</a></div><div class="side-bottom"><div class="secure"><span></span><div><b>Workspace status</b><small id="connectionStatus">Demo mode</small></div></div><button class="nav" data-view="settings">⌘　Connect Supabase</button><p class="version">NEXORA HRM <span>v0.6 Platform control plane</span></p></div></aside>
