@@ -1,6 +1,6 @@
 (()=>{"use strict";
 const $=s=>document.querySelector(s),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let sb=null,rows=[],audit=[],ready=false,busy=false;
+let sb=null,rows=[],audit=[],ready=false,busy=false,initializing=false,authSubscription=null;
 const say=(s,bad=false)=>{const n=$("#marketplaceMessage");if(n){n.textContent=s;n.style.background=bad?"#fff0ef":"#f1f4ff";n.style.color=bad?"#a32620":"#343b78"}};
 const date=s=>s?new Date(s).toLocaleDateString("en-KE",{day:"2-digit",month:"short",year:"numeric"}):"—";
 const statusLabel=s=>({"pending_review":"Awaiting review","published":"Published","rejected":"Rejected","suspended":"Unpublished","draft":"Draft","closed":"Closed"}[s]||s||"Unknown");
@@ -23,16 +23,15 @@ function render(){
 async function init(){
  if(initializing||sb)return;
  initializing=true;
- if(!window.supabase?.createClient){say("Supabase library did not load. Reload this page after checking connectivity.",true);return}
+ if(!window.supabase?.createClient){initializing=false;say("Supabase library did not load. Reload this page after checking connectivity.",true);return}
  let cfg;try{cfg=JSON.parse(localStorage.getItem("nexora_supabase_public_config_v1")||"null")}catch{}
- if(!cfg?.url||!cfg?.key){say("Supabase connection settings are missing. Reopen the Super Admin dashboard and reconnect.",true);return}
- sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ if(!cfg?.url||!cfg?.key){initializing=false;say("Supabase connection settings are missing. Reopen the Super Admin dashboard and reconnect.",true);return}
+ sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}});
  authSubscription=sb.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"||!session){ready=false;rows=[];audit=[];render();$("#marketLiveState").textContent="SIGN-IN REQUIRED";say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);}});
- const {data:{session:storedSession},error:se}=await window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}}).auth.getSession();if(se)throw se;
- const session=storedSession;
+ const {data:{session},error:se}=await sb.auth.getSession();if(se)throw se;
  if(!session?.user){say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);$("#marketLiveState").textContent="SIGN-IN REQUIRED";initializing=false;return}
  const {data:pa,error:pe}=await sb.from("platform_admins").select("user_id,role,status").eq("user_id",session.user.id).maybeSingle();
- if(pe)throw pe;if(!pa||pa.role!=="platform_admin"||pa.status!=="active"){say("This account is not an active platform administrator. No moderation controls are enabled.",true);return}
+ if(pe)throw pe;if(!pa||pa.role!=="platform_admin"||pa.status!=="active"){initializing=false;say("This account is not an active platform administrator. No moderation controls are enabled.",true);return}
  ready=true;initializing=false;$("#marketLiveState").textContent="LIVE DATABASE";say("Connected as authorized platform administrator. Vacancy changes are written to Supabase and logged.");
  await refresh();
 }
@@ -62,5 +61,5 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-moderate]"
 $("#marketplaceRefresh")?.addEventListener("click",refresh);
 $("#marketSearch")?.addEventListener("input",render);$("#marketStatus")?.addEventListener("change",render);
 const view=$("#view-marketplace");if(view)new MutationObserver(()=>{if(view.classList.contains("active")&&ready)refresh()}).observe(view,{attributes:true,attributeFilter:["class"]});
-init().catch(e=>{initializing=false;say("Marketplace startup failed: "+(e.message||e),true)});
+init().catch(e=>{initializing=false;say("Marketplace startup failed: "+(e.message||e),true);$("#marketLiveState").textContent="CONNECTION ERROR";});
 })();
