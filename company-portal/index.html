@@ -40,7 +40,7 @@
     var timer = window.setTimeout(function () {
       if (!settled) { settled = true; fail('The employer portal script is taking too long to load. Check your connection and refresh.'); }
     }, 5000);
-    app.src = './employer-portal.js?v=20261014-employerfix13';
+    app.src = './employer-portal.js?v=20261015-auth-load-guard';
     app.onload = function () {
       if (settled) return;
       settled = true;
