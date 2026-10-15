@@ -191,7 +191,7 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
  :where(.table-wrap,.table-container,.table-responsive){overflow:visible!important}
  :where(.table-wrap,.table-container,.table-responsive) table{min-width:0!important;width:100%!important}
 }
-</style>\n
+</style>
 <style id="nexora-public-site-visual-rebuild-20261015">
 /* NEXORA corporate homepage visual rebuild: editorial hero, clearer product story, polished conversion paths. */
 :root{--nx-ink:#131b39;--nx-muted:#69758e;--nx-purple:#5c48e8;--nx-purple2:#8d7bff;--nx-mint:#72e4cd;--nx-line:#e5e8f3;--nx-paper:#f7f8fd}
@@ -349,6 +349,46 @@ footer .foot-links a:hover{color:#fff}
  .hero-visual{min-height:320px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+</style>
+
+
+<style id="nexora-physical-mobile-viewport-fix">
+/* Physical-device fallback for mobile browsers that request desktop-site layout. */
+@media (max-device-width: 600px){
+ html{width:100%;overflow-x:hidden}
+ body{width:100%;min-width:0;overflow-x:hidden}
+ .topbar .wrap{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+ .top .wrap{width:calc(100% - 24px);min-height:66px;gap:7px;flex-wrap:nowrap}
+ .brand-logo{width:clamp(112px,35vw,165px);max-width:none}
+ .mobile-nav-toggle{display:inline-flex;flex:0 0 auto;padding:8px 9px;font-size:11px}
+ .top .links{display:none}
+ .top .links.is-open{display:flex;position:absolute;left:0;right:0;top:100%;padding:14px;background:#fff;border:1px solid #e5e8f3;border-radius:0 0 14px 14px;box-shadow:0 18px 30px #101a331c;flex-direction:column;align-items:stretch;gap:4px;z-index:80}
+ .top .links.is-open a{padding:11px 8px}
+ .top .actions{margin-left:auto!important;display:flex;gap:5px}
+ .top .actions .btn{min-height:36px;padding:7px 8px;font-size:10px;white-space:nowrap}
+ .hero-grid{width:calc(100% - 26px);grid-template-columns:minmax(0,1fr);gap:0;min-height:0}
+ .hero-copy{padding:38px 0 22px}
+ .hero h1{font-size:clamp(39px,10vw,55px);letter-spacing:-2.5px}
+ .hero p{font-size:15px;line-height:1.7}
+ .hero-search{grid-template-columns:minmax(0,1fr);gap:2px}
+ .hero-search label{min-height:42px;border-bottom:1px solid #edf0f6}
+ .hero-search button{min-height:44px}
+ .hero-visual{min-height:320px;padding:0 0 18px}
+ .hero-photo{inset:0 0 18px;height:calc(100% - 18px);object-position:55% 25%}
+ .hero-visual:after{inset:0 0 18px}
+ .hrm-float{right:4px;top:10px;width:clamp(145px,42vw,175px);padding:11px}
+ .job-float{left:4px;bottom:27px;width:clamp(175px,51vw,205px);padding:11px}
+ .float-card strong{font-size:13px}
+ .category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .cards,.audience,.steps{grid-template-columns:minmax(0,1fr);gap:12px}
+ .section{padding:54px 0}
+ .center h2{font-size:clamp(27px,7vw,34px)}
+ .center p{font-size:13px}
+ .cta{padding:24px 19px;display:block}
+ .cta .actions{margin-top:17px!important;flex-wrap:wrap}
+ footer .foot{grid-template-columns:1fr 1fr;gap:22px}
+ footer .foot>div:first-child{grid-column:1/-1}
+}
 </style>
 
 </head><body>
