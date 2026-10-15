@@ -50,7 +50,7 @@ async function moderate(id,action){
  busy=true;$("#marketplaceRefresh").disabled=true;say("Saving moderation decision…");
  try{const {data,error}=await sb.rpc("nexora_moderate_job",{p_job_id:id,p_action:action,p_reason:reason||null});if(error)throw error;
  say('Vacancy "'+job.title+'" updated: '+statusLabel(data?.status||({"approve":"published","reject":"rejected","unpublish":"suspended"}[action]))+'. Audit entry saved.');
- await refresh();
+ busy=false;await refresh();
  }catch(e){say("Moderation failed: "+(e.message||e),true)}
  finally{busy=false;$("#marketplaceRefresh").disabled=false}
 }
