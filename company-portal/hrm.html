@@ -201,7 +201,56 @@ input,select,textarea{max-width:100%}
  .section:not(.active){display:none!important}.table-wrap{overflow:visible!important}.table-wrap table{min-width:0!important;width:100%!important}
 }
 </style>
-</head>
+<style id="nexora-unified-dashboard-design">
+/* NEXORA design system: consistent premium surfaces across platform dashboards. */
+:root{
+ --nx-ink:#17243b;--nx-muted:#6b7b92;--nx-line:#e4eaf3;--nx-canvas:#f4f7fc;
+ --nx-brand:#5148cf;--nx-brand-dark:#38339b;--nx-brand-soft:#efefff;
+ --nx-teal:#0b8e98;--nx-teal-soft:#e8f9fa;--nx-green:#15805d;--nx-green-soft:#e8f7ef;
+ --nx-amber:#a56b13;--nx-amber-soft:#fff6e5;--nx-red:#b93f51;--nx-red-soft:#fff0f2;
+ --nx-shadow:0 10px 30px rgba(24,38,72,.055);--nx-shadow-hover:0 18px 40px rgba(24,38,72,.095);
+}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{color:var(--nx-ink)}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid rgba(81,72,207,.3)!important;outline-offset:3px}
+:where(.panel,.stat,.card,.metric-card,.analytics-panel,.org-panel,.dashboard-card,.module-card,.auth-card){border:1px solid var(--nx-line);box-shadow:var(--nx-shadow);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+:where(.panel,.card,.metric-card,.analytics-panel,.dashboard-card,.module-card):hover{border-color:#d7def0}
+:where(.panel-head,h2,h3){letter-spacing:-.25px}
+:where(.btn,button[type=submit],.primary-btn){transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}
+:where(.btn,button[type=submit],.primary-btn):hover:not(:disabled){filter:brightness(1.025);transform:translateY(-1px)}
+:where(.btn,button[type=submit],.primary-btn):disabled{opacity:.58;cursor:wait;transform:none}
+:where(input,select,textarea){max-width:100%;accent-color:var(--nx-brand)}
+:where(table){font-variant-numeric:tabular-nums}
+:where(.table-wrap,.table-container,.table-responsive){max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+:where(.table-wrap,.table-container,.table-responsive) table{min-width:600px}
+:where(.table-wrap,.table-container,.table-responsive) th{white-space:nowrap}
+:where(.badge,.pill,.status,.status-badge){white-space:nowrap}
+:where(.message,.alert,.notice){overflow-wrap:anywhere}
+:where(.empty,.empty-state){border:1px dashed var(--nx-line);border-radius:14px;background:#fafbff;padding:22px;color:var(--nx-muted)}
+@media(max-width:760px){
+ :where(.panel-head){gap:12px;flex-wrap:wrap}
+ :where(.panel-head)>:where(button,.btn){max-width:100%}
+ :where(.toolbar,.filters,.filter-row){gap:9px;flex-wrap:wrap}
+ :where(.toolbar input,.toolbar select,.filters input,.filters select){min-width:0;max-width:100%}
+ :where(.modal,.modal-card,.dialog,.auth-card){max-width:calc(100vw - 24px)}
+ :where(.content,.main-content,.dashboard-content){min-width:0}
+}
+@media(max-width:420px){
+ :where(.table-wrap,.table-container,.table-responsive) table{min-width:560px}
+ :where(.panel,.card,.analytics-panel){border-radius:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+@media print{
+ :where(aside,.sidebar,.topbar,.toolbar,.btn,button,.mobile-hr-toggle,.hr-nav-overlay){display:none!important}
+ body{background:#fff!important;color:#111!important}
+ :where(.panel,.stat,.card,.metric-card,.analytics-panel){box-shadow:none!important;break-inside:avoid}
+ :where(.table-wrap,.table-container,.table-responsive){overflow:visible!important}
+ :where(.table-wrap,.table-container,.table-responsive) table{min-width:0!important;width:100%!important}
+}
+</style>\n</head>
 <body>
 <div id="authScreen" class="auth-wrap">
  <form id="loginForm" class="auth-card">
