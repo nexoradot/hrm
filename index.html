@@ -179,6 +179,35 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
  #view-overview>.stats article{padding:15px 13px}
 }
 @media(prefers-reduced-motion:reduce){#view-overview>.stats article{transition:none}}
+
+/* Mobile viewport correction: keep the admin navigation off-canvas until requested. */
+@media screen and (max-width:760px){
+ html,body{width:100%;min-width:0;overflow-x:hidden}
+ body{font-size:14px}
+ .sidebar{position:fixed!important;top:0!important;bottom:0!important;left:0!important;width:min(290px,84vw)!important;max-width:84vw!important;transform:translateX(-105%)!important;visibility:hidden!important;pointer-events:none!important;z-index:1000!important}
+ .sidebar.open{transform:translateX(0)!important;visibility:visible!important;pointer-events:auto!important}
+ main{margin-left:0!important;width:100%!important;min-width:0!important}
+ .topbar{width:100%;min-width:0;padding:0 12px;gap:8px}
+ .right{gap:7px;min-width:0}
+ .session-email{display:none!important}
+ .dash-search-trigger .search-label,.dash-search-trigger kbd{display:none!important}
+ .content{width:100%!important;max-width:none!important;margin:0!important;padding:16px 12px 28px!important;min-width:0!important}
+ .content>.heading{width:100%;min-width:0}
+ #view-overview>.stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #view-overview>.analytics-grid,#view-overview>.grid,#view-overview>.grid.two{grid-template-columns:minmax(0,1fr)!important}
+ #view-overview .panel,#view-overview .analytics-panel{width:100%;min-width:0}
+ .analytics-chart{width:100%;height:auto}
+ .plan-analytics{grid-template-columns:minmax(95px,.8fr) minmax(0,1fr)}
+ .topbar .crumb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media screen and (max-width:420px){
+ .content{padding-left:10px!important;padding-right:10px!important}
+ #view-overview>.stats{gap:9px!important}
+ #view-overview>.stats article{padding:13px 11px!important}
+ #view-overview>.stats article>strong{font-size:24px}
+ .topbar{padding:0 8px}
+ .topbar .right .pill{display:none}
+}
 </style>\n</head>
 <body class="auth-locked"><section class="login-gate visible" id="loginGate" aria-labelledby="loginTitle"><div class="login-card"><div class="login-brand"><span class="login-mark">N</span><span><strong>NEXORA</strong><small>INTELLIGENCE FOR EVERY WORKFORCE</small></span></div><p class="eyebrow">SECURE PLATFORM ACCESS</p><h1 id="loginTitle">Super Admin sign in</h1><p class="login-intro">Sign in with your authorized NEXORA platform administrator account to continue.</p><form id="loginGateForm" class="form-stack"><label>Administrator email<input id="loginGateEmail" type="email" autocomplete="username" required placeholder="admin@yourdomain.com"></label><label>Password<input id="loginGatePassword" type="password" autocomplete="current-password" required minlength="8" placeholder="Enter your password"></label><button class="btn primary" id="loginGateButton" type="submit">Sign in securely</button><p id="loginGateMessage" class="login-message" role="status" aria-live="polite">Initializing secure sign-in…</p><details class="login-debug" open><summary>Sign-in diagnostics</summary><pre id="loginDebugOutput" aria-live="polite">Waiting for Supabase initialization…</pre><small>If sign-in appears stuck, copy these messages when asking for help. Passwords and keys are never displayed here.</small></details></form><p class="login-security">Protected access · NEXORA HRM · Human Resources &amp; Workforce Management</p></div></section><aside class="sidebar" id="sidebar"><a class="brand" href="#"><b class="mark">N</b><span><strong>NEXORA</strong><small>INTELLIGENCE FOR EVERY WORKFORCE</small><em>Human Resources &amp; Workforce Management</em></span></a><p class="side-label">PLATFORM WORKSPACE</p><nav><button class="nav active" data-view="overview">▦　Overview</button><button class="nav" data-view="companies">▣　Companies <i id="companyCount">0</i></button><button class="nav" data-view="users">♙　Platform users</button><button class="nav" data-view="subscriptions">◇　Subscriptions</button><button class="nav" data-view="modules">▤　Modules & features</button><button class="nav" data-view="billing">＄　Billing controls</button><button class="nav" data-view="marketplace">⌕　Jobs marketplace</button><button class="nav" data-view="support">✉　Support centre</button><button class="nav" data-view="security">⬡　Security & access</button><button class="nav" data-view="activity">↗　Audit activity</button><button class="nav" data-view="settings">⚙　Platform settings</button></nav><p class="side-label">ECOSYSTEM PORTALS</p><div class="portal-shortcuts"><a href="public-site/index.html" target="_blank" rel="noopener">↗ Public jobs marketplace</a><a href="candidate-portal/index.html" target="_blank" rel="noopener">♙ Candidate portal</a><a href="consultancy-portal/index.html" target="_blank" rel="noopener">▣ HR consultancy portal</a><a href="company-portal/index.html" target="_blank" rel="noopener">▦ Employer workspace</a></div><div class="side-bottom"><div class="secure"><span></span><div><b>Workspace status</b><small id="connectionStatus">Demo mode</small></div></div><button class="nav" data-view="settings">⌘　Connect Supabase</button><p class="version">NEXORA HRM <span>v0.6 Platform control plane</span></p></div></aside>
 <main><header class="topbar"><button class="mobile" id="mobileMenu">☰</button><div class="crumb">Platform　/　<strong id="crumb">Overview</strong></div><div class="right"><button type="button" class="dash-search-trigger" id="dashSearchTrigger" aria-label="Search navigation"><span class="search-glyph">⌕</span><span class="search-label">Search</span><kbd>Ctrl K</kbd></button><span class="pill" id="mode">● DEMO</span><span class="session-email" id="topSessionEmail">Not signed in</span><span class="avatar" id="topAvatar">SA</span><button class="btn logout" id="topSignOutBtn" type="button">Sign out</button></div></header><div class="content"><div class="heading"><div><p class="eyebrow" id="dateLabel">PLATFORM CONTROL CENTRE</p><h1 id="title">Good morning, Administrator</h1><p class="muted" id="subtitle">A clear view of your NEXORA workforce-management platform.</p></div><div class="actions"><button class="btn light" id="export">Export companies</button><button class="btn primary" id="newCompany">＋ Register company</button></div></div>
