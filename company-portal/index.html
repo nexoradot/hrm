@@ -311,6 +311,41 @@ footer{padding-top:24px}
 }
 </style>
 
+
+<style id="nexora-employer-desktop-layout-redesign">
+/* Desktop layout redesign: tighter navigation, balanced dashboard grid, purposeful hierarchy. */
+@media (min-width:981px){
+ html body .shell{grid-template-columns:232px minmax(0,1fr)!important;background:#f5f7fc}
+ html body .sidebar{position:sticky!important;top:0;height:100vh;min-height:100vh;padding:24px 13px!important;gap:23px!important;box-shadow:8px 0 28px #101a330c}
+ html body .sidebar .brand{padding:0 8px}
+ html body .sidebar .nav button{min-height:44px;padding:10px 11px;font-size:13px;border-radius:10px}
+ html body .topbar{height:70px;padding:0 clamp(24px,2.5vw,40px);background:#fff}
+ html body .content{max-width:1600px;padding:28px clamp(24px,3vw,46px) 48px}
+ html body .org-panel{padding:14px 18px;margin-bottom:22px;display:grid;grid-template-columns:minmax(260px,1fr) minmax(200px,.8fr);align-items:end;gap:22px;border-radius:14px}
+ html body .org-panel label{min-width:0;font-size:11px}
+ html body .org-panel select{margin-top:7px;min-height:42px}
+ html body .org-status{padding-bottom:12px;font-size:11px}
+ html body .welcome{padding:28px 30px;margin-bottom:20px;align-items:center;min-height:174px;border-radius:20px;background:radial-gradient(circle at 90% 0%,#e4ddff 0,transparent 38%),linear-gradient(105deg,#fff 0%,#f7f5ff 70%,#efedff 100%);border:1px solid #e4e2fa}
+ html body .welcome h1{font-size:clamp(30px,2.6vw,40px);letter-spacing:-1.5px;margin:8px 0}
+ html body .welcome p{font-size:13px;max-width:670px;line-height:1.7}
+ html body .welcome>.primary{min-width:205px;min-height:48px}
+ html body .stats{gap:14px;margin-bottom:20px}
+ html body .stat{min-height:140px;padding:20px 19px;border-radius:17px;box-shadow:0 8px 25px #17234408}
+ html body .stat-top{font-size:12px}
+ html body .stat-value{font-size:34px;margin:13px 0 4px}
+ html body .stat-foot{font-size:11px;line-height:1.5}
+ html body .two-col{grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr);gap:18px;margin-bottom:18px}
+ html body .panel{padding:22px;border-radius:17px}
+ html body .panel-head{margin-bottom:18px}
+ html body .panel h2{font-size:15px}
+ html body .quick-grid{gap:10px}
+ html body .quick{min-height:76px;padding:13px;align-items:center}
+ html body .quick strong{font-size:12px}
+ html body .quick small{font-size:10px}
+ html body .note{padding:14px 17px;line-height:1.7}
+}
+</style>
+
 </head>
 <body data-portal="company">
 <div id="portalAuth" class="auth-wrap">
