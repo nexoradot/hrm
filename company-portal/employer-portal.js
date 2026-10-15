@@ -12,6 +12,8 @@
   };
   const config=window.NEXORA_CONFIG;
   let sb=null,user=null,orgs=[],jobsCache=[],candidateCache=[];
+  let signedInTask=null;
+  function runSignedInOnce(){if(signedInTask)return signedInTask;signedInTask=onSignedIn().finally(()=>{signedInTask=null;});return signedInTask;}
   const portal=document.body.dataset.portal;
   if(!window.supabase?.createClient||!config?.url||!config?.anonKey){message('Supabase client could not initialize. Check network access and public configuration.',true);return;}
   sb=window.supabase.createClient(config.url,config.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -20,7 +22,7 @@
   async function run(fn){try{await fn();}catch(e){console.error('NEXORA portal:',e);message(errText(e),true);}}
   async function getUser(){const r=await sb.auth.getUser();if(r.error)throw r.error;user=r.data.user||null;return user;}
   async function ensureProfile(fullName=''){if(!user)throw new Error('Sign in first.');const current=await sb.from('candidate_profiles').select('user_id').eq('user_id',user.id).maybeSingle();if(current.error)throw current.error;if(!current.data){const r=await sb.from('candidate_profiles').insert({user_id:user.id,full_name:fullName||user.user_metadata?.full_name||'',profile_visibility:'private'});if(r.error)throw r.error;}}
-  async function signIn(form){const f=new FormData(form);const r=await sb.auth.signInWithPassword({email:String(f.get('email')).trim(),password:String(f.get('password'))});if(r.error)throw r.error;user=r.data.user;message('Signed in. Loading your workspace…');await onSignedIn();}
+  async function signIn(form){const f=new FormData(form);const r=await sb.auth.signInWithPassword({email:String(f.get('email')).trim(),password:String(f.get('password'))});if(r.error)throw r.error;user=r.data.user;message('Signed in. Loading your workspace…');await runSignedInOnce();}
   async function signOut(){const r=await sb.auth.signOut();if(r.error)throw r.error;user=null;location.reload();}
   function showWorkspace(id){const auth=$('#portalAuth');if(auth)auth.hidden=true;const w=$(id);if(w)w.hidden=false;const b=$('#portalLogout');if(b)b.hidden=false;}
   async function onSignedIn(){if(!user)await getUser();if(portal!=='company'){const accepted=await sb.rpc('accept_pending_memberships');if(accepted.error)console.warn('NEXORA membership auto-accept unavailable; continuing with existing memberships:',accepted.error.message||accepted.error);}if(portal==='candidate'){await ensureProfile();showWorkspace('#candidateWorkspace');await Promise.all([loadProfile(),loadCandidateDocuments(),loadCandidateLinks(),loadApplications()]);message('Your candidate workspace is ready.');}else if(portal==='consultancy'){showWorkspace('#consultancyWorkspace');await Promise.all([loadConsultancyOrgs(),loadDiscovery(),loadConsultancyLinks(),loadConsultancyJobs()]);message('Consultancy workspace loaded. Candidate documents remain restricted until sharing is accepted.');}else if(portal==='company'){showWorkspace('#companyWorkspace');await loadEmployerOrgs();message('Employer workspace loaded.');}else if(portal==='public'){const b=$('#publicLogout');if(b)b.hidden=false;await ensureProfile(user.user_metadata?.full_name||'');message('Signed in. You can now apply for published jobs.');renderJobs();}}
@@ -50,5 +52,5 @@
   $('#jobSearch')?.addEventListener('input',()=>renderJobs());$('#jobCountry')?.addEventListener('change',()=>renderJobs());$('#jobType')?.addEventListener('change',()=>renderJobs());$('#jobWorkplace')?.addEventListener('change',()=>renderJobs());$('#modalApply')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.apply;if(id)run(()=>apply(id));$('#jobModal')?.classList.remove('open');});$('#consultancySearch')?.addEventListener('input',renderDiscovery);
   $('#year')&&($('#year').textContent=new Date().getFullYear());
   if(portal==='public')renderJobs();
-  sb.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user){setTimeout(()=>run(onSignedIn),0);}else{const w=$('#candidateWorkspace')||$('#consultancyWorkspace')||$('#companyWorkspace');if(w)w.hidden=true;const auth=$('#portalAuth');if(auth)auth.hidden=false;const b=$('#publicLogout');if(b)b.hidden=true;if(portal==='company')message('Connection ready. Sign in with your work email and password.');}});
+  sb.auth.onAuthStateChange((event,session)=>{user=session?.user||null;if(user){if(event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='USER_UPDATED'){setTimeout(()=>run(runSignedInOnce),0);}}else if(event==='SIGNED_OUT'){const w=$('#candidateWorkspace')||$('#consultancyWorkspace')||$('#companyWorkspace');if(w)w.hidden=true;const auth=$('#portalAuth');if(auth)auth.hidden=false;const b=$('#publicLogout');if(b)b.hidden=true;if(portal==='company')message('Connection ready. Sign in with your work email and password.');}});
 })();
