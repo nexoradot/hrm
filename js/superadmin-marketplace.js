@@ -21,16 +21,19 @@ function render(){
  $("#marketAuditRows").innerHTML=audit.length?audit.map(a=>'<tr><td>'+date(a.created_at)+'</td><td><code>'+esc(String(a.job_id).slice(0,8))+'</code></td><td>'+esc(a.action)+'</td><td>'+esc(a.previous_status||"—")+' → '+esc(a.new_status)+'</td><td class="ops-long">'+esc(a.reason||"—")+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No moderation actions recorded yet.</td></tr>';
 }
 async function init(){
+ if(initializing||sb)return;
+ initializing=true;
  if(!window.supabase?.createClient){say("Supabase library did not load. Reload this page after checking connectivity.",true);return}
  let cfg;try{cfg=JSON.parse(localStorage.getItem("nexora_supabase_public_config_v1")||"null")}catch{}
  if(!cfg?.url||!cfg?.key){say("Supabase connection settings are missing. Reopen the Super Admin dashboard and reconnect.",true);return}
- sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
- sb.auth.onAuthStateChange((event,session)=>{if(session&&!ready)setTimeout(()=>init().catch(e=>say("Marketplace startup failed: "+(e.message||e),true)),0);if(!session){ready=false;rows=[];audit=[];render();$("#marketLiveState").textContent="SIGN-IN REQUIRED";say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);}});
- const {data:{session},error:se}=await sb.auth.getSession();if(se)throw se;
- if(!session?.user){say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);$("#marketLiveState").textContent="SIGN-IN REQUIRED";return}
+ sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ authSubscription=sb.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"||!session){ready=false;rows=[];audit=[];render();$("#marketLiveState").textContent="SIGN-IN REQUIRED";say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);}});
+ const {data:{session:storedSession},error:se}=await window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}}).auth.getSession();if(se)throw se;
+ const session=storedSession;
+ if(!session?.user){say("Sign in with an active NEXORA platform administrator account to review vacancies.",true);$("#marketLiveState").textContent="SIGN-IN REQUIRED";initializing=false;return}
  const {data:pa,error:pe}=await sb.from("platform_admins").select("user_id,role,status").eq("user_id",session.user.id).maybeSingle();
  if(pe)throw pe;if(!pa||pa.role!=="platform_admin"||pa.status!=="active"){say("This account is not an active platform administrator. No moderation controls are enabled.",true);return}
- ready=true;$("#marketLiveState").textContent="LIVE DATABASE";say("Connected as authorized platform administrator. Vacancy changes are written to Supabase and logged.");
+ ready=true;initializing=false;$("#marketLiveState").textContent="LIVE DATABASE";say("Connected as authorized platform administrator. Vacancy changes are written to Supabase and logged.");
  await refresh();
 }
 async function refresh(){
@@ -59,5 +62,5 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-moderate]"
 $("#marketplaceRefresh")?.addEventListener("click",refresh);
 $("#marketSearch")?.addEventListener("input",render);$("#marketStatus")?.addEventListener("change",render);
 const view=$("#view-marketplace");if(view)new MutationObserver(()=>{if(view.classList.contains("active")&&ready)refresh()}).observe(view,{attributes:true,attributeFilter:["class"]});
-init().catch(e=>say("Marketplace startup failed: "+(e.message||e),true));
+init().catch(e=>{initializing=false;say("Marketplace startup failed: "+(e.message||e),true)});
 })();
