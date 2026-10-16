@@ -13,7 +13,7 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 - Jobs marketplace: https://nexoradot.github.io/hrm/public-site/jobs/
 - Candidate portal: https://nexoradot.github.io/hrm/candidate-portal/
 - Employer recruitment portal: https://nexoradot.github.io/hrm/company-portal/
-- HRM workspace (requires migrations 005–006 and authorised organisation access): https://nexoradot.github.io/hrm/company-portal/hrm.html
+- HRM workspace (requires migrations 005–006 and 016 plus authorised organisation access): https://nexoradot.github.io/hrm/company-portal/hrm.html
 - Employee self-service portal (requires employee account linking and migration 006): https://nexoradot.github.io/hrm/company-portal/my-portal.html
 - Consultancy portal: https://nexoradot.github.io/hrm/consultancy-portal/
 
@@ -24,7 +24,7 @@ NEXORA is being developed as a connected ecosystem that combines a public jobs m
 3. **Candidate portal:** candidate profile, application history, private candidate-document workflows and consent-based consultancy discovery/sharing.
 4. **Employer portal:** organization workspace, vacancy submission for moderation and applicant status management.
 5. **Consultancy portal:** candidate discovery for opted-in profiles, consent requests and approved document access.
-6. **Company HRM:** workforce command centre with employee/department management, leave, attendance, performance, payroll-period preparation, operational registers for recruitment tracking, onboarding/offboarding, shifts, benefits, compliance, remittance, approvals, billing, wage tracking and go-live tasks, plus CSV reporting. Migrations 005–006 require development-project application and tenant-isolation testing. Employee self-service, statutory payroll calculations, remittance submission, payment collection and external integrations are not yet production-ready.
+6. **Company HRM:** workforce command centre with employee/department management, salary setup, automatic employee-number suggestions, onboarding task creation, private employee-document upload/download, leave, attendance, performance, payroll-period preparation, operational registers and CSV reporting. Apply migrations 005–006 and 016 in a development project and test tenant isolation before production. Payroll line arithmetic is not a statutory tax engine; PAYE, NSSF, SHIF and housing levy still require validated calculations and review. No money is sent and no statutory returns are filed.
 7. **Super Admin:** central organization, user, verification, moderation and platform governance functions, subject to the deployed code and database policies.
 
 ## Technology and architecture
