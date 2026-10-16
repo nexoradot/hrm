@@ -306,7 +306,7 @@ function renderOverview(){
  $('#statOnboarding').textContent=openOnboarding.length;
  $('#statDocuments').textContent=documentAttention.length;
  $('#statPayroll').textContent=payrollAttention.length;
- $('#statPriorities').textContent=pending.length+documentAttention.length+payrollAttention.length;
+ 
  const latest=[...employees].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))).slice(0,5);
  $('#recentEmployees').innerHTML=table(['Employee','Department','Status'],latest.map(e=>'<tr><td>'+person(e)+'</td><td>'+esc(departments.find(d=>d.id===e.department_id)?.name||'—')+'</td><td>'+statusPill(e.employment_status)+'</td></tr>'));
  const deptCounts=departments.filter(d=>d.is_active!==false).map(d=>({name:d.name,count:employees.filter(e=>e.department_id===d.id&&e.employment_status!=='terminated').length})).sort((a,b)=>b.count-a.count).slice(0,6);
@@ -337,6 +337,7 @@ function renderOverview(){
  if(payrollAttention.length)actions.push({icon:'↗',tone:'violet',title:payrollAttention.length+' payroll period'+(payrollAttention.length===1?'':'s')+' not finalised',detail:'Review payroll calculations, approvals and payment status',label:'Open payroll',go:'payroll'});
  if(!actions.length)actions.push({icon:'✓',tone:'',title:'No urgent actions identified',detail:'Your current HR records have no flagged items',label:'View overview',go:'overview'});
  $('#actionCount').textContent=actions.length+' item'+(actions.length===1?'':'s');
+ $('#statPriorities').textContent=actions.length;
  $('#hrActionCentre').innerHTML=actions.slice(0,5).map(a=>'<div class="action-item"><span class="action-mark '+a.tone+'">'+a.icon+'</span><div class="action-copy"><strong>'+esc(a.title)+'</strong><small>'+esc(a.detail)+'</small></div><button class="btn ghost" data-goto="'+a.go+'">'+esc(a.label)+'</button></div>').join('');
  const events=[];
  const addEvents=(items,type,icon,titleFn,dateFn)=>items.forEach(item=>{const when=dateFn(item);if(when)events.push({type,icon,title:titleFn(item),date:when});});
