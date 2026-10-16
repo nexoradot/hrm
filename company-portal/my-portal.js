@@ -23,7 +23,22 @@ function render(){
 }
 async function load(){
  const p=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();if(p.error){if(p.error.code==='PGRST205'||/could not find the table .*hr_employees.*schema cache/i.test(p.error.message||'')){throw new Error('Employee portal setup is incomplete: Supabase cannot find public.hr_employees. Ask the platform administrator to compare the live database with supabase/migrations/005_hrm_workforce_core.sql, safely apply any missing schema after backup, and refresh the Supabase API schema cache. This is a database setup issue, not a password problem.')}throw p.error;}
- if(!p.data){employee=null;$('#authSection').hidden=false;$('#appSection').hidden=true;msg('Your account is signed in, but HR has not linked it to an employee record yet. Ask your HR administrator to set the employee record’s user account.',true);return}
+ if(!p.data){
+  // Attempt a safe self-link through the database RPC. The server verifies the
+  // confirmed Auth email, active employee membership, organisation and uniqueness.
+  const linked=await db.rpc('link_my_hr_employee_by_email');
+  if(linked.error && !/function .*link_my_hr_employee_by_email.*does not exist|schema cache/i.test(linked.error.message||''))throw linked.error;
+  if(!linked.error && linked.data){
+    const retry=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();
+    if(retry.error)throw retry.error;
+    if(retry.data)p.data=retry.data;
+  }
+  if(!p.data){
+    employee=null;$('#authSection').hidden=false;$('#appSection').hidden=true;
+    msg(linked.error?'Your account is signed in, but employee account linking is not enabled in the database yet. The platform administrator must apply migration 017_employee_self_service_account_link.sql in Supabase, then sign in again.':'Your account is signed in, but no unique employee record matched your confirmed email and active employee membership. Ask HR to verify your work email, employee record and employee membership.',true);
+    return
+  }
+}
  employee=p.data;
  const [d,l,a,r,pi]=await Promise.all([
   db.from('hr_departments').select('name').eq('id',employee.department_id||'00000000-0000-0000-0000-000000000000').maybeSingle(),
