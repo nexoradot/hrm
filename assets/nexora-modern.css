@@ -1,0 +1,59 @@
+/* NEXORA Design System — modern workforce experience */
+:root{--nx-ink:#17233b;--nx-muted:#748198;--nx-line:#e5eaf3;--nx-paper:#fff;--nx-bg:#f4f6fb;--nx-primary:#5b54d6;--nx-primary-dark:#4038b7;--nx-cyan:#45d3d8;--nx-shadow:0 14px 40px rgba(25,37,74,.07);--nx-radius:18px}
+html{scroll-behavior:smooth}body{color:var(--nx-ink);-webkit-font-smoothing:antialiased}
+button,a,input,select,textarea{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+:where(button,.btn,[type=button],[type=submit]){font-weight:700}
+:where(input,select,textarea){border-radius:11px!important;outline:none}
+:where(input,select,textarea):focus{border-color:#8e89f1!important;box-shadow:0 0 0 4px rgba(91,84,214,.12)!important}
+:where(.card,.panel,.stat,.stat-card,.metric-card,.feature-card,.job-card,.workspace-card,.section-card){border-radius:var(--nx-radius)!important;box-shadow:var(--nx-shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+:where(.card,.feature-card,.job-card,.workspace-card):hover{box-shadow:0 18px 46px rgba(25,37,74,.11)}
+:where(.btn,button.primary,.primary-btn){border-radius:11px!important}
+:where(table){border-collapse:separate!important;border-spacing:0}
+:where(th){letter-spacing:.075em}
+:where(td,th){padding-top:13px;padding-bottom:13px}
+:where(tbody tr){transition:background .15s ease}
+:where(tbody tr:hover){background:#f7f8ff}
+:where(.badge,.pill,.status,.tag){border-radius:999px}
+:where(.topbar,header,.site-header){backdrop-filter:blur(16px)}
+:where(.nav button,.nav a,.sidebar a,.sidebar button){transition:background .18s ease,color .18s ease,transform .18s ease}
+:where(.nav button:hover,.nav a:hover,.sidebar a:hover,.sidebar button:hover){transform:translateX(2px)}
+::selection{background:rgba(91,84,214,.18);color:var(--nx-ink)}
+:focus-visible{outline:3px solid rgba(91,84,214,.45);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* Employer workspace */
+body:has(.shell aside){background:radial-gradient(ellipse at 82% -10%,#e9eaff 0,transparent 30%),var(--nx-bg)}
+.shell:has(aside){grid-template-columns:264px minmax(0,1fr)}
+.shell aside{box-shadow:8px 0 30px rgba(14,24,49,.08)}
+.shell aside .brand-mark{box-shadow:0 8px 22px rgba(69,211,216,.22)}
+.shell aside .nav button,.shell aside .nav a.employee-portal-nav{border-radius:12px;padding:12px}
+.shell aside .nav button.active{background:linear-gradient(100deg,rgba(91,84,214,.32),rgba(69,211,216,.08));box-shadow:inset 3px 0 var(--nx-cyan)}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);box-shadow:0 4px 18px rgba(20,30,55,.025)}
+.content{padding-top:32px}
+.welcome{padding:24px 26px;border:1px solid rgba(91,84,214,.12);border-radius:22px;background:linear-gradient(115deg,#fff 0%,#f3f3ff 68%,#eafafa 100%);box-shadow:var(--nx-shadow)}
+.welcome h2{letter-spacing:-.9px}
+.stats{gap:16px}
+.stats>*,.stat-card,.metric-card{border:1px solid var(--nx-line);border-radius:17px!important;background:linear-gradient(145deg,#fff,#fbfcff)}
+.btn.primary{background:linear-gradient(120deg,var(--nx-primary),#7770ec);box-shadow:0 8px 18px rgba(91,84,214,.2)}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(91,84,214,.25)}
+/* Employee self-service */
+body:has(.hero){background:radial-gradient(ellipse at 90% 0%,#ecebff 0,transparent 32%),var(--nx-bg)}
+.shell:has(.hero){max-width:1380px}
+.hero{position:relative;overflow:hidden;border-radius:24px!important;background:linear-gradient(115deg,#171c3d 0%,#373b86 60%,#147e8a 120%);box-shadow:0 18px 44px rgba(29,38,91,.18)}
+.hero:after{content:"";position:absolute;width:250px;height:250px;border:1px solid #ffffff20;border-radius:50%;right:-60px;top:-100px;box-shadow:0 0 0 35px #ffffff08,0 0 0 70px #ffffff06;pointer-events:none}
+.topbar{box-shadow:0 8px 24px rgba(23,35,59,.035)}
+.nav button{border-radius:12px!important}
+.nav button.active{background:linear-gradient(120deg,#272d60,#5b54d6)!important;box-shadow:0 7px 18px #5b54d62b}
+.card,.panel{border-radius:18px!important;box-shadow:0 10px 30px rgba(23,35,59,.045)}
+.card strong{letter-spacing:-1.2px}
+/* Public, candidate and consultancy experiences */
+.wrap{max-width:1240px}
+.top{box-shadow:0 6px 22px rgba(23,35,59,.04)}
+.brand-logo{filter:saturate(1.08)}
+.links a{font-weight:650}
+.btn,.button{box-shadow:0 6px 15px rgba(91,84,214,.12)}
+.hero,.hero-section,.candidate-hero{border-radius:24px}
+:where(.feature-card,.category-link,.trust-item,.job-card,.panel,.stat-card){border-color:rgba(222,227,241,.9)}
+.category-link{border-radius:16px;box-shadow:0 5px 16px rgba(23,35,59,.025)}
+.category-link:hover{box-shadow:0 12px 26px rgba(91,84,214,.10)}
+@media(max-width:900px){.shell:has(aside){grid-template-columns:1fr}.shell aside{position:relative}.topbar{padding:14px 18px}.content{padding:20px 16px 36px}.welcome{padding:20px;align-items:flex-start;flex-direction:column}}
+@media(max-width:640px){.shell:has(.hero){padding:12px}.hero{padding:22px!important}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.card,.panel{padding:14px}.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
