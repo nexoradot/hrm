@@ -306,6 +306,7 @@ function renderOverview(){
  $('#statOnboarding').textContent=openOnboarding.length;
  $('#statDocuments').textContent=documentAttention.length;
  $('#statPayroll').textContent=payrollAttention.length;
+ $('#statPriorities').textContent=pending.length+documentAttention.length+payrollAttention.length;
  const latest=[...employees].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))).slice(0,5);
  $('#recentEmployees').innerHTML=table(['Employee','Department','Status'],latest.map(e=>'<tr><td>'+person(e)+'</td><td>'+esc(departments.find(d=>d.id===e.department_id)?.name||'—')+'</td><td>'+statusPill(e.employment_status)+'</td></tr>'));
  const deptCounts=departments.filter(d=>d.is_active!==false).map(d=>({name:d.name,count:employees.filter(e=>e.department_id===d.id&&e.employment_status!=='terminated').length})).sort((a,b)=>b.count-a.count).slice(0,6);
