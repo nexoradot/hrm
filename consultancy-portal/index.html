@@ -49,5 +49,24 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
  :where(.table-wrap,.table-container,.table-responsive){overflow:visible!important}
  :where(.table-wrap,.table-container,.table-responsive) table{min-width:0!important;width:100%!important}
 }
-</style>\n<link rel="stylesheet" href="../assets/nexora-modern.css?v=20261016-ultra1">
+</style>
+<link rel="stylesheet" href="../assets/nexora-modern.css?v=20261016-portal-consistency2">
+<style id="nexora-consultancy-polish">
+body[data-portal="consultancy"]{background:radial-gradient(ellipse at 80% 0%,#ecebff 0,transparent 38%),#f4f6fc;color:#17233b}
+body[data-portal="consultancy"] header{position:sticky;top:0;z-index:10;background:rgba(15,25,51,.96);backdrop-filter:blur(16px);box-shadow:0 8px 26px #101b3018}
+body[data-portal="consultancy"] header .wrap{min-height:42px}
+body[data-portal="consultancy"] main.wrap{padding:28px 0 52px}
+body[data-portal="consultancy"] main>section:first-child{padding:30px 32px;border-radius:22px;border:1px solid #e5e8f7;background:linear-gradient(120deg,#fff 0%,#f2f1ff 70%,#eafafa 100%);box-shadow:0 18px 48px #202b570b}
+body[data-portal="consultancy"] h1{font-size:clamp(28px,3vw,38px);letter-spacing:-1.2px;color:#14203d}
+body[data-portal="consultancy"] #portalMessage{display:block;padding:12px 14px;border-radius:12px;background:#f0efff;color:#5146c7;font-size:13px}
+body[data-portal="consultancy"] #consultancyWorkspace>.grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:16px}
+body[data-portal="consultancy"] #consultancyWorkspace .panel{padding:22px;border-radius:18px;border:1px solid #e4e9f4;box-shadow:0 12px 32px #1a2c5609;min-width:0}
+body[data-portal="consultancy"] #consultancyWorkspace .panel:first-child{grid-row:span 2}
+body[data-portal="consultancy"] h2{font-size:19px;letter-spacing:-.5px}
+body[data-portal="consultancy"] input{min-height:44px;background:#fbfcff}
+body[data-portal="consultancy"] button{min-height:42px;box-shadow:0 7px 17px #5c53d822}
+body[data-portal="consultancy"] .light{box-shadow:none;border:1px solid #e4e2ff}
+body[data-portal="consultancy"] #consultancyCandidates,body[data-portal="consultancy"] #consultancyLinks,body[data-portal="consultancy"] #consultancyDocuments,body[data-portal="consultancy"] #consultancyJobs{overflow-wrap:anywhere}
+@media(max-width:760px){body[data-portal="consultancy"] main.wrap{padding:18px 0 32px}body[data-portal="consultancy"] main>section:first-child{padding:22px}body[data-portal="consultancy"] #consultancyWorkspace>.grid{grid-template-columns:minmax(0,1fr)}body[data-portal="consultancy"] #consultancyWorkspace .panel:first-child{grid-row:auto}}
+</style>
 </head><body data-portal="consultancy"><header><div class="wrap"><a class="brand" href="../public-site/">NEXORA · CONSULTANCY</a><button id="portalLogout" class="light" hidden>Sign out</button></div></header><main class="wrap"><section class="panel"><h1>Talent insight. Responsible matching.</h1><p class="muted">Review eligible candidates, match talent to vacancies and respect candidate consent at every step.</p><p id="portalMessage" role="status">Sign in with an authorised consultancy account.</p><div id="portalAuth"><form id="portalLogin"><div class="grid"><label>Email<input name="email" type="email" required></label><label>Password<input name="password" type="password" required></label></div><button>Sign in</button></form></div></section><section id="consultancyWorkspace" hidden><div class="grid"><section class="panel"><h2>Candidate discovery</h2><input id="consultancySearch" placeholder="Search approved candidate profiles"><button id="consultancyRefresh" class="light" style="margin-top:10px">Refresh candidates</button><div id="consultancyCandidates"></div></section><section class="panel"><h2>Candidate sharing links</h2><p class="muted">Candidate consent is required before documents become available.</p><div id="consultancyLinks"></div><div id="consultancyDocuments"></div></section><section class="panel"><h2>Published jobs</h2><div id="consultancyJobs"></div></section></div></section></main></body></html>
