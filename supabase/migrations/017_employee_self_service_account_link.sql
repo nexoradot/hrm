@@ -27,8 +27,8 @@ begin
     raise exception 'Confirm your sign-in email before linking your employee profile.';
   end if;
 
-  select count(*), min(e.id)
-    into v_count, v_employee_id
+  select count(*)
+    into v_count
   from public.hr_employees e
   join public.organization_members m
     on m.organization_id = e.organization_id
@@ -45,6 +45,18 @@ begin
   if v_count > 1 then
     raise exception 'More than one employee record matches this email. Ask HR to correct duplicate records before signing in.';
   end if;
+
+  select e.id into v_employee_id
+  from public.hr_employees e
+  join public.organization_members m
+    on m.organization_id = e.organization_id
+   and m.user_id = auth.uid()
+   and m.status = 'active'
+   and m.role::text = 'employee'
+  where lower(trim(e.email)) = v_email
+    and (e.user_id is null or e.user_id = auth.uid())
+    and e.employment_status not in ('terminated')
+  limit 1;
 
   update public.hr_employees
      set user_id = auth.uid(), updated_at = now()
