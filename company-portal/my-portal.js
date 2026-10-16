@@ -35,7 +35,7 @@ async function load(){
   }
   if(!p.data){
     employee=null;$('#authSection').hidden=false;$('#appSection').hidden=true;
-    msg(linked.error?'Your account is signed in, but employee account linking is not enabled in the database yet. The platform administrator must apply migration 017_employee_self_service_account_link.sql in Supabase, then sign in again.':'Your account is signed in, but no unique employee record matched your confirmed email and active employee membership. Ask HR to verify your work email, employee record and employee membership.',true);
+    msg(linked.error?'Your account is signed in, but employee account linking is not enabled in the database yet. The platform administrator must apply migration 017_employee_self_service_account_link.sql in Supabase, then sign in again.':'You are signed in successfully, but NEXORA could not find an employee record linked to this account. The HR administrator must first add or verify your employee record in the HR workspace and use the exact same confirmed email address as this sign-in. If the record already exists, HR must check for a spelling difference, duplicate employee records, or a link to another account. After HR corrects it, sign out and sign in again. For security, this portal cannot create or guess your employment record.',true);
     return
   }
 }
