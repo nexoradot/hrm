@@ -1,11 +1,25 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let db=null,user=null,employee=null,leaves=[],attendance=[],reviews=[],payItems=[],periods=[];
+let db=null,user=null,employee=null,leaves=[],attendance=[],reviews=[],payItems=[],periods=[],employeeDocuments=[],announcements=[];
 function msg(text,error=false){const el=$('#message');el.textContent=text;el.hidden=!text;el.classList.toggle('error',error)}
 function pill(v){const s=String(v||'pending').toLowerCase();return '<span class="pill '+esc(s)+'">'+esc(s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))+'</span>'}
 function table(headers,rows){return rows.length?'<table><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':'<div class="empty">No records available yet.</div>'}
 function money(v){return new Intl.NumberFormat('en-KE',{style:'currency',currency:'KES',maximumFractionDigits:2}).format(Number(v)||0)}
 function tab(name){document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id==='tab-'+name));document.querySelectorAll('#portalNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===name))}
+function renderEmployeeDocuments(){
+ const target=$('#employeeDocumentsTable');if(!target)return;
+ target.innerHTML=table(['Document','Type','Uploaded','Verification','Action'],employeeDocuments.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Document')+'</strong><br><small>'+esc(d.original_file_name||'')+'</small></td><td>'+esc(String(d.document_type||'other').replace(/_/g,' '))+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td>'+pill(d.verification_status)+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">Open securely</button></td></tr>'));
+}
+function renderAnnouncements(){
+ const target=$('#employeeAnnouncements');if(!target)return;
+ target.innerHTML=announcements.length?announcements.map(a=>'<article class="panel" style="margin-bottom:12px"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><h2>'+esc(a.title||'Company update')+'</h2><small>'+esc(a.publish_at?new Date(a.publish_at).toLocaleDateString('en-KE'):new Date(a.created_at).toLocaleDateString('en-KE'))+'</small></div><div style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(a.body||'')+'</div></article>').join(''):'<div class="empty">There are no published announcements for employees yet.</div>';
+}
+async function openEmployeeDocument(id){
+ const doc=employeeDocuments.find(x=>x.id===id);if(!doc)throw new Error('Document not found. Refresh and try again.');
+ const result=await db.storage.from('nexora-hr-documents').createSignedUrl(doc.storage_path,60,{download:doc.original_file_name||true});
+ if(result.error)throw result.error;
+ const link=document.createElement('a');link.href=result.data.signedUrl;link.target='_blank';link.rel='noopener noreferrer';link.click();
+}
 function renderEmployeeCharts(){const ah=$('#employeeAttendanceChart'),lh=$('#employeeLeaveChart');if(!ah||!lh)return;const now=new Date(),days=[];for(let i=6;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i),key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');days.push({key,label:d.toLocaleDateString('en-KE',{weekday:'short'}),count:attendance.filter(a=>String(a.work_date||'').slice(0,10)===key).length})}const max=Math.max(1,...days.map(d=>d.count)),W=520,H=185,L=24,R=12,T=14,B=29,pw=W-L-R,ph=H-T-B,bw=28,gap=(pw-7*bw)/6;const bars=days.map((d,i)=>{const height=d.count/max*ph,x=L+i*(bw+gap),y=T+ph-height;return '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+Math.max(3,height)+'" rx="6" fill="'+(i===6?'#6d63dc':'#22b8c7')+'" opacity="'+(d.count?'.95':'.22')+'"><title>'+d.label+': '+d.count+' attendance records</title></rect><text x="'+(x+bw/2)+'" y="'+(H-9)+'" text-anchor="middle">'+d.label+'</text>'}).join('');ah.innerHTML=attendance.length?'<svg class="mini-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Attendance records over the last seven days"><line x1="'+L+'" y1="'+(T+ph)+'" x2="'+(W-R)+'" y2="'+(T+ph)+'" stroke="#e9eef5"/>'+bars+'</svg>':'<div class="mini-chart-empty">Your attendance chart will appear after your organisation records attendance.</div>';const keys=['approved','pending','other'],counts=[leaves.filter(l=>l.status==='approved').length,leaves.filter(l=>l.status==='pending').length,leaves.filter(l=>!['approved','pending'].includes(String(l.status||'').toLowerCase())).length],sum=counts.reduce((a,b)=>a+b,0);if(!sum){lh.innerHTML='<div class="mini-chart-empty">Your leave summary will appear when you have leave requests.</div>';return}const colors=['#22b8c7','#6d63dc','#d6deea'],circ=2*Math.PI*43;let off=0;const rings=counts.map((n,i)=>{const d=n/sum*circ,out='<circle cx="65" cy="65" r="43" fill="none" stroke="'+colors[i]+'" stroke-width="14" stroke-dasharray="'+d+' '+(circ-d)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 65 65)"/>';off+=d;return out}).join('');lh.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:18px;min-height:155px"><svg class="mini-chart" style="width:min(48%,165px)" viewBox="0 0 130 130" role="img" aria-label="Leave request statuses"><circle cx="65" cy="65" r="43" fill="none" stroke="#edf1f7" stroke-width="14"/>'+rings+'<text x="65" y="61" text-anchor="middle" style="font-size:23px;font-weight:800;fill:#17243b">'+sum+'</text><text x="65" y="77" text-anchor="middle" style="font-size:9px">REQUESTS</text></svg><div style="display:grid;gap:13px;font-size:11px;color:#748197">'+keys.map((k,i)=>'<div style="display:flex;align-items:center;gap:8px"><i style="width:9px;height:9px;border-radius:3px;background:'+colors[i]+';flex-shrink:0"></i><span>'+({approved:'Approved',pending:'Pending',other:'Other statuses'}[k])+'</span><b style="margin-left:auto;color:#17243b">'+counts[i]+'</b></div>').join('')+'</div></div>'}
 function render(){
  $('#welcome').textContent='Welcome, '+(employee.full_name||user.email||'employee');
@@ -40,19 +54,21 @@ async function load(){
   }
 }
  employee=p.data;
- const [d,l,a,r,pi]=await Promise.all([
+ const [d,l,a,r,pi,docs,news]=await Promise.all([
   db.from('hr_departments').select('name').eq('id',employee.department_id||'00000000-0000-0000-0000-000000000000').maybeSingle(),
   db.from('hr_leave_requests').select('*').eq('employee_id',employee.id).order('created_at',{ascending:false}),
   db.from('hr_attendance_records').select('*').eq('employee_id',employee.id).order('work_date',{ascending:false}).limit(100),
   db.from('hr_performance_reviews').select('*').eq('employee_id',employee.id).order('review_date',{ascending:false}),
-  db.from('hr_payroll_items').select('*').eq('employee_id',employee.id).order('created_at',{ascending:false})
+  db.from('hr_payroll_items').select('*').eq('employee_id',employee.id).order('created_at',{ascending:false}),
+  db.from('hr_employee_documents').select('id,organization_id,employee_id,document_type,document_name,storage_path,original_file_name,verification_status,created_at').eq('employee_id',employee.id).eq('organization_id',employee.organization_id).order('created_at',{ascending:false}),
+  db.from('platform_announcements').select('id,title,body,publish_at,created_at').in('audience',['all','employees']).eq('status','published').or('publish_at.is.null,publish_at.lte.'+new Date().toISOString()).order('publish_at',{ascending:false,nullsFirst:false})
  ]);
- for(const x of [d,l,a,r,pi])if(x.error)throw x.error;
+ for(const x of [d,l,a,r,pi,docs,news])if(x.error)throw x.error;
  employee.department_name=d.data?.name||'';
- leaves=l.data||[];attendance=a.data||[];reviews=r.data||[];payItems=pi.data||[];
+ leaves=l.data||[];attendance=a.data||[];reviews=r.data||[];payItems=pi.data||[];employeeDocuments=docs.data||[];announcements=news.data||[];
  const ids=[...new Set(payItems.map(x=>x.payroll_period_id))];
  if(ids.length){const pr=await db.from('hr_payroll_periods').select('id,period_name,period_start,period_end,payment_date').in('id',ids);if(pr.error)throw pr.error;periods=pr.data||[]}else periods=[];
- $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();msg('');
+ $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderAnnouncements();msg('');
 }
 async function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
@@ -60,6 +76,7 @@ async function init(){
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),b=e.currentTarget.querySelector('button');b.disabled=true;msg('Signing in…');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed.',true)}finally{b.disabled=false}});
  $('#logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();user=null;employee=null;$('#appSection').hidden=true;$('#authSection').hidden=false;$('#logoutBtn').hidden=true;msg('You have signed out.')});
  $('#portalNav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)tab(b.dataset.tab)});
+ document.addEventListener('click',async e=>{const b=e.target.closest('[data-doc-download]');if(!b)return;b.disabled=true;const label=b.textContent;b.textContent='Opening…';try{await openEmployeeDocument(b.dataset.docDownload)}catch(err){msg(err.message||'Could not open this document. Check that the employee document access migration has been applied.',true)}finally{b.disabled=false;b.textContent=label}});
  $('#leaveForm').addEventListener('submit',async e=>{
   e.preventDefault();if(!employee||!user)return;
   const form=e.currentTarget;if(!form.reportValidity())return;
