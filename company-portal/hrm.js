@@ -24,7 +24,7 @@ const infoModules={
  api_docs:{title:'API documentation',eyebrow:'DEVELOPER RESOURCES',description:'Integration guidance for approved NEXORA developers. No public API endpoint or API key is created by this page.',cards:[['Authentication','Use Supabase Auth and short-lived user sessions. Never place service-role keys in browser code.'],['Tenant isolation','Every data operation must be scoped to the organisation and protected by reviewed Row Level Security policies.'],['Webhooks & integrations','Webhook signing, external API credentials, rate limiting and production API contracts must be implemented before integrations are enabled.']]},
  help_center:{title:'Help center',eyebrow:'SUPPORT & GUIDANCE',description:'Quick operational guidance for administrators using NEXORA HRM.',cards:[['Getting started','Confirm the organisation is active, add departments, create employee records and assign the correct employment status.'],['Leave & attendance','Record requests and attendance against the correct employee and date. Review pending decisions regularly.'],['Payroll safety','Do not treat draft payroll periods or tracker amounts as calculated wages. Validate statutory rules and approvals before paying salaries.'],['Data security','Use named accounts, least-privilege roles and approved access. Never upload sensitive staff data until storage and retention controls are verified.']]}
 };
-const titles={overview:'Overview',employees:'Employees',departments:'Departments',leave:'Leave requests',attendance:'Attendance',performance:'Performance',payroll:'Payroll',...Object.fromEntries(Object.entries(operationModules).map(([k,v])=>[k,v.title])),reports:'Reports & exports',my_portal:'My Portal',api_docs:'API docs',help_center:'Help center'};
+const titles={overview:'Overview',employees:'Employees',employee_invitations:'Employee invitations',registration_review:'Employee registration review',employee_registration:'Employee registration form',departments:'Departments',leave:'Leave requests',attendance:'Attendance',performance:'Performance',payroll:'Payroll',...Object.fromEntries(Object.entries(operationModules).map(([k,v])=>[k,v.title])),reports:'Reports & exports',my_portal:'My Portal',api_docs:'API docs',help_center:'Help center'};
 const today=()=>new Date().toLocaleDateString('en-CA');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nice=v=>String(v||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
@@ -38,7 +38,7 @@ function empty(text){return '<div class="empty"><b>'+esc(text)+'</b><span>No rec
 function table(headers,rows){if(!rows.length)return empty('Nothing here yet');return '<table><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
 function person(e){return '<div class="person"><span class="person-avatar">'+esc(initials(e.full_name))+'</span><span><b>'+esc(e.full_name)+'</b><small>'+esc(e.email||e.employee_number||'No contact details')+'</small></span></div>'}
 function canManage(){return ['owner','hr_manager','platform_admin'].includes(role)}
-function section(name){if(!titles[name])return;$$('.section').forEach(x=>x.classList.toggle('active',x.id==='section-'+name));$$('#mainNav button').forEach(x=>x.classList.toggle('active',x.dataset.section===name));$('#pageTitle').textContent=titles[name];if(name==='employees')renderEmployees();if(name==='departments')renderDepartments();if(name==='leave')renderLeave();if(name==='attendance')renderAttendance();if(name==='performance')renderReviews();if(name==='payroll')renderPayroll();if(name==='settings')loadSettings().catch(e=>notify(e.message||'Could not load workspace settings.',true));else if(operationModules[name])renderOperations(name);if(name==='reports')renderReports();if(infoModules[name])renderInfo(name);window.scrollTo({top:0,behavior:'smooth'})}
+function section(name){if(!titles[name])return;$('.section').forEach(x=>x.classList.toggle('active',x.id==='section-'+name));$('#mainNav button').forEach(x=>x.classList.toggle('active',x.dataset.section===name));$('#pageTitle').textContent=titles[name];if(name==='employees')renderEmployees();if(name==='departments')renderDepartments();if(name==='leave')renderLeave();if(name==='attendance')renderAttendance();if(name==='performance')renderReviews();if(name==='payroll')renderPayroll();if(name==='settings')loadSettings().catch(e=>notify(e.message||'Could not load workspace settings.',true));else if(operationModules[name])renderOperations(name);if(name==='reports')renderReports();if(infoModules[name])renderInfo(name);activateEmbeddedModule(name);window.scrollTo({top:0,behavior:'smooth'})}
 function formField(label,name,type='text',required=false,options=null,wide=false){let input=options?'<select name="'+name+'" '+(required?'required':'')+'>'+options.map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>':'<input name="'+name+'" type="'+type+'" '+(required?'required':'')+(type==='number'?' min="0" step="any"':'')+'>';return '<label class="field '+(wide?'wide':'')+'">'+label+input+'</label>'}
 function openModal(title,fields,submitLabel,callback){
 const host=$('#modalHost');
@@ -126,7 +126,38 @@ function ensureExpansionSections(){
  const moduleHtml=Object.entries(operationModules).map(([key,cfg])=>makeModule(key,cfg)).join('').replace('<section id="section-documents" class="section">','<section id="section-documents" class="section">'+docPanel);
  const reports='<section id="section-reports" class="section"><div class="welcome"><div><div class="eyebrow">MANAGEMENT INFORMATION</div><h2>Reports & exports</h2><div class="module-description">Live summaries from records currently available to this organisation. Export files contain only the data shown in this authorised workspace.</div></div><button class="btn primary" data-action="export-employees">↓ Export employees CSV</button></div><div id="reportMetrics" class="module-grid"></div><div class="panel"><div class="panel-head"><div><h3>Module register summary</h3><p>Records and attention counts by module</p></div><button class="btn ghost" data-action="export-operations">Export module records</button></div><div id="reportTable" class="table-wrap"></div></div></section>';
  const infos=Object.entries(infoModules).map(([key,cfg])=>'<section id="section-'+key+'" class="section"><div class="welcome"><div><div class="eyebrow">'+esc(cfg.eyebrow)+'</div><h2>'+esc(cfg.title)+'</h2><div class="module-description">'+esc(cfg.description)+'</div></div></div><div id="info-'+key+'" class="docs-grid"></div></section>').join('');
- const footer=host.querySelector(':scope > .footer-note');if(footer)footer.insertAdjacentHTML('beforebegin',moduleHtml+reports+infos);else host.insertAdjacentHTML('beforeend',moduleHtml+reports+infos);
+ const embeddedConfigs=[['employee_invitations','Employee invitations','hr-employee-invitations.html','Create secure, single-use onboarding invitations and manage pending invitations.'],['registration_review','Employee registration review','employee-registration-review.html','Review confidential onboarding submissions, uploaded documents and approval decisions.'],['employee_registration','Employee registration form','employee-registration.html','Open the employee onboarding form inside this workspace without leaving the dashboard.']];
+ const embedded=embeddedConfigs.map(([key,label,src,description])=>'<section id="section-'+key+'" class="section"><div class="welcome"><div><div class="eyebrow">WORKSPACE MODULE</div><h2>'+esc(label)+'</h2><div class="module-description">'+esc(description)+'</div></div><button type="button" class="btn ghost" data-goto="overview">← Back to dashboard</button></div><div class="panel embedded-module-panel"><iframe class="embedded-module-frame" id="frame-'+key+'" title="'+esc(label)+'" data-src="'+esc(src)+'" loading="lazy" referrerpolicy="same-origin" style="display:block;width:100%;min-height:900px;border:0;border-radius:10px;background:#fff"></iframe></div></section>').join('');
+ const footer=host.querySelector(':scope > .footer-note');if(footer)footer.insertAdjacentHTML('beforebegin',moduleHtml+reports+infos+embedded);else host.insertAdjacentHTML('beforeend',moduleHtml+reports+infos+embedded);
+}
+function activateEmbeddedModule(name){
+ const sources={employee_invitations:'hr-employee-invitations.html',registration_review:'employee-registration-review.html',employee_registration:'employee-registration.html'};
+ const frame=$('#frame-'+name);if(!frame||!sources[name]||frame.dataset.started==='true')return;
+ frame.dataset.started='true';
+ frame.addEventListener('load',()=>{
+  try{
+   const doc=frame.contentDocument;if(!doc)return;
+   if(!doc.getElementById('nexora-embedded-workspace-style')){
+    const style=doc.createElement('style');style.id='nexora-embedded-workspace-style';
+    style.textContent='html,body{margin:0!important;min-height:0!important;background:#fff!important}body{padding:0!important}.top,header.top,body>header{display:none!important}.wrap{max-width:none!important;margin:0!important;padding:12px!important}.hero{margin-top:0!important}';
+    doc.head.appendChild(style);
+   }
+   doc.querySelectorAll('a[href]').forEach(link=>{
+    if(link.dataset.workspaceLinkBound==='true')return;link.dataset.workspaceLinkBound='true';
+    link.addEventListener('click',event=>{
+     const url=new URL(link.getAttribute('href'),frame.contentWindow.location.href);
+     const file=url.pathname.split('/').pop();
+     if(file==='hrm.html'){event.preventDefault();section('overview');}
+     else if(file==='employee-registration.html'&&name!=='employee_registration'){event.preventDefault();section('employee_registration');}
+     else if(file==='employee-registration-review.html'&&name!=='registration_review'){event.preventDefault();section('registration_review');}
+     else if(file==='hr-employee-invitations.html'&&name!=='employee_invitations'){event.preventDefault();section('employee_invitations');}
+    });
+   });
+   const resize=()=>{try{frame.style.height=Math.max(760,Math.min(2600,doc.documentElement.scrollHeight+24))+'px'}catch{}};
+   resize();if(typeof frame.contentWindow.ResizeObserver==='function'&&!frame.dataset.resizeBound){frame.dataset.resizeBound='true';new frame.contentWindow.ResizeObserver(resize).observe(doc.documentElement)}
+  }catch(err){console.warn('Embedded HR module layout could not be adjusted:',err)}
+ });
+ frame.src=frame.dataset.src||sources[name];
 }
 function operationEmployeeName(id){return employees.find(e=>e.id===id)?.full_name||'—'}
 function moduleRows(key){return operations.filter(r=>r.module_key===key)}
@@ -167,7 +198,7 @@ function renderReports(){
  const rows=Object.entries(operationModules).map(([k,cfg])=>{const all=moduleRows(k),open=all.filter(r=>!['complete','completed','closed','cancelled','paid','confirmed','implemented','archived','not_applicable'].includes(r.status)).length;return '<tr><td>'+esc(cfg.title)+'</td><td>'+all.length+'</td><td>'+open+'</td><td>'+all.filter(r=>r.priority==='high'||r.priority==='urgent'||r.status==='overdue'||r.status==='blocked').length+'</td></tr>'});
  if($('#reportTable'))$('#reportTable').innerHTML=table(['Module','Records','Open','Priority / overdue'],rows);
 }
-function renderInfo(key){const cfg=infoModules[key],host=$('#info-'+key);if(!cfg||!host)return;host.innerHTML=cfg.cards.map(c=>'<article class="docs-card"><h3>'+esc(c[0])+'</h3><p>'+esc(c[1])+'</p></article>').join('')+(key==='my_portal'?'<article class="docs-card"><h3>Open My Portal</h3><p>Employee sign-in, own profile, leave requests, attendance, performance and available payroll records.</p><p><a class="btn primary" href="my-portal.html">Open employee portal →</a></p></article>':'')}
+function renderInfo(key){const cfg=infoModules[key],host=$('#info-'+key);if(!cfg||!host)return;host.innerHTML=cfg.cards.map(c=>'<article class="docs-card"><h3>'+esc(c[0])+'</h3><p>'+esc(c[1])+'</p></article>').join('')}
 function csvDownload(filename,rows){
  const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv=rows.map(row=>row.map(quote).join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
