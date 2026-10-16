@@ -15,6 +15,8 @@ Review and apply migrations in numeric order in a development Supabase project b
 11–15. Platform security, candidate profile and professional-reference migrations; review each numbered SQL file and validate dependencies before application.
 16. `016_hrm_employee_documents_and_compensation.sql` — monthly basic salary and payroll reference fields, organisation-scoped employee document metadata, and a private `nexora-hr-documents` Storage bucket with HR-manager-only policies. Requires `public.can_manage_hr` from migration 005 and Supabase Storage. Files are limited to 10 MB and common PDF, Word and image formats.
 
+17. `017_employee_self_service_account_link.sql` — safe self-link RPC for confirmed employee email + active employee membership, only when exactly one unlinked employee record matches. Requires migrations 001, 005 and 008/employee membership data.
+
 ## Deployment safety
 - Migration 009 must be tested with draft, processing, review, approved and paid periods, including empty periods, held lines, missing payment dates, invalid transitions, and users from a different organisation.
 - These files were added to version control after the live project had already been configured manually. The migration ledger in Supabase may not match this folder. Never blindly rerun migrations against production.
@@ -22,6 +24,6 @@ Review and apply migrations in numeric order in a development Supabase project b
 - Migration 005–006 tests: use at least two organisations and separate accounts; verify all cross-organisation employee/department/leave/attendance/review/payroll/operations links are rejected or isolated.
 - Migration 007 creates `hr_employee_registrations` and a private `hr-employee-documents` bucket (10 MB maximum per file). Object paths are `<organization UUID>/<submitter user UUID>/<registration UUID>/<category>/<filename>`. Check storage policies using an employee account, an authorised HR manager, a non-HR member and an unrelated organisation account.
 - Registration records contain highly sensitive identity, tax, health-insurance, social-security, bank and beneficiary information. The database policy limits record access to the submitter and authorised HR managers. Do not expose this table in general employee exports or public APIs.
-- HR review is the point at which a basic employee record is created. It does not automatically link the employee to an Auth account; use an approved invitation/account-linking workflow for My Portal.
+- HR review is the point at which a basic employee record is created. It does not automatically link the employee to an Auth account; use the approved employee invitation/account-linking workflow for My Portal. Migration 017 supports safe self-linking only after the employee has an active `employee` membership and a confirmed email matching exactly one HR record; it does not replace invitation/approval or grant membership by itself.
 - Payroll entries are manual draft records, not Kenyan statutory calculations or remittance. The operations registers do not execute external payments, statutory submissions, marketplace publication or a configurable approval engine.
 - Never expose the Supabase service-role key. Verify all file downloads use short-lived signed URLs.
