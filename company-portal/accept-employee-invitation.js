@@ -11,6 +11,7 @@ async function init(){
  if(!t||!/^[0-9a-f]{64}$/i.test(t)){msg('This invitation link is missing or invalid. Ask HR for a new link.',true);$('#acceptForm').hidden=true;$('#toggleMode').hidden=true;return}
  const existing=await db.auth.getSession();
  if(existing.data?.session?.user){try{await activateSignedIn();return}catch(e){msg('The currently signed-in account could not use this invitation. Sign in with the invited email address below.',true)}}
+ $('#submitBtn').addEventListener('click',e=>{if(confirmationPending){e.preventDefault();finish()}});
  $('#toggleMode').addEventListener('click',()=>{setMode(mode==='signup'?'signin':'signup');msg('')});
  $('#acceptForm').addEventListener('submit',async e=>{
   e.preventDefault();if(!e.currentTarget.reportValidity())return;
