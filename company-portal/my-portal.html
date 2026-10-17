@@ -48,6 +48,51 @@ body:has(#authSection:not([hidden])) #message{width:min(1120px,100%);margin:0 au
 @media(max-width:800px){.auth-layout{grid-template-columns:1fr;max-width:540px;margin:auto;min-height:0}.auth-story{padding:25px 25px 22px;min-height:0}.auth-story-content{padding:32px 0 25px}.auth-story-content h1{font-size:37px;letter-spacing:-1.5px;margin:15px 0 11px}.auth-story-content>p{font-size:13px;line-height:1.65}.auth-feature-list{grid-template-columns:1fr;gap:12px;margin-top:21px}.auth-feature>span{width:36px;height:36px}.auth-story-foot{font-size:10px}.auth-layout .auth-card{padding:28px 25px 30px}.auth-card-top{margin-bottom:17px}}
 @media(max-width:480px){body:has(#authSection:not([hidden])) .shell{padding:10px!important}body:has(#authSection:not([hidden])) .topbar{position:relative;padding:11px 13px;margin-bottom:14px;border-radius:14px}.auth-layout{border-radius:21px}.auth-story{padding:21px 20px 18px}.auth-story-mark{width:42px;height:42px}.auth-story-top strong{font-size:17px}.auth-story-content{padding:26px 0 20px}.auth-story-content h1{font-size:32px}.auth-feature-list{margin-top:17px;gap:10px}.auth-feature>span{width:33px;height:33px;font-size:17px}.auth-feature strong{font-size:12px}.auth-feature small{font-size:10px}.auth-layout .auth-card{padding:23px 20px 24px}.auth-layout .auth-card h2{font-size:29px}.auth-intro{margin-bottom:17px!important}#message{font-size:12px!important;margin-bottom:10px!important;padding:10px 12px!important}}
 
+
+/* Responsive correction for employee portal: remove desktop dashboard chrome on narrow viewports. */
+@media(max-width:900px){
+ :root{--sidebar-width:0px}
+ body:has(#authSection:not([hidden])) .shell{max-width:600px!important;padding:12px!important;margin:0 auto!important}
+ body:has(#authSection:not([hidden])) .topbar{position:relative!important;left:auto!important;right:auto!important;top:auto!important;height:auto!important;min-height:66px!important;padding:10px 13px!important;margin:0 0 14px!important;border:1px solid #e5ebf4!important;border-radius:14px!important;background:#fffffffa!important;box-shadow:0 5px 18px #15213a0b!important}
+ body:has(#authSection:not([hidden])) .topbar .brand{display:flex!important;gap:10px!important}
+ body:has(#authSection:not([hidden])) .topbar .brand strong{color:#15223d!important;font-size:17px!important}
+ body:has(#authSection:not([hidden])) .topbar .brand small{color:#77869d!important}
+ body:has(#authSection:not([hidden])) .topbar:before,body:has(#authSection:not([hidden])) .topbar:after{display:none!important;content:none!important}
+ body:has(#authSection:not([hidden])) .topbar .employee-top-actions{margin-left:auto!important}
+ body:has(#authSection:not([hidden])) #authSection{min-height:0!important;display:block!important;padding:0!important;margin:0!important}
+ body:has(#authSection:not([hidden])) .auth-layout{display:flex!important;flex-direction:column!important;width:100%!important;max-width:540px!important;min-height:0!important;margin:0 auto!important;border-radius:20px!important}
+ body:has(#authSection:not([hidden])) .auth-story{display:flex!important;min-height:0!important;padding:22px 22px 18px!important}
+ body:has(#authSection:not([hidden])) .auth-story-top{gap:10px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content{padding:23px 0 20px!important;max-width:none!important}
+ body:has(#authSection:not([hidden])) .auth-story-content h1{font-size:clamp(30px,5vw,39px)!important;line-height:1.1!important;letter-spacing:-1.4px!important;margin:14px 0 10px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content>p{font-size:13px!important;line-height:1.65!important;max-width:470px!important}
+ body:has(#authSection:not([hidden])) .auth-feature-list{grid-template-columns:1fr!important;gap:10px!important;margin-top:17px!important}
+ body:has(#authSection:not([hidden])) .auth-feature>span{width:34px!important;height:34px!important}
+ body:has(#authSection:not([hidden])) .auth-feature strong{font-size:12px!important}
+ body:has(#authSection:not([hidden])) .auth-feature small{font-size:10px!important}
+ body:has(#authSection:not([hidden])) .auth-story-foot{font-size:10px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card{display:block!important;width:100%!important;align-self:stretch!important;padding:24px 22px 25px!important}
+ body:has(#authSection:not([hidden])) .auth-card-top{margin-bottom:15px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card h2{font-size:29px!important}
+ body:has(#authSection:not([hidden])) .auth-intro{font-size:13px!important;margin-bottom:17px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .field{font-size:13px!important;margin-top:15px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .field input{min-height:50px!important;font-size:16px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .btn.primary{min-height:52px!important;margin-top:20px!important;font-size:14px!important}
+ body:has(#authSection:not([hidden])) .auth-security{font-size:11px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .footer{font-size:11px!important}
+ body:has(#authSection:not([hidden])) .footer:not(.auth-layout .footer){padding:15px 8px!important;font-size:10px!important}
+ body:has(#authSection:not([hidden])) #message{width:100%!important;margin:0 0 12px!important;font-size:13px!important}
+}
+@media(max-width:420px){
+ body:has(#authSection:not([hidden])) .shell{padding:9px!important}
+ body:has(#authSection:not([hidden])) .auth-story{padding:19px 18px 16px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content{padding:20px 0 17px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content h1{font-size:30px!important}
+ body:has(#authSection:not([hidden])) .auth-feature-list{gap:9px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card{padding:21px 18px 22px!important}
+ body:has(#authSection:not([hidden])) .auth-story-foot{flex-wrap:wrap}
+}
+
 </style>
 <style id="nexora-employee-polish">
 /* Employee self-service refinement: calm, readable, mobile-first data presentation. */
