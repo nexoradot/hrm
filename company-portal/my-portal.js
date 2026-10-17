@@ -47,8 +47,9 @@ async function loadProfilePhoto(){if(!employee?.profile_photo_url){renderProfile
 async function load(){
  const p=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();if(p.error){if(p.error.code==='PGRST205'||/could not find the table .*hr_employees.*schema cache/i.test(p.error.message||'')){throw new Error('Employee portal setup is incomplete: Supabase cannot find public.hr_employees. Ask the platform administrator to compare the live database with supabase/migrations/005_hrm_workforce_core.sql, safely apply any missing schema after backup, and refresh the Supabase API schema cache. This is a database setup issue, not a password problem.')}throw p.error;}
  if(!p.data){
-  // Attempt a safe self-link through the database RPC. The server verifies the
-  // confirmed Auth email, active employee membership, organisation and uniqueness.
+  // Safely self-link an HR-created employee record by the confirmed Auth email.
+  // The server verifies uniqueness, active employment and least-privilege membership;
+  // the browser cannot choose an employee or organisation.
   const linked=await db.rpc('link_my_hr_employee_by_email');
   if(linked.error && !/function .*link_my_hr_employee_by_email.*does not exist|schema cache/i.test(linked.error.message||''))throw linked.error;
   if(!linked.error && linked.data){
@@ -58,7 +59,7 @@ async function load(){
   }
   if(!p.data){
     employee=null;$('#authSection').hidden=false;$('#appSection').hidden=true;
-    msg(linked.error?'Your account is signed in, but employee account linking is not enabled in the database yet. The platform administrator must apply migration 017_employee_self_service_account_link.sql in Supabase, then sign in again.':'You are signed in successfully, but NEXORA could not find an employee record linked to this account. The HR administrator must first add or verify your employee record in the HR workspace and use the exact same confirmed email address as this sign-in. If the record already exists, HR must check for a spelling difference, duplicate employee records, or a link to another account. After HR corrects it, sign out and sign in again. For security, this portal cannot create or guess your employment record.',true);
+    msg(linked.error?'Your sign-in succeeded, but employee access could not be activated. Please contact HR and ask them to verify your work email and employee record.':'Your sign-in succeeded, but no eligible employee record matches this confirmed email. Ask HR to create or correct your employee record using this exact work email. If it already exists, HR should check spelling, duplicate records or a link to another account. After HR updates it, sign out and sign in again. For your security, this portal only links an existing HR employee record.',true);
     return
   }
 }
