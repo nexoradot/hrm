@@ -70,6 +70,31 @@ async function recordLiveAttendance(requestedMode){
   refreshLiveClock();
  }
 }
+async function uploadEmployeeDocument(event){
+ event.preventDefault();
+ const form=$('#employeeDocumentUploadForm'),fileInput=$('#employeeDocumentFile'),button=$('#employeeDocumentUploadButton'),status=$('#employeeDocumentUploadStatus');
+ const file=fileInput?.files?.[0],name=$('#employeeDocumentName')?.value.trim(),type=$('#employeeDocumentType')?.value,notes=$('#employeeDocumentNotes')?.value.trim();
+ const allowed=['application/pdf','image/jpeg','image/png','image/webp','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+ if(!employee||!user||!db){msg('Sign in to upload your documents.',true);return}
+ if(!file){if(status)status.textContent='Choose a file to upload.';return}
+ if(file.size>10485760){if(status)status.textContent='This file exceeds the 10 MB limit.';return}
+ if(!allowed.includes(file.type)){if(status)status.textContent='File type not supported. Use PDF, JPG, PNG, WebP or Word.';return}
+ if(!name){if(status)status.textContent='Enter a document title.';return}
+ const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-120)||'document';
+ const objectPath=employee.organization_id+'/'+employee.id+'/'+(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'_'+Math.random().toString(36).slice(2))+'_'+safeName;
+ button.disabled=true;button.textContent='Uploading…';if(status)status.textContent='Uploading securely. Please keep this page open.';
+ let uploaded=false;
+ try{
+  const storage=await db.storage.from('nexora-hr-documents').upload(objectPath,file,{contentType:file.type,upsert:false});
+  if(storage.error)throw storage.error;uploaded=true;
+  const inserted=await db.from('hr_employee_documents').insert({organization_id:employee.organization_id,employee_id:employee.id,document_type:type,document_name:name,storage_path:objectPath,original_file_name:file.name,content_type:file.type,file_size_bytes:file.size,notes:notes||null,uploaded_by:user.id,verification_status:'pending'}).select('id,organization_id,employee_id,document_type,document_name,storage_path,original_file_name,verification_status,created_at').single();
+  if(inserted.error)throw inserted.error;
+  employeeDocuments=[inserted.data,...employeeDocuments];renderEmployeeDocuments();renderDashboardSummary();form.reset();if(status)status.textContent='Document uploaded successfully and sent to HR for review.';msg('Document uploaded and sent to HR for review.');
+ }catch(err){
+  if(uploaded){try{await db.storage.from('nexora-hr-documents').remove([objectPath])}catch(cleanupError){console.warn('Could not remove unregistered upload',cleanupError)}}
+  console.error('Employee document upload failed:',err);if(status)status.textContent='Upload failed: '+(err.message||'Please try again or contact HR.');msg('Document upload failed: '+(err.message||'Please try again.'),true);
+ }finally{button.disabled=false;button.textContent='Upload document securely'}
+}
 function renderEmployeeDocuments(){
  const target=$('#employeeDocumentsTable');if(!target)return;
  target.innerHTML=table(['Document','Type','Uploaded','Verification','Action'],employeeDocuments.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Document')+'</strong><br><small>'+esc(d.original_file_name||'')+'</small></td><td>'+esc(String(d.document_type||'other').replace(/_/g,' '))+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td>'+pill(d.verification_status)+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">Open securely</button></td></tr>'));
@@ -145,6 +170,7 @@ async function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
  db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey);
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),b=e.currentTarget.querySelector('button');b.disabled=true;msg('Signing in…');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed.',true)}finally{b.disabled=false}});
+ $('#employeeDocumentUploadForm')?.addEventListener('submit',uploadEmployeeDocument);
  $('#logoutBtn').addEventListener('click',async()=>{const b=$('#logoutBtn');b.disabled=true;try{const result=await db.auth.signOut({scope:'local'});if(result.error)throw result.error;user=null;employee=null;leaves=[];attendance=[];reviews=[];payItems=[];periods=[];employeeDocuments=[];announcements=[];$('#appSection').hidden=true;$('#authSection').hidden=false;$('#logoutBtn').hidden=true;$('#loginForm')?.reset();msg('You have signed out.');window.scrollTo({top:0,behavior:'instant'});}catch(err){msg('Could not sign out safely. Please try again. '+(err.message||''),true)}finally{b.disabled=false}});
  $('#portalNav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)tab(b.dataset.tab)});
  document.addEventListener('click',e=>{const jump=e.target.closest('[data-tab-jump]');if(jump){tab(jump.dataset.tabJump);return}if(e.target.closest('#clockInAction'))recordLiveAttendance('in');else if(e.target.closest('#clockOutAction'))recordLiveAttendance('out');else if(e.target.closest('#liveClockAction'))recordLiveAttendance();else if(e.target.closest('[data-attendance-action="in"]'))recordLiveAttendance('in');else if(e.target.closest('[data-attendance-action="out"]'))recordLiveAttendance('out')});
