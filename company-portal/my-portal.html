@@ -371,7 +371,22 @@ body{margin:0!important}
   </section>
   <section id="tab-performance" class="section"><div class="panel"><h2>My performance reviews</h2><p>Reviews recorded for your linked employee profile.</p><div id="performanceTable" class="table-wrap"></div></div></section>
   <section id="tab-payslips" class="section"><div class="panel"><h2>Payroll records</h2><p>Amounts below are shown only when payroll line items exist and are accessible for your linked employee account.</p><div id="payslipTable" class="table-wrap"></div></div></section>
-  <section id="tab-documents" class="section"><div class="panel"><h2>My employment documents</h2><p>Documents uploaded by your HR team. Files remain private and open through short-lived secure links.</p><div id="employeeDocumentsTable" class="table-wrap"></div></div></section>
+  <section id="tab-documents" class="section">
+   <div class="panel employee-document-upload-panel">
+    <h2>Upload my documents</h2><p>Submit employment documents securely for HR review. PDF, JPG, PNG, WebP and Word files up to 10 MB are accepted.</p>
+    <form id="employeeDocumentUploadForm">
+     <div class="form-grid">
+      <label class="field">Document category<select id="employeeDocumentType" name="document_type" required><option value="national_id">National ID / Passport</option><option value="cv">CV / Resume</option><option value="certificate">Academic or professional certificate</option><option value="contract">Employment contract</option><option value="kra_pin">KRA PIN certificate</option><option value="nssf">NSSF document</option><option value="shif">SHIF document</option><option value="bank_details">Bank details document</option><option value="medical">Medical document</option><option value="other">Other document</option></select></label>
+      <label class="field">Document title<input id="employeeDocumentName" name="document_name" type="text" maxlength="120" required placeholder="e.g. Nursing licence 2026"></label>
+      <label class="field wide">Choose file<input id="employeeDocumentFile" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,application/pdf,image/jpeg,image/png,image/webp,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required><small>Maximum file size: 10 MB.</small></label>
+      <label class="field wide">Notes for HR (optional)<textarea id="employeeDocumentNotes" name="notes" rows="2" maxlength="500" placeholder="Add any useful details for the reviewer"></textarea></label>
+     </div>
+     <button class="btn primary" id="employeeDocumentUploadButton" type="submit">Upload document securely</button>
+     <p id="employeeDocumentUploadStatus" role="status" aria-live="polite"></p>
+    </form>
+   </div>
+   <div class="panel"><h2>My employment documents</h2><p>View files you submitted and documents shared by HR. Pending documents are awaiting review.</p><div id="employeeDocumentsTable" class="table-wrap"></div></div>
+  </section>
   <section id="tab-announcements" class="section"><div class="panel"><h2>Company announcements</h2><p>Published updates made available to employees.</p><div id="employeeAnnouncements"></div></div></section>
    </div>
   </div>
