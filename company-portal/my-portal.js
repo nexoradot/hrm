@@ -173,7 +173,7 @@ async function load(){
   db.from('hr_attendance_records').select('*').eq('employee_id',employee.id).order('work_date',{ascending:false}).limit(100),
   db.from('hr_performance_reviews').select('*').eq('employee_id',employee.id).order('review_date',{ascending:false}),
   db.from('hr_payroll_items').select('*').eq('employee_id',employee.id).order('created_at',{ascending:false}),
-  db.from('hr_employee_documents').select('id,organization_id,employee_id,document_type,document_name,storage_path,original_file_name,verification_status,created_at').eq('employee_id',employee.id).eq('organization_id',employee.organization_id).order('created_at',{ascending:false}),
+  db.from('hr_employee_documents').select('id,organization_id,employee_id,document_type,document_name,storage_path,original_file_name,content_type,verification_status,created_at').eq('employee_id',employee.id).eq('organization_id',employee.organization_id).order('created_at',{ascending:false}),
   db.from('platform_announcements').select('id,title,body,publish_at,created_at').in('audience',['all','employees']).eq('status','published').or('publish_at.is.null,publish_at.lte.'+new Date().toISOString()).order('publish_at',{ascending:false,nullsFirst:false})
  ]);
  for(const x of [d,l,a,r,pi,docs,news])if(x.error)throw x.error;
