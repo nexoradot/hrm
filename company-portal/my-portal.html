@@ -231,6 +231,65 @@ body{background:#f0f5fc!important;color:#12213d}.shell{max-width:none!important;
 @media(max-width:760px){:root{--sidebar-width:0px}.topbar{left:0;height:68px;padding:10px 13px 10px 62px!important}.topbar:before{left:10px;top:10px;width:44px;height:44px}.topbar:after{left:63px;top:11px;font-size:16px;color:#10213c}.topbar .mobile-portal-toggle{position:fixed;left:calc(100vw - 52px);top:13px;z-index:41}.topbar .employee-top-actions{margin-right:45px}#appSection{padding:80px 11px 20px!important}.nav#portalNav{width:min(285px,86vw)!important;transform:translateX(-105%)!important;transition:transform .22s ease!important;padding-top:85px!important}.nav#portalNav.open{transform:translateX(0)!important}.nav#portalNav:before{top:31px}.nav#portalNav button{min-height:45px!important}.hero{padding:19px!important;min-height:unset}.hero:after{display:none}.employee-avatar{width:58px;height:58px;flex-basis:58px}.hero h1{font-size:25px!important}.employee-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.employee-quick-action{padding:10px;gap:8px}.employee-quick-action .qa-icon{flex-basis:34px;height:34px}.analytics-grid,.employee-lower-grid{grid-template-columns:minmax(0,1fr)!important}.employee-lower-grid .employee-payslips-card{grid-column:auto}.attendance-now{flex-direction:column}.attendance-clock{min-height:130px}.location-map-placeholder{min-height:150px}#tab-overview .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <link rel="stylesheet" href="../assets/nexora-modern.css?v=20261016-ultra1">
+<style id="employee-layout-final-override">
+/* Final layout correction: remove the legacy fixed-sidebar offset from the new nested sidebar layout. */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+.shell{width:100%;max-width:none!important;margin:0!important;padding:0 22px 20px!important}
+.topbar{position:relative!important;inset:auto!important;width:calc(100% + 44px)!important;height:auto!important;min-height:72px;margin:0 -22px 20px!important;padding:13px 22px!important;z-index:35!important;border-radius:0!important}
+.topbar:before,.topbar:after{display:none!important;content:none!important}
+.topbar .brand{display:flex!important}
+#appSection{width:100%;min-width:0;padding:0!important;margin:0!important}
+.employee-workspace-layout{display:grid!important;grid-template-columns:248px minmax(0,1fr)!important;gap:20px!important;width:100%;min-width:0;align-items:start}
+.employee-sidebar{position:sticky!important;inset:auto!important;top:16px!important;width:auto!important;height:auto!important;min-height:calc(100vh - 32px)!important;max-height:none!important;transform:none!important;overflow:visible!important;z-index:2!important;margin:0!important}
+.employee-sidebar nav#portalNav,.employee-sidebar .nav#portalNav{position:static!important;inset:auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;transform:none!important;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;overflow:visible!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+.employee-sidebar nav#portalNav:before{display:none!important;content:none!important}
+.employee-sidebar nav#portalNav button{position:static!important;width:100%!important;min-height:44px!important;white-space:normal!important;background:transparent!important;color:#b9c8dc!important;box-shadow:none!important}
+.employee-sidebar nav#portalNav button.active{background:linear-gradient(100deg,#1fbdc8,#168b9d)!important;color:#fff!important;box-shadow:0 7px 20px #06152b30!important}
+.employee-main{width:100%;min-width:0}
+.employee-main .hero{width:100%;min-width:0}
+.employee-main .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.employee-main .employee-lower-grid{grid-template-columns:minmax(0,1.3fr) minmax(220px,.8fr) minmax(220px,.9fr)}
+.employee-main .analytics-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr)}
+@media(max-width:900px){
+ .shell{padding:0 12px 16px!important}
+ .topbar{width:calc(100% + 24px)!important;margin:0 -12px 14px!important;padding:10px 12px!important}
+ .employee-workspace-layout{grid-template-columns:210px minmax(0,1fr)!important;gap:12px!important}
+ .employee-main .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .employee-main .employee-lower-grid,.employee-main .analytics-grid{grid-template-columns:minmax(0,1fr)!important}
+ .employee-main .employee-attendance-card{grid-column:auto}
+}
+@media(max-width:680px){
+ .shell{padding:0 10px 12px!important}
+ .topbar{position:sticky!important;top:0!important;min-height:62px!important;width:calc(100% + 20px)!important;margin:0 -10px 12px!important;padding:9px 10px!important;gap:8px!important;flex-wrap:nowrap!important;background:#fff!important}
+ .topbar .brand{display:flex!important;min-width:0!important;gap:7px!important}
+ .topbar .brand .mark{width:37px;height:37px;flex:0 0 37px}
+ .topbar .brand strong{font-size:14px!important;letter-spacing:1.5px!important}
+ .topbar .brand small{font-size:7px!important;letter-spacing:.5px!important}
+ .topbar .employee-top-actions{display:flex;align-items:center;gap:5px;margin-left:auto!important;margin-right:0!important}
+ .dash-search-trigger{padding:8px!important}
+ .dash-search-trigger .search-label,.dash-search-trigger kbd{display:none!important}
+ .topbar #logoutBtn{padding:9px!important;font-size:11px!important}
+ .topbar .mobile-portal-toggle{position:static!important;display:inline-flex!important;width:39px!important;height:39px!important;flex:0 0 39px!important;margin-left:2px!important;z-index:1002!important}
+ .employee-workspace-layout{display:block!important;width:100%!important}
+ .employee-sidebar{position:fixed!important;left:0!important;top:0!important;bottom:0!important;inset-block:auto!important;width:min(285px,86vw)!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow-y:auto!important;z-index:1001!important;transform:translateX(-105%)!important;transition:transform .22s ease!important;border-radius:0 18px 18px 0!important;padding:20px 14px!important}
+ .employee-sidebar:has(nav#portalNav.open){transform:translateX(0)!important}
+ .employee-sidebar nav#portalNav,.employee-sidebar .nav#portalNav{position:static!important;width:100%!important;height:auto!important;max-height:none!important;transform:none!important;overflow:visible!important;padding:0!important;margin:0!important}
+ .employee-sidebar nav#portalNav button{min-height:44px!important;padding:12px 13px!important}
+ .portal-nav-overlay{z-index:1000!important}
+ #appSection{padding:0!important}
+ .employee-main .hero{padding:17px!important;min-height:0!important;margin-bottom:12px!important}
+ .employee-main .hero:after{display:none!important}
+ .employee-main .employee-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .employee-main .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .employee-main .employee-lower-grid,.employee-main .analytics-grid{grid-template-columns:minmax(0,1fr)!important}
+ .employee-main .employee-attendance-card{grid-column:auto}
+ .employee-main .attendance-now{flex-direction:column!important}
+ .employee-main .attendance-clock{flex-basis:auto!important}
+ .employee-main .location-map-placeholder{min-height:145px}
+ .employee-main .table-wrap{max-width:100%;overflow-x:auto}
+ .footer{padding:18px 5px!important}
+}
+</style>
 </head>
 <body>
 <div class="shell">
