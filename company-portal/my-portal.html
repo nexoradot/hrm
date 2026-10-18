@@ -318,6 +318,19 @@ body{margin:0!important}
  .employee-main .employee-quick-action>span:last-child{min-width:0!important}
  .employee-main .employee-quick-action strong,.employee-main .employee-quick-action small{overflow-wrap:anywhere!important}
 }
+
+/* Private employee document viewer stays inside the NEXORA portal */
+.doc-viewer-dialog{width:min(1100px,calc(100vw - 24px));height:min(88dvh,900px);max-width:none;max-height:none;padding:0;border:1px solid #dfe6f0;border-radius:18px;overflow:hidden;background:#f5f7fb;color:#17243b;box-shadow:0 28px 90px #07122566}
+.doc-viewer-dialog::backdrop{background:#071225b8;backdrop-filter:blur(4px)}
+.doc-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;background:#fff;border-bottom:1px solid #e5eaf2}
+.doc-viewer-title{min-width:0}.doc-viewer-title strong{display:block;overflow-wrap:anywhere;font-size:14px}.doc-viewer-title small{display:block;color:#7b8799;font-size:11px;margin-top:3px}
+.doc-viewer-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.doc-viewer-close{border:0;border-radius:9px;background:#eef2f8;color:#24334a;padding:9px 12px;font-weight:800}
+.doc-viewer-content{height:calc(100% - 67px);min-height:0;display:flex;align-items:center;justify-content:center;padding:0}
+.doc-viewer-frame{width:100%;height:100%;border:0;background:#fff}.doc-viewer-image{display:block;max-width:100%;max-height:100%;object-fit:contain;background:#fff}
+.doc-viewer-message{max-width:520px;margin:22px;padding:26px;text-align:center;background:#fff;border:1px solid #e5eaf2;border-radius:16px}
+.doc-viewer-message h3{margin:0 0 8px}.doc-viewer-message p{color:#718096;font-size:13px;line-height:1.6}
+@media(max-width:680px){.doc-viewer-dialog{width:calc(100vw - 12px);height:92dvh;border-radius:13px}.doc-viewer-head{padding:10px}.doc-viewer-title strong{font-size:12px}.doc-viewer-actions{gap:5px}.doc-viewer-close{padding:8px}.doc-viewer-content{height:calc(100% - 62px)}}
+
 </style>
 </head>
 <body>
@@ -392,6 +405,13 @@ body{margin:0!important}
   </div>
  </section>
  <div class="footer">NEXORA · Intelligence for Every Workforce · A Nalis Consultancy product</div>
+<dialog id="employeeDocumentViewer" class="doc-viewer-dialog" aria-label="Employee document viewer">
+ <div class="doc-viewer-head">
+  <div class="doc-viewer-title"><strong id="docViewerTitle">Document preview</strong><small id="docViewerSubtitle">Private document · secure temporary access</small></div>
+  <div class="doc-viewer-actions"><a id="docViewerDownload" class="btn ghost" href="#" target="_blank" rel="noopener noreferrer" hidden>Download</a><button type="button" id="docViewerClose" class="doc-viewer-close" aria-label="Close document viewer">✕ Close</button></div>
+ </div>
+ <div id="docViewerContent" class="doc-viewer-content"><div class="doc-viewer-message">Loading document…</div></div>
+</dialog>
 <dialog id="dashSearchDialog" class="dash-search-dialog" aria-label="Search employee portal navigation"><form class="dash-search-form" method="dialog"><span class="search-glyph">⌕</span><input id="dashSearchInput" type="search" placeholder="Search profile, leave, documents, announcements…" aria-label="Search employee portal tabs" autocomplete="off"><button type="button" id="dashSearchClose">Esc</button></form><div class="dash-search-label">Your portal</div><div class="dash-search-results" id="dashSearchResults"><div class="dash-search-empty">Start typing to find a section.</div></div><div class="dash-search-foot">Choose a result to open it · ↑ ↓ navigate · Enter open</div></dialog>
 </div>
 
