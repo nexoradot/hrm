@@ -105,9 +105,26 @@ function renderAnnouncements(){
 }
 async function openEmployeeDocument(id){
  const doc=employeeDocuments.find(x=>x.id===id);if(!doc)throw new Error('Document not found. Refresh and try again.');
- const result=await db.storage.from('nexora-hr-documents').createSignedUrl(doc.storage_path,60,{download:doc.original_file_name||true});
- if(result.error)throw result.error;
- const link=document.createElement('a');link.href=result.data.signedUrl;link.target='_blank';link.rel='noopener noreferrer';link.click();
+ const dialog=$('#employeeDocumentViewer'),content=$('#docViewerContent'),title=$('#docViewerTitle'),subtitle=$('#docViewerSubtitle'),download=$('#docViewerDownload');
+ if(!dialog||!content)throw new Error('The in-site document viewer is unavailable. Refresh the portal and try again.');
+ title.textContent=doc.document_name||doc.original_file_name||'Employee document';
+ subtitle.textContent='Private document · secure temporary access';
+ content.innerHTML='<div class="doc-viewer-message">Loading your document securely…</div>';
+ download.hidden=true;download.removeAttribute('href');
+ if(!dialog.open){if(dialog.showModal)dialog.showModal();else dialog.setAttribute('open','');}
+ const result=await db.storage.from('nexora-hr-documents').createSignedUrl(doc.storage_path,300);
+ if(result.error){content.innerHTML='<div class="doc-viewer-message"><h3>Unable to open document</h3><p>'+esc(result.error.message||'Your secure document link could not be created. Please try again.')+'</p></div>';throw result.error;}
+ const url=result.data.signedUrl,mime=String(doc.content_type||''),filename=String(doc.original_file_name||doc.document_name||'document');
+ const isImage=/^image\/(jpeg|png|webp)$/i.test(mime)||/\.(jpe?g|png|webp)$/i.test(filename);
+ const isPdf=mime==='application/pdf'||/\.pdf$/i.test(filename);
+ if(isImage){
+  content.innerHTML='<img class="doc-viewer-image" alt="'+esc(filename)+'" src="'+esc(url)+'">';
+ }else if(isPdf){
+  const frame=document.createElement('iframe');frame.className='doc-viewer-frame';frame.title=filename;frame.src=url;frame.setAttribute('referrerpolicy','no-referrer');content.replaceChildren(frame);
+ }else{
+  content.innerHTML='<div class="doc-viewer-message"><h3>Word document ready</h3><p>This file is securely stored, but this browser cannot reliably preview Word documents inside the portal. Download it from here to open it in Word or a compatible app.</p></div>';
+  download.href=url;download.download=filename;download.hidden=false;
+ }
 }
 function renderEmployeeCharts(){const ah=$('#employeeAttendanceChart'),lh=$('#employeeLeaveChart');if(!ah||!lh)return;const now=new Date(),days=[];for(let i=6;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i),key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');days.push({key,label:d.toLocaleDateString('en-KE',{weekday:'short'}),count:attendance.filter(a=>String(a.work_date||'').slice(0,10)===key).length})}const max=Math.max(1,...days.map(d=>d.count)),W=520,H=185,L=24,R=12,T=14,B=29,pw=W-L-R,ph=H-T-B,bw=28,gap=(pw-7*bw)/6;const bars=days.map((d,i)=>{const height=d.count/max*ph,x=L+i*(bw+gap),y=T+ph-height;return '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+Math.max(3,height)+'" rx="6" fill="'+(i===6?'#6d63dc':'#22b8c7')+'" opacity="'+(d.count?'.95':'.22')+'"><title>'+d.label+': '+d.count+' attendance records</title></rect><text x="'+(x+bw/2)+'" y="'+(H-9)+'" text-anchor="middle">'+d.label+'</text>'}).join('');ah.innerHTML=attendance.length?'<svg class="mini-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Attendance records over the last seven days"><line x1="'+L+'" y1="'+(T+ph)+'" x2="'+(W-R)+'" y2="'+(T+ph)+'" stroke="#e9eef5"/>'+bars+'</svg>':'<div class="mini-chart-empty">Your attendance chart will appear after your organisation records attendance.</div>';const keys=['approved','pending','other'],counts=[leaves.filter(l=>l.status==='approved').length,leaves.filter(l=>l.status==='pending').length,leaves.filter(l=>!['approved','pending'].includes(String(l.status||'').toLowerCase())).length],sum=counts.reduce((a,b)=>a+b,0);if(!sum){lh.innerHTML='<div class="mini-chart-empty">Your leave summary will appear when you have leave requests.</div>';return}const colors=['#22b8c7','#6d63dc','#d6deea'],circ=2*Math.PI*43;let off=0;const rings=counts.map((n,i)=>{const d=n/sum*circ,out='<circle cx="65" cy="65" r="43" fill="none" stroke="'+colors[i]+'" stroke-width="14" stroke-dasharray="'+d+' '+(circ-d)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 65 65)"/>';off+=d;return out}).join('');lh.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:18px;min-height:155px"><svg class="mini-chart" style="width:min(48%,165px)" viewBox="0 0 130 130" role="img" aria-label="Leave request statuses"><circle cx="65" cy="65" r="43" fill="none" stroke="#edf1f7" stroke-width="14"/>'+rings+'<text x="65" y="61" text-anchor="middle" style="font-size:23px;font-weight:800;fill:#17243b">'+sum+'</text><text x="65" y="77" text-anchor="middle" style="font-size:9px">REQUESTS</text></svg><div style="display:grid;gap:13px;font-size:11px;color:#748197">'+keys.map((k,i)=>'<div style="display:flex;align-items:center;gap:8px"><i style="width:9px;height:9px;border-radius:3px;background:'+colors[i]+';flex-shrink:0"></i><span>'+({approved:'Approved',pending:'Pending',other:'Other statuses'}[k])+'</span><b style="margin-left:auto;color:#17243b">'+counts[i]+'</b></div>').join('')+'</div></div>'}
 function render(){
@@ -179,6 +196,10 @@ async function init(){
  $('#uploadProfilePhotoBtn')?.addEventListener('click',async()=>{const input=$('#profilePhotoInput'),file=input?.files?.[0],button=$('#uploadProfilePhotoBtn');if(!employee||!file){msg('Choose a passport/profile photograph first.',true);return}button.disabled=true;button.textContent='Saving…';try{const ext=({ 'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type];const path=employee.organization_id+'/'+employee.id+'/profile-photo-'+Date.now()+'.'+ext;const up=await db.storage.from('nexora-hr-documents').upload(path,file,{upsert:false,contentType:file.type});if(up.error)throw up.error;const saved=await db.rpc('employee_update_my_profile_photo',{photo_path:path});if(saved.error)throw saved.error;employee.profile_photo_url=path;await loadProfilePhoto();input.value='';if(profilePhotoObjectUrl){URL.revokeObjectURL(profilePhotoObjectUrl);profilePhotoObjectUrl=null}msg('Profile photograph saved successfully.');}catch(err){msg('Could not save the photograph. Ensure migration 021_employee_profile_photo.sql is applied and try again. '+(err.message||''),true)}finally{button.disabled=false;button.textContent='Save photograph'}});
 
  document.addEventListener('click',async e=>{const b=e.target.closest('[data-doc-download]');if(!b)return;b.disabled=true;const label=b.textContent;b.textContent='Opening…';try{await openEmployeeDocument(b.dataset.docDownload)}catch(err){msg(err.message||'Could not open this document. Check that the employee document access migration has been applied.',true)}finally{b.disabled=false;b.textContent=label}});
+ $('#docViewerClose')?.addEventListener('click',()=>{$('#employeeDocumentViewer')?.close?.()});
+ $('#employeeDocumentViewer')?.addEventListener('click',e=>{if(e.target===$('#employeeDocumentViewer'))$('#employeeDocumentViewer').close?.()});
+ $('#employeeDocumentViewer')?.addEventListener('close',()=>{$('#docViewerContent').replaceChildren();$('#docViewerDownload').hidden=true;$('#docViewerDownload').removeAttribute('href')});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#employeeDocumentViewer')?.open)$('#employeeDocumentViewer').close()});
  $('#leaveForm').addEventListener('submit',async e=>{
   e.preventDefault();if(!employee||!user)return;
   const form=e.currentTarget;if(!form.reportValidity())return;
