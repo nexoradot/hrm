@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let db=null,user=null,employee=null,leaves=[],attendance=[],reviews=[],payItems=[],periods=[],employeeDocuments=[],announcements=[];
-let profilePhotoObjectUrl=null;
+let profilePhotoObjectUrl=null,profilePhotoDisplayUrl=null;
 function msg(text,error=false){const el=$('#message');el.textContent=text;el.hidden=!text;el.classList.toggle('error',error)}
 function pill(v){const s=String(v||'pending').toLowerCase();return '<span class="pill '+esc(s)+'">'+esc(s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))+'</span>'}
 function table(headers,rows){return rows.length?'<table><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':'<div class="empty">No records available yet.</div>'}
@@ -43,8 +43,8 @@ function render(){
 }
 function initials(){return String(employee?.full_name||user?.email||'N').trim().split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'N'}
 function placeholderPhoto(){return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="#bceff1"/><text x="50" y="63" font-size="35" font-family="Arial" font-weight="700" text-anchor="middle" fill="#0d1830">'+initials()+'</text></svg>')}
-function renderProfilePhoto(url){const avatar=$('#employeeAvatar'),preview=$('#profilePhotoPreview');const src=url||placeholderPhoto();[avatar,preview].forEach(img=>{if(img)img.src=src});if(avatar)avatar.classList.toggle('employee-avatar-fallback',!url)}
-async function loadProfilePhoto(){if(!employee?.profile_photo_url){renderProfilePhoto();return}const path=String(employee.profile_photo_url);if(path.startsWith('https://')||path.startsWith('http://')){renderProfilePhoto(path);return}const result=await db.storage.from('nexora-hr-documents').createSignedUrl(path,300);if(result.error){renderProfilePhoto();return}renderProfilePhoto(result.data.signedUrl)}
+function renderProfilePhoto(url){if(url!==undefined)profilePhotoDisplayUrl=url||null;const avatar=$('#employeeAvatar'),preview=$('#profilePhotoPreview');const src=profilePhotoDisplayUrl||placeholderPhoto();[avatar,preview].forEach(img=>{if(img)img.src=src});if(avatar)avatar.classList.toggle('employee-avatar-fallback',!profilePhotoDisplayUrl)}
+async function loadProfilePhoto(){if(!employee?.profile_photo_url){renderProfilePhoto(null);return}const path=String(employee.profile_photo_url);if(path.startsWith('https://')||path.startsWith('http://')){renderProfilePhoto(path);return}const result=await db.storage.from('nexora-hr-documents').createSignedUrl(path,300);if(result.error){renderProfilePhoto(null);return}renderProfilePhoto(result.data.signedUrl)}
 async function load(){
  const p=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();if(p.error){if(p.error.code==='PGRST205'||/could not find the table .*hr_employees.*schema cache/i.test(p.error.message||'')){throw new Error('Employee portal setup is incomplete: Supabase cannot find public.hr_employees. Ask the platform administrator to compare the live database with supabase/migrations/005_hrm_workforce_core.sql, safely apply any missing schema after backup, and refresh the Supabase API schema cache. This is a database setup issue, not a password problem.')}throw p.error;}
  if(!p.data){
