@@ -464,4 +464,5 @@ document.addEventListener('click',async e=>{const revoke=e.target.closest('[data
 })();
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+window.addEventListener('load',()=>window.setTimeout(()=>notify('HR portal refreshed successfully.'),350),{once:true});
 })();
