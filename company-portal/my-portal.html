@@ -238,19 +238,19 @@ body{background:#f0f5fc!important;color:#12213d}.shell{max-width:none!important;
 </style>
 <link rel="stylesheet" href="../assets/nexora-modern.css?v=20261016-ultra1">
 <style id="employee-layout-final-override">
-/* Responsive layout repair: the sidebar is nested in the workspace, never a fixed desktop navigation. */
+/* Employee portal layout: one desktop grid, one mobile drawer breakpoint. */
 *,*::before,*::after{box-sizing:border-box}
 html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
 body{margin:0!important}
-.shell{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0 22px 20px!important}
-.topbar{position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;width:calc(100% + 44px)!important;height:auto!important;min-height:72px;margin:0 -22px 20px!important;padding:13px 22px!important;z-index:35!important;display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:nowrap!important;background:#fff!important;border-radius:0!important}
+.shell{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0 22px 20px!important}
+.topbar{position:relative!important;inset:auto!important;width:calc(100% + 44px)!important;min-width:0!important;min-height:72px;margin:0 -22px 20px!important;padding:13px 22px!important;z-index:35!important;display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:nowrap!important;gap:12px!important;background:#fff!important;border-radius:0!important}
 .topbar:before,.topbar:after{display:none!important;content:none!important}
-.topbar .brand{display:flex!important;min-width:0!important}
+.topbar .brand{display:flex!important;align-items:center!important;min-width:0!important;flex:0 1 auto!important}
 #appSection{display:block;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important}
 #appSection[hidden]{display:none!important}
 .employee-workspace-layout{display:grid!important;grid-template-columns:248px minmax(0,1fr)!important;gap:20px!important;width:100%!important;max-width:none!important;min-width:0!important;align-items:start!important}
-.employee-sidebar{display:flex!important;flex-direction:column!important;position:sticky!important;left:auto!important;right:auto!important;top:16px!important;bottom:auto!important;inset:auto!important;width:100%!important;height:auto!important;min-height:calc(100vh - 32px)!important;max-height:none!important;transform:none!important;overflow:visible!important;z-index:2!important;margin:0!important;padding:20px 14px!important;border-radius:20px!important}
-.employee-sidebar nav#portalNav,.employee-sidebar .nav#portalNav{position:static!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;transform:none!important;overflow:visible!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;gap:5px!important}
+.employee-sidebar{display:flex!important;flex-direction:column!important;position:sticky!important;inset:16px auto auto!important;width:100%!important;height:auto!important;min-height:calc(100vh - 32px)!important;max-height:none!important;transform:none!important;overflow:visible!important;z-index:2!important;margin:0!important;padding:20px 14px!important;border-radius:20px!important}
+.employee-sidebar nav#portalNav,.employee-sidebar .nav#portalNav{position:static!important;inset:auto!important;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;transform:none!important;overflow:visible!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;gap:5px!important}
 .employee-sidebar nav#portalNav:before{display:none!important;content:none!important}
 .employee-sidebar nav#portalNav button{display:flex!important;position:static!important;width:100%!important;min-height:44px!important;white-space:normal!important;text-align:left!important;justify-content:flex-start!important;border:1px solid transparent!important;border-radius:11px!important;padding:12px 13px!important;background:transparent!important;color:#b9c8dc!important;box-shadow:none!important;font-size:13px!important}
 .employee-sidebar nav#portalNav button.active{background:linear-gradient(100deg,#1fbdc8,#168b9d)!important;color:#fff!important;border-color:#42d1d8!important;box-shadow:0 7px 20px #06152b30!important}
@@ -260,48 +260,52 @@ body{margin:0!important}
 .employee-main .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .employee-main .employee-lower-grid{grid-template-columns:minmax(0,1.3fr) minmax(220px,.8fr) minmax(220px,.9fr)}
 .employee-main .analytics-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr)}
-.portal-nav-overlay{display:none;position:fixed;inset:0;background:#0713298a;z-index:1000}
-.portal-nav-overlay.open{display:block}
+.portal-nav-overlay{display:none;position:fixed;inset:0;background:#071329a6;z-index:1000;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.portal-nav-overlay.open{display:block;opacity:1;visibility:visible}
 @media(max-width:900px){
  .shell{padding:0 12px 16px!important}
  .topbar{width:calc(100% + 24px)!important;margin:0 -12px 14px!important;padding:10px 12px!important}
  .employee-workspace-layout{grid-template-columns:200px minmax(0,1fr)!important;gap:12px!important}
  .employee-main .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .employee-main .employee-lower-grid,.employee-main .analytics-grid{grid-template-columns:minmax(0,1fr)!important}
- .employee-main .employee-attendance-card{grid-column:auto}
 }
 @media(max-width:680px){
- .shell{width:100%!important;padding:0 10px 12px!important}
- .topbar{position:sticky!important;top:0!important;left:auto!important;right:auto!important;width:calc(100% + 20px)!important;min-height:62px!important;margin:0 -10px 12px!important;padding:9px 10px!important;gap:7px!important;flex-wrap:nowrap!important}
- .topbar .brand{display:flex!important;gap:7px!important;min-width:0!important}
- .topbar .brand .mark{width:37px!important;height:37px!important;flex:0 0 37px!important}
- .topbar .brand strong{font-size:14px!important;letter-spacing:1.5px!important}
- .topbar .brand small{font-size:7px!important;letter-spacing:.5px!important}
- .topbar .employee-top-actions{display:flex!important;align-items:center!important;gap:5px!important;margin:0 0 0 auto!important;min-width:0!important}
- .dash-search-trigger{padding:8px!important}
- .dash-search-trigger .search-label,.dash-search-trigger kbd{display:none!important}
- .topbar #logoutBtn{padding:8px!important;font-size:11px!important}
- .topbar .mobile-portal-toggle{position:static!important;display:inline-flex!important;width:38px!important;height:38px!important;flex:0 0 38px!important;margin:0!important;z-index:1002!important}
- .employee-workspace-layout{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important}
- .employee-sidebar{position:fixed!important;left:0!important;right:auto!important;top:0!important;bottom:0!important;inset:auto!important;width:min(285px,86vw)!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow-y:auto!important;z-index:1001!important;transform:translateX(-105%)!important;transition:transform .22s ease!important;border-radius:0 18px 18px 0!important;padding:20px 14px!important}
- .employee-sidebar:has(nav#portalNav.open){transform:translateX(0)!important}
+ html,body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+ .shell{width:100%!important;max-width:100%!important;padding:0 10px 12px!important}
+ .topbar{position:sticky!important;top:0!important;left:auto!important;right:auto!important;width:calc(100% + 20px)!important;min-width:0!important;min-height:62px!important;margin:0 -10px 12px!important;padding:9px 10px!important;gap:6px!important;flex-wrap:nowrap!important}
+ .topbar .brand{display:flex!important;gap:6px!important;min-width:0!important;flex:1 1 auto!important}
+ .topbar .brand .mark{width:34px!important;height:34px!important;flex:0 0 34px!important}
+ .topbar .brand strong{font-size:13px!important;letter-spacing:1px!important}
+ .topbar .brand small{font-size:6px!important;letter-spacing:0!important;white-space:nowrap!important}
+ .topbar .employee-top-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;margin:0!important;min-width:0!important;flex:0 0 auto!important}
+ .topbar .dash-search-trigger{width:36px!important;height:38px!important;min-width:36px!important;flex:0 0 36px!important;padding:0!important}
+ .topbar .dash-search-trigger .search-label,.topbar .dash-search-trigger kbd{display:none!important}
+ .topbar #logoutBtn{padding:8px 7px!important;font-size:10px!important;white-space:nowrap!important}
+ .topbar .mobile-portal-toggle{position:static!important;display:inline-flex!important;order:3!important;width:38px!important;height:38px!important;flex:0 0 38px!important;margin:0!important;z-index:1002!important;padding:0!important}
+ .employee-workspace-layout{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important}
+ .employee-sidebar{display:flex!important;position:fixed!important;left:0!important;right:auto!important;top:0!important;bottom:0!important;inset:0 auto 0 0!important;width:min(285px,86vw)!important;height:100vh!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;z-index:1001!important;transform:translateX(-105%)!important;transition:transform .22s ease!important;border-radius:0 18px 18px 0!important;padding:20px 14px!important}
+ .employee-sidebar:has(#portalNav.open){transform:translateX(0)!important}
  .employee-sidebar nav#portalNav,.employee-sidebar .nav#portalNav{position:static!important;inset:auto!important;width:100%!important;height:auto!important;max-height:none!important;transform:none!important;overflow:visible!important;padding:0!important;margin:0!important}
- .employee-sidebar nav#portalNav:before{display:none!important;content:none!important}
- .employee-sidebar nav#portalNav button{min-height:44px!important;padding:12px 13px!important}
- .employee-main{width:100%!important;max-width:100%!important;min-width:0!important}
- #appSection{padding:0!important;margin:0!important}
- .employee-main .hero{width:100%!important;padding:17px!important;min-height:0!important;margin:0 0 12px!important}
+ .employee-main{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important}
+ #appSection{width:100%!important;max-width:100%!important;min-width:0!important;padding:0!important;margin:0!important}
+ .employee-main .hero{width:100%!important;min-width:0!important;padding:17px!important;min-height:0!important;margin:0 0 12px!important}
  .employee-main .hero:after{display:none!important}
  .employee-main .employee-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- .employee-main .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- .employee-main .employee-lower-grid,.employee-main .analytics-grid{grid-template-columns:minmax(0,1fr)!important}
- .employee-main .employee-attendance-card{grid-column:auto}
+ .employee-main .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .employee-main .card,.employee-main .panel{min-width:0!important;padding:13px!important}
+ .employee-main .employee-lower-grid,.employee-main .analytics-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ .employee-main .employee-attendance-card{grid-column:auto!important}
  .employee-main .attendance-now{flex-direction:column!important}
- .employee-main .attendance-clock{flex-basis:auto!important}
+ .employee-main .attendance-clock{flex-basis:auto!important;min-width:0!important}
  .employee-main .location-map-placeholder{min-height:145px}
- .employee-main .table-wrap{width:100%;max-width:100%;overflow-x:auto}
+ .employee-main .table-wrap{display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ .employee-main table{min-width:max-content;white-space:nowrap}
+ .employee-main .attendance-action-grid{grid-template-columns:minmax(0,1fr)!important}
+ .employee-main .attendance-action-card{min-width:0!important}
+ .employee-main .attendance-action-button{width:100%!important}
  .footer{padding:18px 5px!important}
 }
+@media(prefers-reduced-motion:reduce){.employee-sidebar,.portal-nav-overlay{transition:none!important}}
 </style>
 </head>
 <body>
@@ -364,5 +368,5 @@ body{margin:0!important}
 <dialog id="dashSearchDialog" class="dash-search-dialog" aria-label="Search employee portal navigation"><form class="dash-search-form" method="dialog"><span class="search-glyph">⌕</span><input id="dashSearchInput" type="search" placeholder="Search profile, leave, documents, announcements…" aria-label="Search employee portal tabs" autocomplete="off"><button type="button" id="dashSearchClose">Esc</button></form><div class="dash-search-label">Your portal</div><div class="dash-search-results" id="dashSearchResults"><div class="dash-search-empty">Start typing to find a section.</div></div><div class="dash-search-foot">Choose a result to open it · ↑ ↓ navigate · Enter open</div></dialog>
 </div>
 
-<script>(function(){const nav=document.getElementById('portalNav');if(!nav)return;const header=document.querySelector('.topbar');const toggle=document.createElement('button');toggle.type='button';toggle.className='mobile-portal-toggle';toggle.setAttribute('aria-label','Open employee navigation');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰';header.insertBefore(toggle,header.firstChild);const overlay=document.createElement('div');overlay.className='portal-nav-overlay';document.body.appendChild(overlay);function close(){nav.classList.remove('open');overlay.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open employee navigation');toggle.textContent='☰'}function open(){nav.classList.add('open');overlay.classList.add('open');toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close employee navigation');toggle.textContent='✕'}toggle.addEventListener('click',()=>nav.classList.contains('open')?close():open());overlay.addEventListener('click',close);nav.addEventListener('click',e=>{if(e.target.closest('button[data-tab]'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',()=>{if(window.innerWidth>680)close()})})();</script>
+<script>(function(){const nav=document.getElementById('portalNav');if(!nav)return;const header=document.querySelector('.topbar');const toggle=document.createElement('button');toggle.type='button';toggle.className='mobile-portal-toggle';toggle.setAttribute('aria-label','Open employee navigation');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰';const actions=header.querySelector('.employee-top-actions');if(actions)actions.insertBefore(toggle,actions.firstChild);else header.appendChild(toggle);const overlay=document.createElement('div');overlay.className='portal-nav-overlay';document.body.appendChild(overlay);function close(){nav.classList.remove('open');overlay.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open employee navigation');toggle.textContent='☰'}function open(){nav.classList.add('open');overlay.classList.add('open');toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close employee navigation');toggle.textContent='✕'}toggle.addEventListener('click',()=>nav.classList.contains('open')?close():open());overlay.addEventListener('click',close);nav.addEventListener('click',e=>{if(e.target.closest('button[data-tab]'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',()=>{if(window.innerWidth>680)close()})})();</script>
 </body></html>
