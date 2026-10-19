@@ -12,6 +12,7 @@ const response = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 Deno.serve(async (req) => {
+  try {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return response({ error: "POST required" }, 405);
   const url = Deno.env.get("SUPABASE_URL");
@@ -60,6 +61,67 @@ Deno.serve(async (req) => {
     if (memberResult.error) return response({ error: "Could not load workspace memberships: " + memberResult.error.message }, 400);
     return response({ organizations: orgResult.data || [], memberships: memberResult.data || [] });
   }
+  if (action === "create-company-admin") {
+    const organizationId = String(body.organizationId || "");
+    const email = String(body.email || "").trim().toLowerCase();
+    const fullName = String(body.fullName || "").trim();
+    const password = String(body.password || "");
+    if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "A valid organization is required." }, 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return response({ error: "A valid login email is required." }, 400);
+    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) return response({ error: "Temporary password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+    if (!fullName) return response({ error: "Contact person's name is required." }, 400);
+    const { data: org, error: orgError } = await admin.from("organizations").select("id,name,contact_email,contact_name,status").eq("id", organizationId).maybeSingle();
+    if (orgError || !org) return response({ error: "Workspace not found." }, 404);
+    if (String(org.contact_email || "").toLowerCase() !== email) return response({ error: "Login email must match the company's registered contact email." }, 409);
+    let emailAlreadyExists = false;
+    for (let page = 1; page <= 20; page++) {
+      const { data: existing, error: listError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (listError) return response({ error: "Could not verify whether this login email is already registered: " + listError.message }, 500);
+      const batch = existing.users || [];
+      if (batch.some(u => (u.email || "").toLowerCase() === email)) { emailAlreadyExists = true; break; }
+      if (batch.length < 1000) break;
+    }
+    if (emailAlreadyExists) return response({ error: "An account already exists for this email. Use the existing account invitation or account-recovery workflow; no password was changed." }, 409);
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email, password, email_confirm: true,
+      user_metadata: { full_name: fullName, require_password_change: true, provisioned_by: "nexora_super_admin", organization_id: organizationId }
+    });
+    if (createError || !created.user) return response({ error: createError?.message || "Could not create the company administrator account." }, 400);
+    const { error: memberError } = await admin.from("organization_members").upsert({
+      organization_id: organizationId, user_id: created.user.id, role: "owner", status: org.status === "active" ? "active" : "pending", invited_by: callerData.user.id
+    }, { onConflict: "organization_id,user_id" });
+    if (memberError) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      return response({ error: "Account creation was rolled back because workspace membership failed: " + memberError.message }, 500);
+    }
+    return response({ user: { id: created.user.id, email: created.user.email }, organization: { id: org.id, name: org.name }, membershipStatus: org.status === "active" ? "active" : "pending", requirePasswordChange: true });
+  }
+  if (action === "reset-company-admin-password") {
+    const organizationId = String(body.organizationId || "");
+    const email = String(body.email || "").trim().toLowerCase();
+    const password = String(body.password || "");
+    if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "A valid workspace is required." }, 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return response({ error: "A valid company login email is required." }, 400);
+    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) return response({ error: "Password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+    const { data: org, error: orgError } = await admin.from("organizations").select("id,name,contact_email").eq("id", organizationId).maybeSingle();
+    if (orgError || !org) return response({ error: "Workspace not found." }, 404);
+    if (String(org.contact_email || "").trim().toLowerCase() !== email) return response({ error: "Password can only be reset for the registered company contact email." }, 409);
+    let user = null;
+    for (let page = 1; page <= 20; page++) {
+      const { data: batchData, error: listError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (listError) return response({ error: "Could not find the company login account: " + listError.message }, 500);
+      const batch = batchData.users || [];
+      user = batch.find(u => (u.email || "").trim().toLowerCase() === email) || null;
+      if (user || batch.length < 1000) break;
+    }
+    if (!user) return response({ error: "No login account exists for this company email. Recreate/provision the account or use account recovery." }, 404);
+    const { data: membership, error: membershipError } = await admin.from("organization_members").select("id,status").eq("organization_id", organizationId).eq("user_id", user.id).maybeSingle();
+    if (membershipError || !membership) return response({ error: "The registered email is not linked to this company's workspace." }, 409);
+    const userMetadata = { ...(user.user_metadata || {}), require_password_change: true, password_reset_by: "nexora_super_admin", password_reset_at: new Date().toISOString(), organization_id: organizationId };
+    const { data: updated, error: updateError } = await admin.auth.admin.updateUserById(user.id, { password, user_metadata: userMetadata });
+    if (updateError || !updated.user) return response({ error: updateError?.message || "Password update failed." }, 400);
+    return response({ user: { id: updated.user.id, email: updated.user.email }, passwordChanged: true, requirePasswordChange: true });
+  }
   if (action === "invite") {
     const email = String(body.email || "").trim().toLowerCase();
     const organizationId = String(body.organizationId || "");
@@ -70,47 +132,15 @@ Deno.serve(async (req) => {
     const { data: org, error: orgError } = await admin.from("organizations").select("id,status").eq("id", organizationId).maybeSingle();
     if (orgError || !org) return response({ error: "Workspace not found." }, 404);
     if (org.status !== "active") return response({ error: "Activate the workspace before inviting its users." }, 409);
-    // Reuse an existing Auth account when the email is already registered.
-    // inviteUserByEmail is only for new accounts; existing accounts should be
-    // linked to the workspace instead of failing with "User already registered".
-    let existingUser: { id: string; email?: string } | null = null;
-    for (let page = 1; page <= 20; page++) {
-      const { data: pageData, error: pageError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
-      if (pageError) return response({ error: "Could not check existing Auth accounts: " + pageError.message }, 400);
-      const batch = pageData.users || [];
-      const match = batch.find((u) => (u.email || "").toLowerCase() === email);
-      if (match) { existingUser = { id: match.id, email: match.email }; break; }
-      if (batch.length < 1000) break;
-    }
-
-    let userId = existingUser?.id || "";
-    let userEmail = existingUser?.email || email;
-    let invited = false;
-    if (!existingUser) {
-      const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: String(body.redirectTo || "") || undefined });
-      if (error) return response({ error: error.message }, 400);
-      userId = data.user?.id || "";
-      userEmail = data.user?.email || email;
-      invited = true;
-      if (!userId) return response({ error: "Invitation was requested but no user ID was returned." }, 502);
-    }
-
+    const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: String(body.redirectTo || "") || undefined });
+    if (error) return response({ error: error.message }, 400);
+    const userId = data.user?.id;
+    if (!userId) return response({ error: "Invitation was requested but no user ID was returned." }, 502);
     const { error: memberError } = await admin.from("organization_members").upsert({
       organization_id: organizationId, user_id: userId, role, status: "pending", invited_by: callerData.user.id
     }, { onConflict: "organization_id,user_id" });
-    if (memberError) return response({
-      error: (invited ? "Invitation was sent" : "Existing Auth account was found") + ", but workspace membership could not be prepared: " + memberError.message,
-      invited, userId
-    }, 500);
-    return response({
-      user: { id: userId, email: userEmail },
-      invited,
-      existingAccount: !!existingUser,
-      membershipStatus: "pending",
-      message: existingUser
-        ? "Existing account linked to the workspace. Membership is pending activation."
-        : "Invitation sent. Membership is pending activation."
-    });
+    if (memberError) return response({ error: "Invitation was sent, but workspace membership could not be prepared: " + memberError.message, invited: true, userId }, 500);
+    return response({ user: { id: userId, email: data.user?.email }, invited: true, membershipStatus: "pending" });
   }
   if (action === "suspend" || action === "unsuspend") {
     const userId = String(body.userId || "");
@@ -121,4 +151,9 @@ Deno.serve(async (req) => {
     return response({ user: { id: data.user.id, email: data.user.email }, suspended: action === "suspend" });
   }
   return response({ error: "Unsupported action." }, 400);
+  } catch (error) {
+    console.error("admin-user-admin request failed:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    return response({ error: "Unexpected server error while processing the request.", detail: message }, 500);
+  }
 });
