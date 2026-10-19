@@ -163,6 +163,22 @@ Deno.serve(async (req) => {
     if (memberError) return response({ error: "Invitation was sent, but workspace membership could not be prepared: " + memberError.message, invited: true, userId }, 500);
     return response({ user: { id: userId, email: data.user?.email }, invited: true, membershipStatus: "pending" });
   }
+
+  if (action === "set-membership-status") {
+    const organizationId = String(body.organizationId || "");
+    const userId = String(body.userId || "");
+    const status = String(body.status || "");
+    if (!/^[0-9a-f-]{36}$/i.test(organizationId) || !/^[0-9a-f-]{36}$/i.test(userId)) return response({ error: "Valid organization and user IDs are required." }, 400);
+    if (!["active", "invited", "suspended"].includes(status)) return response({ error: "Status must be active, invited, or suspended." }, 400);
+    const { data: org, error: orgError } = await admin.from("organizations").select("id,status").eq("id", organizationId).maybeSingle();
+    if (orgError || !org) return response({ error: "Workspace not found." }, 404);
+    const { data: member, error: memberError } = await admin.from("organization_members").select("id,role,status").eq("organization_id", organizationId).eq("user_id", userId).maybeSingle();
+    if (memberError || !member) return response({ error: "Workspace membership not found." }, 404);
+    if (status === "active" && org.status !== "active") return response({ error: "Activate the organization before activating member access." }, 409);
+    const { data: updated, error: updateError } = await admin.from("organization_members").update({ status, updated_at: new Date().toISOString() }).eq("organization_id", organizationId).eq("user_id", userId).select("organization_id,user_id,role,status").maybeSingle();
+    if (updateError || !updated) return response({ error: updateError?.message || "Membership status update failed." }, 500);
+    return response({ membership: updated });
+  }
   if (action === "suspend" || action === "unsuspend") {
     const userId = String(body.userId || "");
     if (!/^[0-9a-f-]{36}$/i.test(userId)) return response({ error: "Valid userId required." }, 400);
