@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     });
     if (createError || !created.user) return response({ error: createError?.message || "Could not create the company administrator account." }, 400);
     const { error: memberError } = await admin.from("organization_members").upsert({
-      organization_id: organizationId, user_id: created.user.id, role: "owner", status: org.status === "active" ? "active" : "pending"
+      organization_id: organizationId, user_id: created.user.id, role: "owner", status: org.status === "active" ? "active" : "invited"
     }, { onConflict: "organization_id,user_id" });
     if (memberError) {
       await admin.auth.admin.deleteUser(created.user.id);
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     }
     if (!membership) {
       const { error: linkError } = await admin.from("organization_members").upsert({
-        organization_id: organizationId, user_id: user.id, role: "owner", status: org.status === "active" ? "active" : "pending"
+        organization_id: organizationId, user_id: user.id, role: "owner", status: org.status === "active" ? "active" : "invited"
       }, { onConflict: "organization_id,user_id" });
       if (linkError) {
         if (createdDuringReset) await admin.auth.admin.deleteUser(user.id);
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
     const userId = data.user?.id;
     if (!userId) return response({ error: "Invitation was requested but no user ID was returned." }, 502);
     const { error: memberError } = await admin.from("organization_members").upsert({
-      organization_id: organizationId, user_id: userId, role, status: "pending"
+      organization_id: organizationId, user_id: userId, role, status: "invited"
     }, { onConflict: "organization_id,user_id" });
     if (memberError) return response({ error: "Invitation was sent, but workspace membership could not be prepared: " + memberError.message, invited: true, userId }, 500);
     return response({ user: { id: userId, email: data.user?.email }, invited: true, membershipStatus: "pending" });
