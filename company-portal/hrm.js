@@ -221,16 +221,16 @@ function applyCompanyEntitlements(){
   const key=button.dataset.section;
   const moduleName=Object.keys(mapping).find(name=>mapping[name].includes(key));
   const enabled=moduleName?modules[moduleName]===true:true;
-  button.hidden=!enabled;button.setAttribute('aria-hidden',String(!enabled));button.tabIndex=enabled?0:-1;
+  button.hidden=!enabled;button.style.display=enabled?'':'none';button.setAttribute('aria-hidden',String(!enabled));button.tabIndex=enabled?0:-1;
  });
  nav.querySelectorAll('a.employee-portal-nav').forEach(anchor=>{
   const enabled=modules.employee_self_service===true;
-  anchor.hidden=!enabled;anchor.setAttribute('aria-hidden',String(!enabled));anchor.tabIndex=enabled?0:-1;
+  anchor.hidden=!enabled;anchor.style.display=enabled?'':'none';anchor.setAttribute('aria-hidden',String(!enabled));anchor.tabIndex=enabled?0:-1;
  });
  nav.querySelectorAll('.nav-group-label').forEach(label=>{
   let node=label.nextElementSibling,visible=false;
   while(node&&!node.classList.contains('nav-group-label')){if(node.matches('[data-section],a'))visible=visible||!node.hidden;node=node.nextElementSibling}
-  label.hidden=!visible;
+  label.hidden=!visible;label.style.display=visible?'':'none';
  });
  const current=document.querySelector('#mainNav [data-section].active');if(current?.hidden)section('overview');
 }
