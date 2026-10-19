@@ -114,13 +114,34 @@ Deno.serve(async (req) => {
       user = batch.find(u => (u.email || "").trim().toLowerCase() === email) || null;
       if (user || batch.length < 1000) break;
     }
-    if (!user) return response({ error: "No login account exists for this company email. Recreate/provision the account or use account recovery." }, 404);
+    let createdDuringReset = false;
+    if (!user) {
+      const { data: created, error: createError } = await admin.auth.admin.createUser({
+        email, password, email_confirm: true,
+        user_metadata: { full_name: String(org.contact_name || org.name || email), require_password_change: true, provisioned_by: "nexora_super_admin_password_recovery", organization_id: organizationId }
+      });
+      if (createError || !created.user) return response({ error: "No existing login was found and account recovery could not create one: " + (createError?.message || "Unknown Auth error") }, 400);
+      user = created.user;
+      createdDuringReset = true;
+    }
     const { data: membership, error: membershipError } = await admin.from("organization_members").select("id,status").eq("organization_id", organizationId).eq("user_id", user.id).maybeSingle();
-    if (membershipError || !membership) return response({ error: "The registered email is not linked to this company's workspace." }, 409);
+    if (membershipError) {
+      if (createdDuringReset) await admin.auth.admin.deleteUser(user.id);
+      return response({ error: "Could not verify company workspace membership: " + membershipError.message }, 500);
+    }
+    if (!membership) {
+      const { error: linkError } = await admin.from("organization_members").upsert({
+        organization_id: organizationId, user_id: user.id, role: "owner", status: org.status === "active" ? "active" : "pending", invited_by: callerData.user.id
+      }, { onConflict: "organization_id,user_id" });
+      if (linkError) {
+        if (createdDuringReset) await admin.auth.admin.deleteUser(user.id);
+        return response({ error: "The login was found, but company workspace access could not be linked: " + linkError.message }, 500);
+      }
+    }
     const userMetadata = { ...(user.user_metadata || {}), require_password_change: true, password_reset_by: "nexora_super_admin", password_reset_at: new Date().toISOString(), organization_id: organizationId };
     const { data: updated, error: updateError } = await admin.auth.admin.updateUserById(user.id, { password, user_metadata: userMetadata });
     if (updateError || !updated.user) return response({ error: updateError?.message || "Password update failed." }, 400);
-    return response({ user: { id: updated.user.id, email: updated.user.email }, passwordChanged: true, requirePasswordChange: true });
+    return response({ user: { id: updated.user.id, email: updated.user.email }, passwordChanged: true, requirePasswordChange: true, accountCreated: createdDuringReset });
   }
   if (action === "invite") {
     const email = String(body.email || "").trim().toLowerCase();
