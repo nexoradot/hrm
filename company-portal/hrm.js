@@ -198,41 +198,41 @@ function applyCompanyBranding(){const org=orgs.find(x=>x.id===orgId);const setti
 function applyCompanyEntitlements(){
  const org=orgs.find(x=>x.id===orgId);
  const configured=org?.workspace_settings?.modules;
- // Core HR is the minimum workspace foundation. Optional modules are OFF unless
- // their persisted entitlement is explicitly true in organizations.workspace_settings.modules.
- const modules={core_hr:true,...(configured&&typeof configured==='object'?configured:{})};
+ const modules=configured&&typeof configured==='object'?configured:{};
  const mapping={
   core_hr:['employees','employee_invitations','registration_review','employee_registration','departments','onboarding','offboarding','documents','settings','go_live'],
-  recruitment:['recruitment','recruitment_ats'],
-  payroll:['payroll','simulator','billing','wage_tracker','remittance','advanced_payroll'],
+  recruitment:['recruitment','recruitment_ats'],payroll:['payroll','simulator','billing','wage_tracker','remittance','advanced_payroll'],
   leave:['leave'],performance:['performance','goals'],learning:['training','learning_management'],
-  welfare:['benefits','employee_relations','benefits_admin','employee_engagement'],
-  employee_self_service:['employee_self_service'],
-  time_workforce:['attendance','shifts','timesheets','time_workforce'],
-  expenses:['expenses','travel_expenses'],compensation_planning:['compensation_planning'],
-  succession_talent:['succession_talent'],workforce_planning:['workforce_planning','org_chart'],
-  workforce_analytics:['reports','workforce_analytics'],contracts_signing:['contracts_signing'],
-  compliance:['compliance'],helpdesk:['helpdesk'],assets:['assets'],
-  workflow_automation:['workflow_automation','approvals'],integrations:['integrations'],
-  mobile_access:['mobile_access'],consultancy_marketplace:['consultancy_marketplace']
+  welfare:['benefits','employee_relations','benefits_admin','employee_engagement'],employee_self_service:['employee_self_service'],
+  time_workforce:['attendance','shifts','timesheets','time_workforce'],expenses:['expenses','travel_expenses'],
+  compensation_planning:['compensation_planning'],succession_talent:['succession_talent'],workforce_planning:['workforce_planning','org_chart'],
+  workforce_analytics:['reports','workforce_analytics'],contracts_signing:['contracts_signing'],compliance:['compliance'],
+  helpdesk:['helpdesk'],assets:['assets'],workflow_automation:['workflow_automation','approvals'],
+  integrations:['integrations'],mobile_access:['mobile_access'],consultancy_marketplace:['consultancy_marketplace']
  };
  const nav=$('#mainNav');if(!nav)return;
  nav.querySelectorAll('[data-section]').forEach(button=>{
   const key=button.dataset.section;
   const moduleName=Object.keys(mapping).find(name=>mapping[name].includes(key));
-  const enabled=moduleName?modules[moduleName]===true:true;
-  button.hidden=!enabled;button.style.display=enabled?'':'none';button.setAttribute('aria-hidden',String(!enabled));button.tabIndex=enabled?0:-1;
+  const enabled=key==='overview'||(moduleName!==undefined&&modules[moduleName]===true);
+  button.hidden=!enabled;button.style.setProperty('display',enabled?'':'none','important');
+  button.setAttribute('aria-hidden',String(!enabled));button.tabIndex=enabled?0:-1;
  });
  nav.querySelectorAll('a.employee-portal-nav').forEach(anchor=>{
   const enabled=modules.employee_self_service===true;
-  anchor.hidden=!enabled;anchor.style.display=enabled?'':'none';anchor.setAttribute('aria-hidden',String(!enabled));anchor.tabIndex=enabled?0:-1;
+  anchor.hidden=!enabled;anchor.style.setProperty('display',enabled?'':'none','important');
+  anchor.setAttribute('aria-hidden',String(!enabled));anchor.tabIndex=enabled?0:-1;
  });
  nav.querySelectorAll('.nav-group-label').forEach(label=>{
   let node=label.nextElementSibling,visible=false;
-  while(node&&!node.classList.contains('nav-group-label')){if(node.matches('[data-section],a'))visible=visible||!node.hidden;node=node.nextElementSibling}
-  label.hidden=!visible;label.style.display=visible?'':'none';
+  while(node&&!node.classList.contains('nav-group-label')){
+   if(node.matches('[data-section],a'))visible=visible||(!node.hidden&&getComputedStyle(node).display!=='none');
+   node=node.nextElementSibling;
+  }
+  label.hidden=!visible;label.style.setProperty('display',visible?'':'none','important');
  });
- const current=document.querySelector('#mainNav [data-section].active');if(current?.hidden)section('overview');
+ const current=document.querySelector('#mainNav [data-section].active');
+ if(current&&current.dataset.section!=='overview'&&current.hidden)section('overview');
 }
 async function refreshCompanyEntitlementsFromDatabase(){
  if(!db||!user||!orgId||document.hidden)return;
