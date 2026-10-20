@@ -214,8 +214,14 @@ function renderEmployeeSelfService(records,error){
    target.innerHTML='<div class="table-wrap" style="width:100%;overflow-x:auto"><table style="width:100%;min-width:700px"><thead><tr><th>Goal / KPI</th><th>Review status</th><th>Target date</th><th>Progress</th><th>Update</th></tr></thead><tbody>'+rows.map(x=>{const d=x.details&&typeof x.details==='object'?x.details:{},progress=Math.max(0,Math.min(100,Number(d.progress_percent)||0));return '<tr><td><strong>'+esc(x.title||'Goal')+'</strong><br><small>'+esc(d.category||'')+'</small><br><small>'+esc(d.measure||'')+'</small><br><small>'+esc(d.notes||'')+'</small></td><td>'+pill(String(x.status||'submitted_for_review').replace(/_/g,' '))+'</td><td>'+esc(x.due_date||'—')+'</td><td><div style="min-width:90px;background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden"><div style="height:100%;width:'+progress+'%;background:#0d9488"></div></div><small>'+progress+'%</small></td><td><form data-goal-progress="'+esc(x.id)+'" style="display:flex;gap:6px;align-items:center"><input name="progress" type="number" min="0" max="100" step="5" value="'+progress+'" aria-label="Progress percentage" style="width:70px" required><button class="btn ghost" type="submit">Save</button></form></td></tr>'}).join('')+'</tbody></table></div>';
   }else if(module.key==='expenses'&&rows.length){
    target.innerHTML='<div class="table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:780px;border-collapse:collapse"><thead><tr><th>Reference / date</th><th>Expense</th><th>Amount (KES)</th><th>Status</th><th>Evidence</th><th>Actions</th></tr></thead><tbody>'+rows.map(x=>{
-    const d=x.details&&typeof x.details==='object'?x.details:{},statusText=String(x.status||'submitted').toLowerCase(),editable=['submitted','pending','returned','rejected'].includes(statusText),amt=Number(x.amount??d.amount??d.claim_amount??0);
-    return '<tr><td>'+esc(x.reference_code||'—')+'<br><small>'+esc(d.expense_date||x.start_date||'Date not set')+'</small></td><td><strong>'+esc(d.category||x.title||'Expense claim')+'</strong><br><small>'+esc(d.notes||'')+'</small></td><td><strong>'+esc(amt.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2}))+'</strong></td><td>'+pill(statusText.replace(/_/g,' '))+'</td><td>'+ (d.evidence_path?'<button type="button" class="btn ghost" data-expense-evidence="'+esc(x.id)+'">View evidence</button>':esc(d.evidence_name||'Not attached'))+'</td><td>'+ (editable?'<button type="button" class="btn ghost" data-expense-edit="'+esc(x.id)+'">Edit</button> <button type="button" class="btn ghost" data-expense-delete="'+esc(x.id)+'">Delete</button>':'—')+'</td></tr>'
+    const d=x.details&&typeof x.details==='object'?x.details:{},statusText=String(x.status||'submitted').toLowerCase(),editable=['submitted','pending','returned'].includes(statusText);
+    const rawAmount=x.amount??d.amount??d.claim_amount??d.requested_amount??d.expense_amount;
+    const amt=rawAmount===null||rawAmount===undefined||rawAmount===''?null:Number(rawAmount);
+    const expenseDate=d.expense_date||d.expenseDate||d.date||x.start_date||x.expense_date||'';
+    const category=d.category||d.expense_category||d.expense_type||(String(x.title||'').split(/\\s+[—–-]\\s+/)[0])||'Expense claim';
+    const evidencePath=d.evidence_path||d.evidencePath||d.receipt_path||d.attachment_path||'';
+    const evidenceName=d.evidence_name||d.evidence_filename||d.original_file_name||d.receipt_filename||'';
+    return '<tr><td>'+esc(x.reference_code||'—')+'<br><small>'+(expenseDate?esc(expenseDate):'Date not recorded')+'</small></td><td><strong>'+esc(category)+'</strong><br><small>'+esc(d.notes||d.business_purpose||d.purpose||'')+'</small></td><td><strong>'+(amt!==null&&Number.isFinite(amt)?esc(amt.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2})):'Amount not recorded')+'</strong></td><td>'+pill(statusText.replace(/_/g,' '))+'</td><td>'+(evidencePath?'<button type="button" class="btn ghost" data-expense-evidence="'+esc(x.id)+'">View evidence</button>':esc(evidenceName||'Evidence not recorded'))+'</td><td>'+(editable?'<button type="button" class="btn ghost" data-expense-edit="'+esc(x.id)+'">Edit</button> <button type="button" class="btn ghost" data-expense-delete="'+esc(x.id)+'">Withdraw</button>':'—')+'</td></tr>'
    }).join('')+'</tbody></table></div>';
   }else{
    target.innerHTML=rows.length?'<div class="table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch">'+table(['Item','Status','Due date','Details'],rows.map(x=>{
@@ -248,12 +254,16 @@ async function handleExpenseClaimAction(event){
   else msg('Expense claim deleted.');
   await loadEmployeeSelfService();return;
  }
- const amountInput=prompt('Enter the corrected claim amount in KES:',String(Number(row.amount??d.amount??0)));
+ const amountInput=prompt('Correct claim amount in KES:',String(row.amount??d.amount??d.claim_amount??d.requested_amount??''));
  if(amountInput===null)return;
  const amount=Number(amountInput);if(!Number.isFinite(amount)||amount<=0){msg('Enter a valid amount greater than zero.',true);return}
- const notes=prompt('Update the business purpose / explanation:',String(d.notes||''));if(notes===null)return;
- if(notes.trim().length<8){msg('Please provide a clearer explanation (at least 8 characters).',true);return}
- const patch={amount,details:{...d,notes:notes.trim(),updated_by_employee_at:new Date().toISOString()},updated_by:user.id,status:'submitted'};
+ const category=prompt('Expense category:',String(d.category||d.expense_category||d.expense_type||row.title||''));if(category===null)return;
+ const expenseDate=prompt('Expense date (YYYY-MM-DD):',String(d.expense_date||d.expenseDate||row.start_date||''));if(expenseDate===null)return;
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(expenseDate)||Number.isNaN(Date.parse(expenseDate))){msg('Enter the expense date as YYYY-MM-DD.',true);return}
+ const receipt=prompt('Receipt reference:',String(d.receipt_reference||''));if(receipt===null)return;
+ const notes=prompt('Business purpose / explanation:',String(d.notes||d.business_purpose||d.purpose||''));if(notes===null)return;
+ if(notes.trim().length<8||!category.trim()){msg('Enter a category and a clearer business purpose (at least 8 characters).',true);return}
+ const patch={amount,start_date:expenseDate,title:category.trim()+' claim — '+expenseDate,details:{...d,category:category.trim(),expense_date:expenseDate,receipt_reference:receipt.trim(),notes:notes.trim(),updated_by_employee_at:new Date().toISOString()},updated_by:user.id,status:'submitted'};
  const saved=await db.from('hr_operations_records').update(patch).eq('id',id).eq('organization_id',employee.organization_id).eq('employee_id',employee.id).eq('module_key','expenses');
  if(saved.error){msg('Claim could not be updated. Check employee claim permissions.',true);return}
  msg('Claim updated and returned to HR review.');await loadEmployeeSelfService();
