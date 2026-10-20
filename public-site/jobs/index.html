@@ -7,7 +7,7 @@
 <form id="portalLogin"><label>Email address<input type="email" name="email" required autocomplete="username"></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button class="primary">Sign in to apply</button></form>
 <form id="candidateSignup" hidden><label>Full name<input type="text" name="full_name" required autocomplete="name"></label><label>Email address<input type="email" name="email" required autocomplete="email"></label><label>Create password<input type="password" name="password" required minlength="8" autocomplete="new-password"></label><button class="primary">Create candidate account</button></form>
 <p id="portalMessage" role="status">Loading published vacancies…</p><small class="muted">Keep your CV and personal documents private. You control whether your profile is discoverable by participating consultancies.</small></section>
-<section class="filters" aria-label="Filter vacancies"><label>Search<input id="jobSearch" placeholder="Job title, skill, employer or location" aria-label="Search jobs"></label><label>Location<select id="jobCountry"><option value="all">All locations</option><option value="KE">Kenya</option><option value="remote">Remote</option></select></label><label>Employment type<select id="jobType"><option value="all">All types</option><option value="full_time">Full-time</option><option value="part_time">Part-time</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="internship">Internship</option><option value="casual">Casual</option></select></label><label>Work arrangement<select id="jobWorkplace"><option value="all">All arrangements</option><option value="onsite">On-site</option><option value="hybrid">Hybrid</option><option value="remote">Remote</option></select></label></section>
+<section class="filters" aria-label="Filter vacancies"><label>Search<input id="jobSearch" placeholder="Job title, skill, employer or location" aria-label="Search jobs"></label><label>Location<input id="jobLocation" type="search" placeholder="City, county or remote" aria-label="Filter by location"></label><label>Employment type<select id="jobType"><option value="all">All types</option><option value="full_time">Full-time</option><option value="part_time">Part-time</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="internship">Internship</option><option value="casual">Casual</option></select></label><label>Work arrangement<select id="jobWorkplace"><option value="all">All arrangements</option><option value="onsite">On-site</option><option value="hybrid">Hybrid</option><option value="remote">Remote</option></select></label></section>
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0"><b>Latest opportunities</b><button id="refreshJobs" class="light" type="button">Refresh listings ↻</button></div><div id="publicJobs" class="jobs"><div class="empty">Loading published vacancies…</div></div></main>
 <div class="modal" id="jobModal" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle"><article class="modal-card"><div class="modal-top"><div><div id="jobModalEmployer" class="muted"></div><h2 id="jobModalTitle"></h2><div id="jobModalMeta" class="muted"></div></div><button type="button" class="light close" id="closeJobModal" aria-label="Close job details">✕</button></div><div id="jobModalChips" class="chips"></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div id="jobModalBody" class="modal-body"></div><div class="actions"><button id="modalApply" class="primary" type="button">Apply for this job</button></div></article></div>
 <footer><div class="wrap">© <span id="year"></span> NEXORA · Human Resources & Workforce Management · <a href="../privacy.html">Privacy</a> · <a href="../contact.html">Contact</a></div></footer>
@@ -19,13 +19,13 @@ document.getElementById('jobModal').addEventListener('click',e=>{if(e.target.id=
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{
   const params=new URLSearchParams(window.location.search);
-  const q=params.get('q')||'';
-  const locationTerm=params.get('location')||'';
-  const search=document.getElementById('jobSearch');
-  if(search&&(q||locationTerm)){
-    search.value=[q,locationTerm].filter(Boolean).join(' ');
-    search.dispatchEvent(new Event('input',{bubbles:true}));
-    document.querySelector('.hero h1')?.scrollIntoView({block:'start',behavior:'auto'});
-  }
+  const q=params.get('q')||'';const locationTerm=params.get('location')||'';const type=params.get('employment_type')||'';
+  const search=document.getElementById('jobSearch');const locationInput=document.getElementById('jobLocation');
+  const typeSelect=document.getElementById('jobType');const workplace=document.getElementById('jobWorkplace');
+  if(search&&q)search.value=q;
+  if(locationInput&&locationTerm&&!/^remote$/i.test(locationTerm))locationInput.value=locationTerm;
+  if(/^remote$/i.test(locationTerm)||type==='remote'){if(workplace)workplace.value='remote';}
+  else if(type&&typeSelect&&Array.from(typeSelect.options).some(o=>o.value===type))typeSelect.value=type;
+  if(q||locationTerm||type){document.querySelector('.filters')?.scrollIntoView({block:'start',behavior:'auto'});}
 });
 </script></body></html>
