@@ -6,7 +6,7 @@ function msg(text,error=false){const el=$('#message');el.textContent=text;el.hid
 function pill(v){const s=String(v||'pending').toLowerCase();return '<span class="pill '+esc(s)+'">'+esc(s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))+'</span>'}
 function table(headers,rows){return rows.length?'<table><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':'<div class="empty">No records available yet.</div>'}
 function money(v){return new Intl.NumberFormat('en-KE',{style:'currency',currency:'KES',maximumFractionDigits:2}).format(Number(v)||0)}
-function tab(name){document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id==='tab-'+name));document.querySelectorAll('#portalNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));document.querySelectorAll('[data-tab-jump]').forEach(x=>x.addEventListener('click',()=>tab(x.dataset.tabJump),{once:true}))}
+function tab(name){document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id==='tab-'+name));document.querySelectorAll('#portalNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===name))}
 function annualLeaveBalance(){
  const start=employee?.start_date?new Date(String(employee.start_date).slice(0,10)+'T00:00:00'):null;
  if(!start||Number.isNaN(start.getTime()))return {entitled:null,used:0,pending:0,remaining:null};
@@ -23,6 +23,7 @@ function annualLeaveBalance(){
 }
 function renderLeaveBalanceNotice(){
  const target=$('#leaveBalanceNotice');if(!target)return;
+ if(employee&&String(employee.employment_status||'').toLowerCase()==='probation'&&employee.is_permanent!==true){target.innerHTML='<strong>Leave is not available during probation</strong><div>Your HR record must be marked as permanent before you can submit a leave request. Contact HR to confirm your employment status.</div>';return}
  const b=annualLeaveBalance();
  const type=$('#leaveForm select[name="leave_type"]')?.value||'annual';
  const days=Number($('#leaveForm input[name="days_requested"]')?.value||0);
@@ -235,6 +236,7 @@ async function init(){
   const form=e.currentTarget;if(!form.reportValidity())return;
   const f=new FormData(form),start=String(f.get('start_date')||''),end=String(f.get('end_date')||''),days=Number(f.get('days_requested'));
   if(!start||!end||end<start||!Number.isFinite(days)||days<=0){msg('Check the leave dates and enter a number of days greater than zero.',true);return}
+  if(String(employee.employment_status||'').toLowerCase()==='probation'&&employee.is_permanent!==true){msg('Leave requests are unavailable while your employee record is on probation. Contact HR to confirm permanent employment before applying.',true);renderLeaveBalanceNotice();return}
   if(String(f.get('leave_type')||'').toLowerCase()==='annual'){const balance=annualLeaveBalance();if(balance.remaining===null){msg('Annual leave balance cannot be verified because your start date is missing. Contact HR before submitting.',true);return}if(days>balance.remaining){msg('You requested '+days+' days, but only '+balance.remaining+' annual leave days remain after approved and pending requests.',true);renderLeaveBalanceNotice();return}}
   const b=form.querySelector('button[type="submit"]');if(b.disabled)return;
   b.disabled=true;const originalLabel=b.textContent;b.textContent='Submitting…';
