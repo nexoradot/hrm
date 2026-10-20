@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const organizationId = String(currentUser.app_metadata?.organization_id || "");
     const newPassword = String(body.newPassword || "");
     if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "The executive workspace assignment is missing. Contact the platform administrator." }, 409);
-    if (newPassword.length < 12 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword) || !/[^A-Za-z0-9]/.test(newPassword)) return response({ error: "New password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword) || !/[^A-Za-z0-9]/.test(newPassword)) return response({ error: "New password must be at least 8 characters and include uppercase, lowercase, a number and a symbol." }, 400);
     const { data: member, error: memberError } = await admin.from("organization_members").select("organization_id,role,status").eq("organization_id", organizationId).eq("user_id", currentUser.id).maybeSingle();
     if (memberError || !member || !["director","accountant"].includes(member.role) || !["invited","active"].includes(member.status)) return response({ error: "No valid executive workspace assignment was found." }, 403);
     const nextAppMetadata = { ...(currentUser.app_metadata || {}), require_password_change: false, password_changed_at: new Date().toISOString() };
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return response({ error: "A valid executive email is required." }, 400);
     if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "Choose a valid workspace." }, 400);
     if (!["director","accountant"].includes(role)) return response({ error: "Choose Director or Accountant." }, 400);
-    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) return response({ error: "Temporary password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) return response({ error: "Temporary password must be at least 8 characters and include uppercase, lowercase, a number and a symbol." }, 400);
     const { data: org, error: orgError } = await admin.from("organizations").select("id,name,status").eq("id", organizationId).maybeSingle();
     if (orgError || !org) return response({ error: "Workspace not found." }, 404);
     if (org.status !== "active") return response({ error: "Activate the workspace before creating an executive account." }, 409);
