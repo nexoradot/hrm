@@ -80,7 +80,7 @@ function filterTableRows(id){
 function person(e){return '<div class="person"><span class="person-avatar">'+esc(initials(e.full_name))+'</span><span><b>'+esc(e.full_name)+'</b><small>'+esc(e.email||e.employee_number||'No contact details')+'</small></span></div>'}
 function canManage(){return ['owner','hr_manager','platform_admin'].includes(role)}
 
-function section(name){if(!titles[name])return;const navItem=$('#mainNav [data-section="'+CSS.escape(name)+'"]');if(navItem&&navItem.hidden){notify('This module is disabled for this company workspace. Contact your platform administrator to enable it.',true);return;}const org=orgs.find(x=>x.id===orgId),mods=org?.workspace_settings?.modules||{};const guarded={employees:'core_hr',employee_invitations:'core_hr',registration_review:'core_hr',employee_registration:'core_hr',departments:'core_hr',onboarding:'core_hr',offboarding:'core_hr',documents:'core_hr',settings:'core_hr',go_live:'core_hr',recruitment:'recruitment',recruitment_ats:'recruitment',payroll:'payroll',simulator:'payroll',billing:'payroll',wage_tracker:'payroll',remittance:'payroll',advanced_payroll:'payroll',leave:'leave',performance:'performance',goals:'performance',training:'learning',learning_management:'learning',benefits:'welfare',employee_relations:'welfare',benefits_admin:'welfare',employee_engagement:'welfare',employee_self_service:'employee_self_service',attendance:'time_workforce',shifts:'time_workforce',timesheets:'time_workforce',time_workforce:'time_workforce',expenses:'expenses',travel_expenses:'expenses',compensation_planning:'compensation_planning',succession_talent:'succession_talent',workforce_planning:'workforce_planning',org_chart:'workforce_planning',reports:'workforce_analytics',workforce_analytics:'workforce_analytics',contracts_signing:'contracts_signing',compliance:'compliance',helpdesk:'helpdesk',assets:'assets',workflow_automation:'workflow_automation',approvals:'workflow_automation',integrations:'integrations',mobile_access:'mobile_access',consultancy_marketplace:'consultancy_marketplace'};if(guarded[name]&&mods[guarded[name]]!==true){notify('This module is disabled for this company workspace. Contact your platform administrator to enable it.',true);return;}$$('.section').forEach(x=>x.classList.toggle('active',x.id==='section-'+name));$$('#mainNav button').forEach(x=>x.classList.toggle('active',x.dataset.section===name));$('#pageTitle').textContent=titles[name];if(name==='employees')renderEmployees();if(name==='departments')renderDepartments();if(name==='leave')renderLeave();if(name==='attendance')renderAttendance();if(name==='performance')renderReviews();if(name==='payroll')renderPayroll();if(name==='settings'){loadSettings().catch(e=>notify(e.message||'Could not load workspace settings.',true));}else if(operationModules[name])renderOperations(name);if(name==='reports')renderReports();if(infoModules[name])renderInfo(name);if(name==='employee_invitations')loadEmployeeInvitations().catch(e=>notify(e.message||'Could not load employee invitations.',true));else activateEmbeddedModule(name);window.scrollTo({top:0,behavior:'smooth'})}
+function section(name){if(!titles[name])return;const navItem=$('#mainNav [data-section="'+CSS.escape(name)+'"]');if(navItem&&navItem.hidden){notify('This module is disabled for this company workspace. Contact your platform administrator to enable it.',true);return;}const org=orgs.find(x=>x.id===orgId),mods=org?.workspace_settings?.modules||{};const guarded={employees:'core_hr',employee_invitations:'core_hr',registration_review:'core_hr',employee_registration:'core_hr',departments:'core_hr',onboarding:'core_hr',offboarding:'core_hr',documents:'core_hr',settings:'core_hr',go_live:'core_hr',recruitment:'recruitment',recruitment_ats:'recruitment',payroll:'payroll',simulator:'payroll',billing:'payroll',wage_tracker:'payroll',remittance:'payroll',advanced_payroll:'payroll',leave:'leave',performance:'performance',goals:'performance',training:'learning',learning_management:'learning',benefits:'welfare',employee_relations:'welfare',benefits_admin:'welfare',employee_engagement:'welfare',employee_self_service:'employee_self_service',attendance:'time_workforce',shifts:'time_workforce',timesheets:'time_workforce',time_workforce:'time_workforce',expenses:'expenses',travel_expenses:'expenses',compensation_planning:'compensation_planning',succession_talent:'succession_talent',workforce_planning:'workforce_planning',org_chart:'workforce_planning',reports:'workforce_analytics',workforce_analytics:'workforce_analytics',contracts_signing:'contracts_signing',compliance:'compliance',helpdesk:'helpdesk',assets:'assets',workflow_automation:'workflow_automation',approvals:'workflow_automation',integrations:'integrations',mobile_access:'mobile_access',consultancy_marketplace:'consultancy_marketplace'};if(guarded[name]&&(!Object.prototype.hasOwnProperty.call(mods,guarded[name])||mods[guarded[name]]!==true)){notify('This module is disabled for this company workspace. Contact your platform administrator to enable it.',true);return;}$$('.section').forEach(x=>x.classList.toggle('active',x.id==='section-'+name));$$('#mainNav button').forEach(x=>x.classList.toggle('active',x.dataset.section===name));$('#pageTitle').textContent=titles[name];if(name==='employees')renderEmployees();if(name==='departments')renderDepartments();if(name==='leave')renderLeave();if(name==='attendance')renderAttendance();if(name==='performance')renderReviews();if(name==='payroll')renderPayroll();if(name==='settings'){loadSettings().catch(e=>notify(e.message||'Could not load workspace settings.',true));}else if(operationModules[name])renderOperations(name);if(name==='reports')renderReports();if(infoModules[name])renderInfo(name);if(name==='employee_invitations')loadEmployeeInvitations().catch(e=>notify(e.message||'Could not load employee invitations.',true));else activateEmbeddedModule(name);window.scrollTo({top:0,behavior:'smooth'})}
 function formField(label,name,type='text',required=false,options=null,wide=false){let input=options?'<select name="'+name+'" '+(required?'required':'')+'>'+options.map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>':'<input name="'+name+'" type="'+type+'" '+(required?'required':'')+(type==='number'?' min="0" step="any"':'')+'>';return '<label class="field '+(wide?'wide':'')+'">'+label+input+'</label>'}
 function openModal(title,fields,submitLabel,callback){
 const host=$('#modalHost');
@@ -197,24 +197,26 @@ const DEFAULT_WORKSPACE_SETTINGS={default_currency:'KES',timezone:'Africa/Nairob
 function applyCompanyBranding(){const org=orgs.find(x=>x.id===orgId);const settings=org?.workspace_settings||{};const brand=$('.brand');if(!brand)return;const mark=brand.querySelector('.brand-mark'),name=brand.querySelector('strong'),tagline=brand.querySelector('small');const color=/^#[0-9a-f]{6}$/i.test(settings.brand_color||'')?settings.brand_color:'#43d5df';document.documentElement.style.setProperty('--cyan',color);if(mark){if(settings.logo_url){mark.innerHTML='<img src="'+esc(settings.logo_url)+'" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.textContent=\'N\'">';mark.style.background='#fff';}else{mark.textContent='N';mark.style.background=color;}}if(name)name.textContent=settings.display_name||org?.name||'NEXORA';if(tagline)tagline.textContent=settings.display_name?'WORKFORCE MANAGEMENT':'INTELLIGENCE FOR EVERY WORKFORCE';document.title=(settings.display_name||org?.name||'NEXORA')+' | HR Management';}
 function applyCompanyEntitlements(){
  const org=orgs.find(x=>x.id===orgId);
+ // Company entitlements fail closed: missing keys are disabled until explicitly enabled.
  const configured=org?.workspace_settings?.modules;
- const modules=configured&&typeof configured==='object'?configured:{};
+ const modules=configured&&typeof configured==='object'&&!Array.isArray(configured)?configured:{};
  const mapping={
   core_hr:['employees','employee_invitations','registration_review','employee_registration','departments','onboarding','offboarding','documents','settings','go_live'],
   recruitment:['recruitment','recruitment_ats'],payroll:['payroll','simulator','billing','wage_tracker','remittance','advanced_payroll'],
   leave:['leave'],performance:['performance','goals'],learning:['training','learning_management'],
-  welfare:['benefits','employee_relations','benefits_admin','employee_engagement'],employee_self_service:['employee_self_service'],
+  welfare:['benefits','employee_relations','benefits_admin','employee_engagement'],
+  employee_self_service:['employee_self_service'],
   time_workforce:['attendance','shifts','timesheets','time_workforce'],expenses:['expenses','travel_expenses'],
-  compensation_planning:['compensation_planning'],succession_talent:['succession_talent'],workforce_planning:['workforce_planning','org_chart'],
-  workforce_analytics:['reports','workforce_analytics'],contracts_signing:['contracts_signing'],compliance:['compliance'],
-  helpdesk:['helpdesk'],assets:['assets'],workflow_automation:['workflow_automation','approvals'],
-  integrations:['integrations'],mobile_access:['mobile_access'],consultancy_marketplace:['consultancy_marketplace']
+  compensation_planning:['compensation_planning'],succession_talent:['succession_talent'],
+  workforce_planning:['workforce_planning','org_chart'],workforce_analytics:['reports','workforce_analytics'],
+  contracts_signing:['contracts_signing'],compliance:['compliance'],helpdesk:['helpdesk'],assets:['assets'],
+  workflow_automation:['workflow_automation','approvals'],integrations:['integrations'],mobile_access:['mobile_access'],
+  consultancy_marketplace:['consultancy_marketplace']
  };
  const nav=$('#mainNav');if(!nav)return;
+ const isEnabled=key=>key==='overview'||Object.keys(mapping).some(moduleName=>mapping[moduleName].includes(key)&&modules[moduleName]===true);
  nav.querySelectorAll('[data-section]').forEach(button=>{
-  const key=button.dataset.section;
-  const moduleName=Object.keys(mapping).find(name=>mapping[name].includes(key));
-  const enabled=key==='overview'||(moduleName!==undefined&&modules[moduleName]===true);
+  const enabled=isEnabled(button.dataset.section);
   button.hidden=!enabled;button.style.setProperty('display',enabled?'':'none','important');
   button.setAttribute('aria-hidden',String(!enabled));button.tabIndex=enabled?0:-1;
  });
@@ -231,8 +233,8 @@ function applyCompanyEntitlements(){
   }
   label.hidden=!visible;label.style.setProperty('display',visible?'':'none','important');
  });
- const current=document.querySelector('#mainNav [data-section].active');
- if(current&&current.dataset.section!=='overview'&&current.hidden)section('overview');
+ const current=nav.querySelector('[data-section].active');
+ if(current&&current.dataset.section!=='overview'&&!isEnabled(current.dataset.section))section('overview');
 }
 async function refreshCompanyEntitlementsFromDatabase(){
  if(!db||!user||!orgId||document.hidden)return;
