@@ -240,8 +240,9 @@ async function handleExpenseClaimAction(event){
  if(result.error||!result.data){msg('Could not load this claim. Check your access and retry.',true);return}
  const row=result.data,d=row.details&&typeof row.details==='object'?row.details:{},status=String(row.status||'').toLowerCase();
  if(view){
-  if(!d.evidence_path){msg('No evidence file is attached to this claim.',true);return}
-  const signed=await db.storage.from('nexora-hr-documents').createSignedUrl(d.evidence_path,300);
+  const evidencePath=d.evidence_path||d.evidencePath||d.receipt_path||d.attachment_path;
+  if(!evidencePath){msg('No evidence file path is recorded for this claim. Ask HR to check the original upload record.',true);return}
+  const signed=await db.storage.from('nexora-hr-documents').createSignedUrl(evidencePath,300);
   if(signed.error||!signed.data?.signedUrl){msg('Evidence could not be opened. Check secure file permissions.',true);return}
   window.open(signed.data.signedUrl,'_blank','noopener');return;
  }
@@ -250,7 +251,7 @@ async function handleExpenseClaimAction(event){
   if(!confirm('Delete this expense claim '+(row.reference_code||'')+'? This cannot be undone.'))return;
   const removed=await db.from('hr_operations_records').delete().eq('id',id).eq('organization_id',employee.organization_id).eq('employee_id',employee.id).eq('module_key','expenses');
   if(removed.error){msg('Claim was not deleted. Check employee claim permissions.',true);return}
-  if(d.evidence_path){const storage=await db.storage.from('nexora-hr-documents').remove([d.evidence_path]);if(storage.error)msg('Claim deleted, but evidence cleanup needs administrator review.',true)}
+  const evidencePath=d.evidence_path||d.evidencePath||d.receipt_path||d.attachment_path;if(evidencePath){const storage=await db.storage.from('nexora-hr-documents').remove([evidencePath]);if(storage.error)msg('Claim withdrawn, but evidence cleanup needs administrator review.',true)}
   else msg('Expense claim deleted.');
   await loadEmployeeSelfService();return;
  }
