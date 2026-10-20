@@ -197,10 +197,17 @@ function renderEmployeeSelfService(records,error){
   const target=document.getElementById(module.target);if(!target)continue;
   if(error){target.innerHTML='<div class="empty">Your assigned records could not be loaded. Contact HR to check employee self-service access.</div>';continue}
   const rows=records.filter(x=>String(x.module_key||'').toLowerCase()===module.key);
-  target.innerHTML=rows.length?table(['Item','Status','Due date','Details'],rows.map(x=>{
-   const details=x.details&&typeof x.details==='object'?(x.details.notes||x.details.description||x.details.summary||''):String(x.details||'');
-   return '<tr><td><strong>'+esc(x.title||module.title)+'</strong><br><small>'+esc(x.reference_code||'')+'</small></td><td>'+pill(x.status||'open')+'</td><td>'+esc(x.due_date?new Date(String(x.due_date).slice(0,10)+'T00:00:00').toLocaleDateString('en-KE'):'—')+'</td><td style="white-space:normal;min-width:180px">'+esc(details||'Contact HR for more information.')+'</td></tr>'
-  })):'<div class="empty"><b>No '+esc(module.title.toLowerCase())+' records assigned</b><span>When HR assigns a relevant item to your employee record, it will appear here.</span></div>';
+  if(module.key==='expenses'&&rows.length){
+   target.innerHTML='<div style="display:grid;gap:10px">'+rows.map(x=>{
+    const d=x.details&&typeof x.details==='object'?x.details:{},statusText=String(x.status||'submitted').replace(/_/g,' ');
+    return '<article style="border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;overflow-wrap:anywhere"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><strong>'+esc(x.title||'Expense claim')+'</strong>'+pill(statusText)+'</div><p style="margin:7px 0;color:var(--muted);font-size:12px">Reference: '+esc(x.reference_code||'—')+' · '+esc(d.expense_date||x.start_date||'Date not set')+'</p><div style="font-weight:800;font-size:18px;margin:8px 0">KES '+esc(Number(x.amount||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2}))+'</div><p style="margin:0;white-space:normal;overflow-wrap:anywhere">'+esc(d.notes||'No explanation recorded.')+'</p><small style="display:block;margin-top:8px;color:var(--muted)">Evidence: '+esc(d.evidence_name||'Not attached')+'</small></article>'
+   }).join('')+'</div>';
+  }else{
+   target.innerHTML=rows.length?'<div class="table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch">'+table(['Item','Status','Due date','Details'],rows.map(x=>{
+    const details=x.details&&typeof x.details==='object'?(x.details.notes||x.details.description||x.details.summary||''):String(x.details||'');
+    return '<tr><td><strong>'+esc(x.title||module.title)+'</strong><br><small>'+esc(x.reference_code||'')+'</small></td><td>'+pill(x.status||'open')+'</td><td>'+esc(x.due_date?new Date(String(x.due_date).slice(0,10)+'T00:00:00').toLocaleDateString('en-KE'):'—')+'</td><td style="white-space:normal;min-width:180px">'+esc(details||'Contact HR for more information.')+'</td></tr>'
+   }))+'</div>':'<div class="empty"><b>No '+esc(module.title.toLowerCase())+' records assigned</b><span>When HR assigns a relevant item to your employee record, it will appear here.</span></div>';
+  }
  }
 }
 async function submitEmployeeExpenseClaim(event){
