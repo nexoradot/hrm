@@ -182,6 +182,32 @@ function initials(){return String(employee?.full_name||user?.email||'N').trim().
 function placeholderPhoto(){return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="#bceff1"/><text x="50" y="63" font-size="35" font-family="Arial" font-weight="700" text-anchor="middle" fill="#0d1830">'+initials()+'</text></svg>')}
 function renderProfilePhoto(url){if(url!==undefined)profilePhotoDisplayUrl=url||null;const avatar=$('#employeeAvatar'),preview=$('#profilePhotoPreview');const src=profilePhotoDisplayUrl||placeholderPhoto();[avatar,preview].forEach(img=>{if(img)img.src=src});if(avatar)avatar.classList.toggle('employee-avatar-fallback',!profilePhotoDisplayUrl)}
 async function loadProfilePhoto(){if(!employee?.profile_photo_url){renderProfilePhoto(null);return}const path=String(employee.profile_photo_url);if(path.startsWith('https://')||path.startsWith('http://')){renderProfilePhoto(path);return}const result=await db.storage.from('nexora-hr-documents').createSignedUrl(path,300);if(result.error){renderProfilePhoto(null);return}renderProfilePhoto(result.data.signedUrl)}
+const employeeSelfServiceModules=[
+ {tab:'onboarding',key:'onboarding',target:'employeeOnboardingRecords',title:'Onboarding'},
+ {tab:'training',key:'training',target:'employeeTrainingRecords',title:'Training & certificates'},
+ {tab:'benefits',key:'benefits',target:'employeeBenefitsRecords',title:'Benefits'},
+ {tab:'goals',key:'goals',target:'employeeGoalsRecords',title:'Goals & OKRs'},
+ {tab:'expenses',key:'expenses',target:'employeeExpensesRecords',title:'Expenses & reimbursements'},
+ {tab:'assets',key:'assets',target:'employeeAssetsRecords',title:'Assets & equipment'},
+ {tab:'policies',key:'compliance',target:'employeePoliciesRecords',title:'Policies & compliance'},
+ {tab:'requests',key:'helpdesk',target:'employeeRequestsRecords',title:'HR requests'}
+];
+function renderEmployeeSelfService(records,error){
+ for(const module of employeeSelfServiceModules){
+  const target=document.getElementById(module.target);if(!target)continue;
+  if(error){target.innerHTML='<div class="empty">Your assigned records could not be loaded. Contact HR to check employee self-service access.</div>';continue}
+  const rows=records.filter(x=>String(x.module_key||'').toLowerCase()===module.key);
+  target.innerHTML=rows.length?table(['Item','Status','Due date','Details'],rows.map(x=>{
+   const details=x.details&&typeof x.details==='object'?(x.details.notes||x.details.description||x.details.summary||''):String(x.details||'');
+   return '<tr><td><strong>'+esc(x.title||module.title)+'</strong><br><small>'+esc(x.reference_code||'')+'</small></td><td>'+pill(x.status||'open')+'</td><td>'+esc(x.due_date?new Date(String(x.due_date).slice(0,10)+'T00:00:00').toLocaleDateString('en-KE'):'—')+'</td><td style="white-space:normal;min-width:180px">'+esc(details||'Contact HR for more information.')+'</td></tr>'
+  })):'<div class="empty"><b>No '+esc(module.title.toLowerCase())+' records assigned</b><span>When HR assigns a relevant item to your employee record, it will appear here.</span></div>';
+ }
+}
+async function loadEmployeeSelfService(){
+ if(!employee?.id)return;
+ const result=await db.from('hr_operations_records').select('id,organization_id,module_key,title,status,priority,employee_id,reference_code,due_date,details,created_at').eq('organization_id',employee.organization_id).eq('employee_id',employee.id).order('created_at',{ascending:false}).limit(250);
+ renderEmployeeSelfService(result.data||[],!!result.error);
+}
 async function load(){
  const p=await db.from('hr_employees').select('*').eq('user_id',user.id).maybeSingle();if(p.error){if(p.error.code==='PGRST205'||/could not find the table .*hr_employees.*schema cache/i.test(p.error.message||'')){throw new Error('Employee portal setup is incomplete: Supabase cannot find public.hr_employees. Ask the platform administrator to compare the live database with supabase/migrations/005_hrm_workforce_core.sql, safely apply any missing schema after backup, and refresh the Supabase API schema cache. This is a database setup issue, not a password problem.')}throw p.error;}
  if(!p.data){
@@ -217,7 +243,7 @@ async function load(){
  leaves=l.data||[];attendance=a.data||[];reviews=r.data||[];payItems=pi.data||[];employeeDocuments=docs.data||[];announcements=news.data||[];
  const ids=[...new Set(payItems.map(x=>x.payroll_period_id))];
  if(ids.length){const pr=await db.from('hr_payroll_periods').select('id,period_name,period_start,period_end,payment_date').in('id',ids);if(pr.error)throw pr.error;periods=pr.data||[]}else periods=[];
- $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();msg('');
+ $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();await loadEmployeeSelfService();msg('');
 }
 async function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
