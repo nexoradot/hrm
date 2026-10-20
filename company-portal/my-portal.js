@@ -157,9 +157,11 @@ async function openEmployeeDocument(id){
   content.innerHTML='<img class="doc-viewer-image" alt="'+esc(filename)+'" src="'+esc(url)+'">';
  }else if(isPdf){
   const frame=document.createElement('iframe');frame.className='doc-viewer-frame';frame.title=filename;frame.src=url;frame.setAttribute('referrerpolicy','no-referrer');content.replaceChildren(frame);
- }else if(/\.docx$/i.test(filename)&&window.mammoth){
+ }else if(/\.docx$/i.test(filename)){
   content.innerHTML='<div class="doc-viewer-message"><h3>Preparing Word preview…</h3><p>The document is being rendered locally in this portal.</p></div>';
   try{
+   if(!window.mammoth){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.0/mammoth.browser.min.js';script.onload=resolve;script.onerror=()=>reject(new Error('Word preview library could not load.'));document.head.appendChild(script)})}
+   if(!window.mammoth)throw new Error('Word preview library is unavailable.');
    const response=await fetch(url,{credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw new Error('Could not retrieve the secure document.');
    const buffer=await response.arrayBuffer(),converted=await window.mammoth.extractRawText({arrayBuffer:buffer});
    const paper=document.createElement('article');paper.style.cssText='width:100%;height:100%;overflow:auto;box-sizing:border-box;padding:clamp(18px,4vw,44px);background:#fff;color:#17243b;white-space:pre-wrap;overflow-wrap:anywhere;font:15px/1.75 Georgia,serif';
