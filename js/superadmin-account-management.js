@@ -189,18 +189,20 @@
       const form = event.currentTarget;
       if (!form.reportValidity()) return;
       const button = form.querySelector('button[type="submit"]'), original = button.textContent;
-      button.disabled = true; button.textContent = "Sending invitation…";
+      button.disabled = true; button.textContent = "Creating account…";
       const status = $("#executivesStatus");
       try {
         if (!authorized || !await verifyAdmin()) throw new Error("An active platform administrator session is required.");
         const email = $("#executiveEmail").value.trim().toLowerCase();
         const organizationId = $("#executiveOrganization").value;
         const role = $("#executiveRole").value;
+        const temporaryPassword = $("#executiveTempPassword").value;
         if (!organizationId) throw new Error("Choose the workspace this executive should access.");
         if (!["director","accountant"].includes(role)) throw new Error("Choose Director or Accountant.");
-        const inviteResult = await privileged({ action:"invite", email, organizationId, role, redirectTo:location.origin + "/executive/" });
-        toast(inviteResult.message || "Executive invitation sent and linked to the selected workspace. Membership is pending until activated.", "success");
-        if (status) status.textContent = "Invitation requested for " + email + ". Refresh to verify the workspace membership status.";
+        if (temporaryPassword.length < 12 || !/[A-Z]/.test(temporaryPassword) || !/[a-z]/.test(temporaryPassword) || !/[0-9]/.test(temporaryPassword) || !/[^A-Za-z0-9]/.test(temporaryPassword)) throw new Error("Temporary password must be at least 12 characters and include uppercase, lowercase, a number and a symbol.");
+        const createResult = await privileged({ action:"create-executive", email, organizationId, role, password:temporaryPassword });
+        toast(createResult.message || "Executive account created and linked to the selected workspace.", "success");
+        if (status) status.textContent = "Account created for " + email + ". Share the temporary password securely. They must change it at first sign-in.";
         form.reset(); populateExecutiveOrganizations(); await load();
       } catch (error) {
         if (status) status.textContent = "Executive invitation failed: " + (error?.message || String(error));
