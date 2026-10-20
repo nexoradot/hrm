@@ -12,13 +12,16 @@ function annualLeaveBalance(){
  if(!start||Number.isNaN(start.getTime()))return {entitled:null,used:0,pending:0,remaining:null};
  const today=new Date();today.setHours(0,0,0,0);
  if(start>today)return {entitled:0,used:0,pending:0,remaining:0};
- // Kenya's statutory baseline: 21 working days for each completed 12 months of service,
- // accrued monthly for employee-facing estimates. HR policy/carry-over may differ.
- const months=Math.max(0,(today.getFullYear()-start.getFullYear())*12+today.getMonth()-start.getMonth()-(today.getDate()<start.getDate()?1:0));
- const entitled=Math.round((months*21/12)*100)/100;
- const annual=leaves.filter(x=>String(x.leave_type||'').toLowerCase()==='annual');
+ // Each employee leave year runs from their start-date anniversary. The annual allowance is 21 working days.
+ // Only approved annual leave is deducted as used; pending requests are shown separately and reserved to prevent overbooking.
+ let yearStart=new Date(today.getFullYear(),start.getMonth(),start.getDate());
+ if(yearStart>today)yearStart.setFullYear(yearStart.getFullYear()-1);
+ const yearEnd=new Date(yearStart);yearEnd.setFullYear(yearEnd.getFullYear()+1);
+ const inCurrentLeaveYear=x=>{const d=new Date(String(x.start_date||'').slice(0,10)+'T00:00:00');return !Number.isNaN(d.getTime())&&d>=yearStart&&d<yearEnd};
+ const annual=leaves.filter(x=>String(x.leave_type||'').toLowerCase()==='annual'&&inCurrentLeaveYear(x));
  const used=Math.round(annual.filter(x=>String(x.status||'').toLowerCase()==='approved').reduce((n,x)=>n+Number(x.days_requested||0),0)*100)/100;
  const pending=Math.round(annual.filter(x=>String(x.status||'').toLowerCase()==='pending').reduce((n,x)=>n+Number(x.days_requested||0),0)*100)/100;
+ const entitled=21;
  return {entitled,used,pending,remaining:Math.max(0,Math.round((entitled-used-pending)*100)/100)};
 }
 function renderLeaveBalanceNotice(){
