@@ -126,9 +126,11 @@ async function uploadEmployeeDocument(event){
   console.error('Employee document upload failed:',err);if(status)status.textContent='Upload failed: '+(err.message||'Please try again or contact HR.');msg('Document upload failed: '+(err.message||'Please try again.'),true);
  }finally{button.disabled=false;button.textContent='Upload document securely'}
 }
+function isEmploymentContract(d){return /contract|employment agreement/i.test(String(d.document_type||'')+' '+String(d.document_name||''))}
+function renderApprovedContracts(){const target=$('#approvedContractsTable');if(!target)return;const approved=employeeDocuments.filter(d=>isEmploymentContract(d)&&['approved','verified'].includes(String(d.verification_status||'').toLowerCase()));target.innerHTML=table(['Contract','Status','Available since','Copy'],approved.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Employment contract')+'</strong><br><small>'+esc(d.original_file_name||'Official contract copy')+'</small></td><td>'+pill('approved')+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">View / download copy</button></td></tr>'))}
 function renderEmployeeDocuments(){
  const target=$('#employeeDocumentsTable');if(!target)return;
- target.innerHTML=table(['Document','Type','Uploaded','Verification','Action'],employeeDocuments.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Document')+'</strong><br><small>'+esc(d.original_file_name||'')+'</small></td><td>'+esc(String(d.document_type||'other').replace(/_/g,' '))+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td>'+pill(d.verification_status)+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">Open securely</button></td></tr>'));
+ target.innerHTML=table(['Document','Type','Uploaded','Verification','Action'],employeeDocuments.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Document')+'</strong><br><small>'+esc(d.original_file_name||'')+'</small></td><td>'+esc(String(d.document_type||'other').replace(/_/g,' '))+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td>'+pill(d.verification_status)+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">Open securely</button></td></tr>'));renderApprovedContracts();
 }
 function renderAnnouncements(){
  const target=$('#employeeAnnouncements');if(!target)return;
@@ -212,7 +214,7 @@ async function load(){
  leaves=l.data||[];attendance=a.data||[];reviews=r.data||[];payItems=pi.data||[];employeeDocuments=docs.data||[];announcements=news.data||[];
  const ids=[...new Set(payItems.map(x=>x.payroll_period_id))];
  if(ids.length){const pr=await db.from('hr_payroll_periods').select('id,period_name,period_start,period_end,payment_date').in('id',ids);if(pr.error)throw pr.error;periods=pr.data||[]}else periods=[];
- $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderAnnouncements();renderDashboardSummary();refreshLiveClock();msg('');
+ $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();msg('');
 }
 async function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
