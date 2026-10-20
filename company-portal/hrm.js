@@ -320,8 +320,46 @@ function activateEmbeddedModule(name){
 }
 function operationEmployeeName(id){return employees.find(e=>e.id===id)?.full_name||'—'}
 function moduleRows(key){return operations.filter(r=>r.module_key===key)}
+async function renderJobVacancies(){
+ const target=$('#table-recruitment');if(!target)return;
+ target.innerHTML='<div class="empty"><b>Loading vacancies…</b><span>Reading live job records for this organisation.</span></div>';
+ const {data,error}=await db.from('jobs').select('id,title,public_employer_name,slug,summary,description,requirements,location,country_code,employment_type,workplace_type,salary_min,salary_max,salary_currency,show_salary,status,closing_date,published_at,created_at').eq('organization_id',orgId).order('created_at',{ascending:false});
+ if(error){target.innerHTML=empty('Could not load vacancies');notify('Vacancy records could not be loaded: '+error.message,true);return}
+ const jobs=data||[];
+ target.innerHTML='<div class="panel-head"><div><h3>Vacancies & drafts</h3><p>Create a vacancy, save a draft, publish it to the public jobs marketplace, or close it.</p></div><button class="btn primary" type="button" id="createVacancyBtn">＋ Create vacancy</button></div>'+table(['Vacancy','Location','Employment','Closing date','Status','Actions'],jobs.map(j=>'<tr><td><b>'+esc(j.title)+'</b><br><small class="muted">'+esc(j.public_employer_name)+'</small></td><td>'+esc(j.location||'Not specified')+'</td><td>'+esc(nice(j.employment_type)+' · '+nice(j.workplace_type))+'</td><td>'+esc(j.closing_date||'—')+'</td><td>'+statusPill(j.status)+'</td><td><div class="module-actions"><button class="btn ghost" type="button" data-vacancy-edit="'+esc(j.id)+'">Edit</button>'+(j.status==='published'?'<button class="btn ghost" type="button" data-vacancy-state="'+esc(j.id)+'" data-state="closed">Close</button>':'<button class="btn primary" type="button" data-vacancy-state="'+esc(j.id)+'" data-state="published">Publish</button>')+'<button class="btn danger" type="button" data-vacancy-state="'+esc(j.id)+'" data-state="archived">Archive</button></div></td></tr>'))+'<p class="footer-note">Only published vacancies are public. Drafts remain private to authorised recruiters.</p>';
+ $('#createVacancyBtn')?.addEventListener('click',()=>openVacancyForm());
+ target.querySelectorAll('[data-vacancy-edit]').forEach(b=>b.addEventListener('click',()=>openVacancyForm(jobs.find(x=>x.id===b.dataset.vacancyEdit))));
+ target.querySelectorAll('[data-vacancy-state]').forEach(b=>b.addEventListener('click',async()=>{
+  if(!canManage()){notify('You do not have permission to manage vacancies.',true);return}
+  const next=b.dataset.state;if(next==='archived'&&!confirm('Archive this vacancy?'))return;
+  b.disabled=true;try{
+   const patch={status:next,updated_at:new Date().toISOString()};if(next==='published')patch.published_at=new Date().toISOString();
+   const q=await db.from('jobs').update(patch).eq('id',b.dataset.vacancyState).eq('organization_id',orgId).select('id').maybeSingle();
+   if(q.error)throw q.error;if(!q.data)throw new Error('No vacancy was updated. Check recruitment permissions.');
+   notify(next==='published'?'Vacancy published to the public jobs marketplace.':next==='closed'?'Vacancy closed.':'Vacancy archived.');await renderJobVacancies();
+  }catch(e){notify('Could not update vacancy: '+e.message,true);b.disabled=false}
+ }));
+}
+function openVacancyForm(job=null){
+ if(!canManage()){notify('Only authorised HR managers can create or edit vacancies.',true);return}
+ const fields=formField('Job title','title','text',true)+formField('Public employer name','public_employer_name','text',true)+formField('Location','location')+formField('Employment type','employment_type','text',true,[['full_time','Full time'],['part_time','Part time'],['contract','Contract'],['temporary','Temporary'],['internship','Internship']])+formField('Workplace type','workplace_type','text',true,[['onsite','On-site'],['hybrid','Hybrid'],['remote','Remote']])+formField('Country code','country_code','text',true)+formField('Minimum salary (KES)','salary_min','number')+formField('Maximum salary (KES)','salary_max','number')+formField('Closing date','closing_date','date')+'<label class="field wide"><span>Short summary</span><textarea name="summary" rows="2" maxlength="500" required></textarea></label>'+'<label class="field wide"><span>Job description</span><textarea name="description" rows="5" required></textarea></label>'+'<label class="field wide"><span>Requirements</span><textarea name="requirements" rows="4" required></textarea></label>'+'<label class="field"><span><input type="checkbox" name="show_salary"> Show salary publicly</span></label>';
+ openModal(job?'Edit vacancy':'Create vacancy',fields,'Save draft',async d=>{
+  const form=$('#recordForm'),values=Object.fromEntries(new FormData(form).entries());
+  const title=String(values.title||'').trim(),employer=String(values.public_employer_name||'').trim();
+  if(!title||!employer||!String(values.description||'').trim()||!String(values.requirements||'').trim())throw new Error('Complete the required vacancy fields.');
+  const min=values.salary_min===''?null:Number(values.salary_min),max=values.salary_max===''?null:Number(values.salary_max);
+  if((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0))||(min!==null&&max!==null&&max<min))throw new Error('Check the salary range.');
+  const slugBase=title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'vacancy';
+  const patch={organization_id:orgId,created_by:user.id,title,public_employer_name:employer,slug:slugBase+'-'+Math.random().toString(36).slice(2,8),summary:String(values.summary||'').trim(),description:String(values.description||'').trim(),requirements:String(values.requirements||'').trim(),location:String(values.location||'').trim()||null,country_code:String(values.country_code||'KE').trim().toUpperCase(),employment_type:values.employment_type,workplace_type:values.workplace_type,salary_min:min,salary_max:max,salary_currency:'KES',show_salary:form.elements.namedItem('show_salary').checked,closing_date:values.closing_date||null,status:'draft',updated_at:new Date().toISOString()};
+  const q=job?await db.from('jobs').update({...patch,slug:job.slug,created_by:job.created_by}).eq('id',job.id).eq('organization_id',orgId).select('id').maybeSingle():await db.from('jobs').insert(patch).select('id').single();
+  if(q.error)throw q.error;if(!q.data)throw new Error('Vacancy was not saved. Check recruiter access.');
+  await renderJobVacancies();notify('Vacancy saved as a private draft. Publish it when ready.');
+ });
+ const form=$('#recordForm');if(job){for(const [k,v] of Object.entries(job)){const field=form.elements.namedItem(k);if(field&&field.type!=='checkbox')field.value=v??''}if(form.elements.namedItem('show_salary'))form.elements.namedItem('show_salary').checked=!!job.show_salary}
+}
 function renderOperations(key){
  const cfg=operationModules[key],target=$('#table-'+key);if(!cfg||!target)return;
+ if(key==='recruitment'){renderJobVacancies().catch(e=>notify('Could not load vacancies: '+e.message,true));return;}
  const all=moduleRows(key),q=($('#search-'+key)?.value||'').toLowerCase(),status=$('#filter-'+key)?.value||'';
  const rows=all.filter(r=>(!status||r.status===status)&&[r.title,r.reference_code,r.status,r.details?.notes,operationEmployeeName(r.employee_id)].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
  const open=all.filter(r=>!['complete','completed','closed','cancelled','paid','confirmed','implemented','archived','not_applicable'].includes(r.status)).length;
