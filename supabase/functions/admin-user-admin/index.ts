@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
     const role = String(body.role || "hr_manager");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return response({ error: "A valid email is required." }, 400);
     if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "Choose a valid workspace." }, 400);
-    if (!["owner","hr_manager","recruiter","consultant","member","viewer"].includes(role)) return response({ error: "Unsupported workspace role." }, 400);
+    if (!["owner","hr_manager","recruiter","consultant","member","viewer","director","accountant"].includes(role)) return response({ error: "Unsupported workspace role." }, 400);
     const { data: org, error: orgError } = await admin.from("organizations").select("id,status").eq("id", organizationId).maybeSingle();
     if (orgError || !org) return response({ error: "Workspace not found." }, 404);
     if (org.status !== "active") return response({ error: "Activate the workspace before inviting its users." }, 409);
