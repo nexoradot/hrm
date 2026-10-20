@@ -208,59 +208,38 @@ async function submitEmployeeExpenseClaim(event){
  const form=event.currentTarget,button=form.querySelector('button[type="submit"]'),status=document.getElementById('employeeExpenseFormStatus');
  if(!employee||!user){if(status)status.textContent='Sign in to submit an expense claim.';return}
  if(!form.reportValidity())return;
- const f=new FormData(form),amount=Number(f.get('amount')),expenseDate=String(f.get('expense_date')||''),category=String(f.get('expense_category')||'').trim(),receipt=String(f.get('receipt_reference')||'').trim(),notes=String(f.get('notes')||'').trim();
- if(!Number.isFinite(amount)||amount<=0||!expenseDate||!category||receipt.length<2||notes.length<8){if(status)status.textContent='Complete all required fields with a valid amount, receipt reference and explanation.';return}
- button.disabled=true;const original=button.textContent;button.textContent='Submitting…';if(status)status.textContent='Sending your claim to HR for review…';
+ const f=new FormData(form),file=f.get('evidence_file'),amount=Number(f.get('amount')),expenseDate=String(f.get('expense_date')||''),category=String(f.get('expense_category')||'').trim(),receipt=String(f.get('receipt_reference')||'').trim(),notes=String(f.get('notes')||'').trim();
+ const allowed=['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+ if(!file||!file.name||!allowed.includes(file.type)||file.size>10*1024*1024){if(status)status.textContent='Attach a PDF, DOC or DOCX file no larger than 10 MB.';return}
+ if(!Number.isFinite(amount)||amount<=0||!expenseDate||expenseDate>new Date().toISOString().slice(0,10)||!category||notes.length<8){if(status)status.textContent='Complete the category, amount, valid expense date and business explanation.';return}
+ button.disabled=true;const original=button.textContent;button.textContent='Uploading evidence…';if(status)status.textContent='Uploading your evidence and submitting to HR…';
+ let uploadedPath='';
  try{
+  const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  uploadedPath=employee.organization_id+'/'+employee.id+'/expense-evidence/'+Date.now()+'-'+safeName;
+  const upload=await db.storage.from('nexora-hr-documents').upload(uploadedPath,file,{upsert:false,contentType:file.type});
+  if(upload.error)throw upload.error;
   const ref='EXP-'+new Date().getFullYear()+'-'+Math.random().toString(36).slice(2,8).toUpperCase();
   const result=await db.from('hr_operations_records').insert({
    organization_id:employee.organization_id,module_key:'expenses',
    title:category+' reimbursement — '+expenseDate,status:'submitted',priority:'normal',
    employee_id:employee.id,reference_code:ref,start_date:expenseDate,due_date:null,
-   amount,details:{notes,category,receipt_reference:receipt,expense_date:expenseDate,submitted_by_employee:true},
+   amount,details:{notes,category,receipt_reference:receipt,expense_date:expenseDate,submitted_by_employee:true,evidence_path:uploadedPath,evidence_name:file.name,evidence_type:file.type,evidence_size:file.size},
    created_by:user.id,updated_by:user.id
   }).select('id').single();
   if(result.error)throw result.error;
-  form.reset();if(status)status.textContent='Claim '+ref+' submitted. HR will review it and update the status.';
+  form.reset();const date=form.elements.namedItem('expense_date');if(date)date.value=new Date().toISOString().slice(0,10);
+  if(status)status.textContent='Claim '+ref+' and evidence submitted. HR will review it and update the status.';
   await loadEmployeeSelfService();
  }catch(err){
-  if(status)status.textContent=(err.message||'Could not submit the claim.')+' If this continues, ask the administrator to verify the employee expense-claim RLS policy.';
+  if(uploadedPath){try{await db.storage.from('nexora-hr-documents').remove([uploadedPath])}catch{}}
+  if(status)status.textContent=(err.message||'Could not submit the claim.')+' Check upload and employee expense-claim permissions, then retry.';
  }finally{button.disabled=false;button.textContent=original}
 }
 async function loadEmployeeSelfService(){
  if(!employee?.id)return;
  const result=await db.from('hr_operations_records').select('id,organization_id,module_key,title,status,priority,employee_id,reference_code,due_date,details,created_at').eq('organization_id',employee.organization_id).eq('employee_id',employee.id).order('created_at',{ascending:false}).limit(250);
  renderEmployeeSelfService(result.data||[],!!result.error);
-}
-function bindExpenseClaimForm(){
- const form=$('#employeeExpenseForm');
- if(!form||form.dataset.bound)return;
- form.dataset.bound='true';
- const date=form.elements.namedItem('expense_date');
- if(date&&!date.value)date.value=new Date().toISOString().slice(0,10);
- form.addEventListener('submit',async event=>{
-  event.preventDefault();
-  if(!employee||!user||!form.reportValidity())return;
-  const data=new FormData(form),file=data.get('evidence_file'),amount=Number(data.get('amount')),expenseDate=String(data.get('expense_date')||'');
-  const allowed=['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-  if(!file||!file.name||!allowed.includes(file.type)||file.size>10*1024*1024){msg('Attach a PDF, DOC or DOCX evidence file no larger than 10 MB.',true);return}
-  if(!(amount>0)||!expenseDate||expenseDate>new Date().toISOString().slice(0,10)){msg('Enter a valid amount and expense date.',true);return}
-  const button=form.querySelector('button[type="submit"]'),label=button.textContent;button.disabled=true;button.textContent='Uploading evidence…';
-  let uploadedPath='';
-  try{
-   const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-   uploadedPath=employee.organization_id+'/'+employee.id+'/expense-evidence/'+Date.now()+'-'+safeName;
-   const upload=await db.storage.from('nexora-hr-documents').upload(uploadedPath,file,{upsert:false,contentType:file.type});
-   if(upload.error)throw upload.error;
-   const row={organization_id:employee.organization_id,module_key:'expenses',title:String(data.get('expense_category'))+' claim — '+employee.full_name,status:'submitted',priority:'normal',employee_id:employee.id,reference_code:'EXP-'+Date.now().toString(36).toUpperCase(),start_date:expenseDate,amount:Math.round(amount*100)/100,details:{category:String(data.get('expense_category')),expense_date:expenseDate,receipt_reference:String(data.get('receipt_reference')||'').trim(),notes:String(data.get('notes')||'').trim(),evidence_path:uploadedPath,evidence_name:file.name,evidence_type:file.type,evidence_size:file.size},created_by:user.id,updated_by:user.id};
-   const saved=await db.from('hr_operations_records').insert(row);
-   if(saved.error)throw saved.error;
-   form.reset();if(date)date.value=new Date().toISOString().slice(0,10);msg('Claim and evidence submitted to HR for review.');await loadEmployeeSelfService();
-  }catch(error){
-   if(uploadedPath){try{await db.storage.from('nexora-hr-documents').remove([uploadedPath])}catch{}}
-   msg('Could not submit the claim. Check your upload permissions and try again. '+(error.message||''),true);
-  }finally{button.disabled=false;button.textContent=label}
- });
 }
 
 async function load(){
@@ -298,7 +277,7 @@ async function load(){
  leaves=l.data||[];attendance=a.data||[];reviews=r.data||[];payItems=pi.data||[];employeeDocuments=docs.data||[];announcements=news.data||[];
  const ids=[...new Set(payItems.map(x=>x.payroll_period_id))];
  if(ids.length){const pr=await db.from('hr_payroll_periods').select('id,period_name,period_start,period_end,payment_date').in('id',ids);if(pr.error)throw pr.error;periods=pr.data||[]}else periods=[];
- $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();bindExpenseClaimForm();await loadEmployeeSelfService();msg('');
+ $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();await loadEmployeeSelfService();msg('');
 }
 async function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
