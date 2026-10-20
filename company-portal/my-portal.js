@@ -203,6 +203,30 @@ function renderEmployeeSelfService(records,error){
   })):'<div class="empty"><b>No '+esc(module.title.toLowerCase())+' records assigned</b><span>When HR assigns a relevant item to your employee record, it will appear here.</span></div>';
  }
 }
+async function submitEmployeeExpenseClaim(event){
+ event.preventDefault();
+ const form=event.currentTarget,button=form.querySelector('button[type="submit"]'),status=document.getElementById('employeeExpenseFormStatus');
+ if(!employee||!user){if(status)status.textContent='Sign in to submit an expense claim.';return}
+ if(!form.reportValidity())return;
+ const f=new FormData(form),amount=Number(f.get('amount')),expenseDate=String(f.get('expense_date')||''),category=String(f.get('expense_category')||'').trim(),receipt=String(f.get('receipt_reference')||'').trim(),notes=String(f.get('notes')||'').trim();
+ if(!Number.isFinite(amount)||amount<=0||!expenseDate||!category||receipt.length<2||notes.length<8){if(status)status.textContent='Complete all required fields with a valid amount, receipt reference and explanation.';return}
+ button.disabled=true;const original=button.textContent;button.textContent='Submitting…';if(status)status.textContent='Sending your claim to HR for review…';
+ try{
+  const ref='EXP-'+new Date().getFullYear()+'-'+Math.random().toString(36).slice(2,8).toUpperCase();
+  const result=await db.from('hr_operations_records').insert({
+   organization_id:employee.organization_id,module_key:'expenses',
+   title:category+' reimbursement — '+expenseDate,status:'submitted',priority:'normal',
+   employee_id:employee.id,reference_code:ref,start_date:expenseDate,due_date:null,
+   amount,details:{notes,category,receipt_reference:receipt,expense_date:expenseDate,submitted_by_employee:true},
+   created_by:user.id,updated_by:user.id
+  }).select('id').single();
+  if(result.error)throw result.error;
+  form.reset();if(status)status.textContent='Claim '+ref+' submitted. HR will review it and update the status.';
+  await loadEmployeeSelfService();
+ }catch(err){
+  if(status)status.textContent=(err.message||'Could not submit the claim.')+' If this continues, ask the administrator to verify the employee expense-claim RLS policy.';
+ }finally{button.disabled=false;button.textContent=original}
+}
 async function loadEmployeeSelfService(){
  if(!employee?.id)return;
  const result=await db.from('hr_operations_records').select('id,organization_id,module_key,title,status,priority,employee_id,reference_code,due_date,details,created_at').eq('organization_id',employee.organization_id).eq('employee_id',employee.id).order('created_at',{ascending:false}).limit(250);
@@ -250,6 +274,7 @@ async function init(){
  db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey);
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),b=e.currentTarget.querySelector('button');b.disabled=true;msg('Signing in…');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed.',true)}finally{b.disabled=false}});
  $('#employeeDocumentUploadForm')?.addEventListener('submit',uploadEmployeeDocument);
+ $('#employeeExpenseForm')?.addEventListener('submit',submitEmployeeExpenseClaim);
  $('#logoutBtn').addEventListener('click',async()=>{const b=$('#logoutBtn');b.disabled=true;try{const result=await db.auth.signOut({scope:'local'});if(result.error)throw result.error;user=null;employee=null;leaves=[];attendance=[];reviews=[];payItems=[];periods=[];employeeDocuments=[];announcements=[];$('#appSection').hidden=true;$('#authSection').hidden=false;$('#logoutBtn').hidden=true;$('#loginForm')?.reset();msg('You have signed out.');window.scrollTo({top:0,behavior:'instant'});}catch(err){msg('Could not sign out safely. Please try again. '+(err.message||''),true)}finally{b.disabled=false}});
  $('#portalNav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)tab(b.dataset.tab)});
  document.addEventListener('click',e=>{const jump=e.target.closest('[data-tab-jump]');if(jump){tab(jump.dataset.tabJump);return}if(e.target.closest('#clockInAction'))recordLiveAttendance('in');else if(e.target.closest('#clockOutAction'))recordLiveAttendance('out');else if(e.target.closest('#liveClockAction'))recordLiveAttendance();else if(e.target.closest('[data-attendance-action="in"]'))recordLiveAttendance('in');else if(e.target.closest('[data-attendance-action="out"]'))recordLiveAttendance('out')});
