@@ -104,7 +104,6 @@ db.from('hr_payroll_items').select('id,organization_id,payroll_period_id,employe
 db.rpc('executive_employee_summary',{p_org_id:orgId}),
 db.from('hr_payroll_audit_events').select('id,organization_id,payroll_period_id,actor_id,action,created_at').eq('organization_id',orgId).order('created_at',{ascending:false}).limit(100)
 ]);for(const r of [p,i,e,a])if(r.error)throw r.error;periods=p.data||[];items=i.data||[];staff=(e.data||[]).map(x=>({...x,department:{name:x.department_name||'—'}}));audits=a.data||[];await loadExecutivePeopleData();await loadExecutiveVacancies();render();message('Executive workspace is up to date.')}
-async 
 let employeeDocs=[],employeeRegistrations=[],executiveVacancies=[];
 async function loadExecutivePeopleData(){
  const [docs,regs]=await Promise.all([
