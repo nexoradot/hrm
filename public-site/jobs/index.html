@@ -26,6 +26,6 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(locationInput&&locationTerm&&!/^remote$/i.test(locationTerm))locationInput.value=locationTerm;
   if(/^remote$/i.test(locationTerm)||type==='remote'){if(workplace)workplace.value='remote';}
   else if(type&&typeSelect&&Array.from(typeSelect.options).some(o=>o.value===type))typeSelect.value=type;
-  if(q||locationTerm||type){document.querySelector('.filters')?.scrollIntoView({block:'start',behavior:'auto'});}
+  if(q||locationTerm||type){search?.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('.filters')?.scrollIntoView({block:'start',behavior:'auto'});}
 });
 </script></body></html>
