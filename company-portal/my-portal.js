@@ -153,11 +153,12 @@ async function openEmployeeDocument(id){
  const url=result.data.signedUrl,mime=String(doc.content_type||''),filename=String(doc.original_file_name||doc.document_name||'document');download.href=url;download.download=filename;download.hidden=false;download.textContent='Download copy';
  const isImage=/^image\/(jpeg|png|webp)$/i.test(mime)||/\.(jpe?g|png|webp)$/i.test(filename);
  const isPdf=mime==='application/pdf'||/\.pdf$/i.test(filename);
+ const isWord=/\.(docx?|docm)$/i.test(filename)||/wordprocessingml|msword/i.test(mime);
  if(isImage){
   content.innerHTML='<img class="doc-viewer-image" alt="'+esc(filename)+'" src="'+esc(url)+'">';
  }else if(isPdf){
   const frame=document.createElement('iframe');frame.className='doc-viewer-frame';frame.title=filename;frame.src=url;frame.setAttribute('referrerpolicy','no-referrer');content.replaceChildren(frame);
- }else if(/\.docx$/i.test(filename)){
+ }else if(isWord&&/\.docx$/i.test(filename)){
   content.innerHTML='<div class="doc-viewer-message"><h3>Preparing Word preview…</h3><p>The document is being rendered locally in this portal.</p></div>';
   try{
    if(!window.mammoth){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.0/mammoth.browser.min.js';script.onload=resolve;script.onerror=()=>reject(new Error('Word preview library could not load.'));document.head.appendChild(script)})}
