@@ -199,7 +199,7 @@
         const temporaryPassword = $("#executiveTempPassword").value;
         if (!organizationId) throw new Error("Choose the workspace this executive should access.");
         if (!["director","accountant"].includes(role)) throw new Error("Choose Director or Accountant.");
-        if (temporaryPassword.length < 12 || !/[A-Z]/.test(temporaryPassword) || !/[a-z]/.test(temporaryPassword) || !/[0-9]/.test(temporaryPassword) || !/[^A-Za-z0-9]/.test(temporaryPassword)) throw new Error("Temporary password must be at least 12 characters and include uppercase, lowercase, a number and a symbol.");
+        if (temporaryPassword.length < 8 || !/[A-Z]/.test(temporaryPassword) || !/[a-z]/.test(temporaryPassword) || !/[0-9]/.test(temporaryPassword) || !/[^A-Za-z0-9]/.test(temporaryPassword)) throw new Error("Temporary password must be at least 8 characters and include uppercase, lowercase, a number and a symbol.");
         const createResult = await privileged({ action:"create-executive", email, organizationId, role, password:temporaryPassword });
         toast(createResult.message || "Executive account created and linked to the selected workspace.", "success");
         if (status) status.textContent = "Account created for " + email + ". Share the temporary password securely. They must change it at first sign-in.";
