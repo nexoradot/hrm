@@ -51,8 +51,8 @@
     try {
       if (!await verifyAdmin()) {
         accounts = []; organizations = []; memberships = [];
-        populateOrganizations("Sign in as an active platform administrator to load workspaces.");
-        render();
+        populateOrganizations("Sign in as an active platform administrator to load workspaces."); populateExecutiveOrganizations();
+        render(); renderExecutives();
         statusText("Sign in as an active platform administrator to view live accounts.");
         return;
       }
@@ -94,14 +94,14 @@
         }
       }
 
-      populateOrganizations(); render();
+      populateOrganizations(); populateExecutiveOrganizations(); render(); renderExecutives();
       const summary = "Workspace access loaded · " + organizations.length + " workspaces · " + memberships.length + " company memberships.";
       const notes = [accountLoadError, workspaceLoadError].filter(Boolean).join(" · ");
       statusText(notes ? summary + " " + notes : summary);
     } catch (error) {
       authorized = false; accounts = []; organizations = []; memberships = [];
-      populateOrganizations("Workspace list unavailable. Check the status message above and refresh.");
-      render();
+      populateOrganizations("Workspace list unavailable. Check the status message above and refresh."); populateExecutiveOrganizations();
+      render(); renderExecutives();
       statusText("Live account directory unavailable: " + (error?.message || String(error)));
     } finally { loading = false; }
   }
@@ -124,6 +124,38 @@
       : organizations.length
         ? "Workspaces were found, but none are active. Open Companies, activate a workspace, then refresh this list."
         : "No workspace records were returned. Create a workspace under Companies, then refresh this list.";
+  }
+  function populateExecutiveOrganizations() {
+    const select = $("#executiveOrganization");
+    if (!select) return;
+    const previous = select.value;
+    const active = organizations.filter(org => org.status === "active");
+    select.innerHTML = '<option value="">'+esc(active.length ? "Select a workspace…" : "No active workspaces available")+'</option>' +
+      active.map(org => '<option value="'+esc(org.id)+'">'+esc(org.name || "Unnamed workspace")+'</option>').join("");
+    if (active.some(org => org.id === previous)) select.value = previous;
+    const hint = $("#executiveWorkspaceHint");
+    if (hint) hint.textContent = active.length
+      ? active.length + " active workspace" + (active.length === 1 ? "" : "s") + " available. Each executive will be linked only to the selected workspace."
+      : "Activate a workspace under Companies before assigning executive access.";
+  }
+  function renderExecutives() {
+    const host = $("#executiveRows");
+    if (!host) return;
+    const query = ($("#executiveSearch")?.value || "").trim().toLowerCase();
+    const rows = memberships.filter(m => ["director","accountant"].includes(m.role))
+      .map(m => ({...m, user:accounts.find(u => u.id === m.user_id), organization:organizations.find(o => o.id === m.organization_id)}))
+      .filter(row => !query || [row.user?.email,row.organization?.name,row.role,row.status].some(value => String(value || "").toLowerCase().includes(query)));
+    if (!rows.length) {
+      host.innerHTML = '<tr><td colspan="5">'+(authorized ? "No executive accounts assigned yet. Use the form above to invite a Director or Accountant." : "Sign in as a platform administrator to load executive accounts.")+'</td></tr>';
+      return;
+    }
+    host.innerHTML = rows.map(row => {
+      const banned = !!row.user?.banned_until && new Date(row.user.banned_until) > new Date();
+      return '<tr><td><b>'+esc(row.user?.email || "Pending invitation")+'</b><small class="user-id">'+esc(row.user_id)+'</small></td>'+
+        '<td>'+esc(row.organization?.name || "Unknown workspace")+'</td><td>'+esc(row.role === "director" ? "Director" : "Accountant")+'</td>'+
+        '<td>'+pill(row.status)+'</td><td><button type="button" class="rowbtn" data-account-action="membership" data-membership="'+esc(row.id)+'" data-status="'+esc(row.status)+'">'+(row.status === "active" ? "Suspend access" : "Activate access")+'</button> '+
+        '<button type="button" class="rowbtn" data-account-action="auth" data-user="'+esc(row.user_id)+'" data-status="'+(banned ? "suspended" : "active")+'">'+(banned ? "Restore account" : "Suspend account")+'</button></td></tr>';
+    }).join("");
   }
   function render() {
     const host = $("#userRows");
@@ -150,6 +182,31 @@
   function wire() {
     $("#refreshUsers")?.addEventListener("click", load);
     $("#userSearch")?.addEventListener("input", render);
+    $("#executiveSearch")?.addEventListener("input", renderExecutives);
+    $("#refreshExecutives")?.addEventListener("click", load);
+    $("#executiveInviteForm")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      const button = form.querySelector('button[type="submit"]'), original = button.textContent;
+      button.disabled = true; button.textContent = "Sending invitation…";
+      const status = $("#executivesStatus");
+      try {
+        if (!authorized || !await verifyAdmin()) throw new Error("An active platform administrator session is required.");
+        const email = $("#executiveEmail").value.trim().toLowerCase();
+        const organizationId = $("#executiveOrganization").value;
+        const role = $("#executiveRole").value;
+        if (!organizationId) throw new Error("Choose the workspace this executive should access.");
+        if (!["director","accountant"].includes(role)) throw new Error("Choose Director or Accountant.");
+        const inviteResult = await privileged({ action:"invite", email, organizationId, role, redirectTo:location.origin + "/executive/" });
+        toast(inviteResult.message || "Executive invitation sent and linked to the selected workspace. Membership is pending until activated.", "success");
+        if (status) status.textContent = "Invitation requested for " + email + ". Refresh to verify the workspace membership status.";
+        form.reset(); populateExecutiveOrganizations(); await load();
+      } catch (error) {
+        if (status) status.textContent = "Executive invitation failed: " + (error?.message || String(error));
+        toast(error?.message || "Executive invitation failed.", "error");
+      } finally { button.disabled = false; button.textContent = original; }
+    });
     $("#inviteUserForm")?.addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -193,7 +250,7 @@
       const client = getClient();
       client.auth.onAuthStateChange((event, session) => {
         if (session && ["SIGNED_IN","TOKEN_REFRESHED","INITIAL_SESSION","USER_UPDATED"].includes(event)) load();
-        else if (event === "SIGNED_OUT") { authorized = false; accounts = []; memberships = []; organizations = []; render(); statusText("Signed out. Sign in as a platform administrator to load accounts."); }
+        else if (event === "SIGNED_OUT") { authorized = false; accounts = []; memberships = []; organizations = []; render(); renderExecutives(); populateExecutiveOrganizations(); statusText("Signed out. Sign in as a platform administrator to load accounts."); }
       });
       load();
     } catch (error) { statusText(error?.message || "Supabase configuration required."); }
