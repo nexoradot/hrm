@@ -29,15 +29,35 @@ Deno.serve(async (req) => {
   });
   const { data: callerData, error: callerError } = await caller.auth.getUser();
   if (callerError || !callerData.user) return response({ error: "Invalid session." }, 401);
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return response({ error: "Valid JSON body required." }, 400); }
+  const action = String(body.action || "");
+
+  // First-login setup is bound to the authenticated executive. The required-change
+  // flag is in app_metadata, which the browser client cannot modify.
+  if (action === "complete-executive-first-login") {
+    const currentUser = callerData.user;
+    if (currentUser.app_metadata?.require_password_change !== true) return response({ error: "This account does not require first-login password setup." }, 409);
+    const organizationId = String(currentUser.app_metadata?.organization_id || "");
+    const newPassword = String(body.newPassword || "");
+    if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "The executive workspace assignment is missing. Contact the platform administrator." }, 409);
+    if (newPassword.length < 12 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword) || !/[^A-Za-z0-9]/.test(newPassword)) return response({ error: "New password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+    const { data: member, error: memberError } = await admin.from("organization_members").select("organization_id,role,status").eq("organization_id", organizationId).eq("user_id", currentUser.id).maybeSingle();
+    if (memberError || !member || !["director","accountant"].includes(member.role) || !["invited","active"].includes(member.status)) return response({ error: "No valid executive workspace assignment was found." }, 403);
+    const nextAppMetadata = { ...(currentUser.app_metadata || {}), require_password_change: false, password_changed_at: new Date().toISOString() };
+    const { data: updatedUser, error: passwordError } = await admin.auth.admin.updateUserById(currentUser.id, { password: newPassword, app_metadata: nextAppMetadata });
+    if (passwordError || !updatedUser.user) return response({ error: passwordError?.message || "Could not update the password." }, 400);
+    const { error: membershipUpdateError } = await admin.from("organization_members").update({ status: "active", updated_at: new Date().toISOString() }).eq("organization_id", organizationId).eq("user_id", currentUser.id);
+    if (membershipUpdateError) return response({ error: "Password updated, but workspace activation failed. Contact the platform administrator." }, 500);
+    return response({ success: true, message: "Password updated. Sign in again with your new password." });
+  }
+
   const { data: role, error: roleError } = await admin.from("platform_admins")
     .select("role,status").eq("user_id", callerData.user.id).maybeSingle();
   if (roleError || !role || role.status !== "active" || role.role !== "platform_admin") {
     return response({ error: "Platform administrator permission required." }, 403);
   }
 
-  let body: Record<string, unknown>;
-  try { body = await req.json(); } catch { return response({ error: "Valid JSON body required." }, 400); }
-  const action = String(body.action || "");
   if (action === "list") {
     const users = [];
     for (let page = 1; page <= 20; page++) {
@@ -142,6 +162,38 @@ Deno.serve(async (req) => {
     const { data: updated, error: updateError } = await admin.auth.admin.updateUserById(user.id, { password, user_metadata: userMetadata });
     if (updateError || !updated.user) return response({ error: updateError?.message || "Password update failed." }, 400);
     return response({ user: { id: updated.user.id, email: updated.user.email }, passwordChanged: true, requirePasswordChange: true, accountCreated: createdDuringReset });
+  }
+  if (action === "create-executive") {
+    const email = String(body.email || "").trim().toLowerCase();
+    const organizationId = String(body.organizationId || "");
+    const role = String(body.role || "");
+    const password = String(body.password || "");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return response({ error: "A valid executive email is required." }, 400);
+    if (!/^[0-9a-f-]{36}$/i.test(organizationId)) return response({ error: "Choose a valid workspace." }, 400);
+    if (!["director","accountant"].includes(role)) return response({ error: "Choose Director or Accountant." }, 400);
+    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) return response({ error: "Temporary password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+    const { data: org, error: orgError } = await admin.from("organizations").select("id,name,status").eq("id", organizationId).maybeSingle();
+    if (orgError || !org) return response({ error: "Workspace not found." }, 404);
+    if (org.status !== "active") return response({ error: "Activate the workspace before creating an executive account." }, 409);
+    for (let page = 1; page <= 20; page++) {
+      const { data: existing, error: listError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (listError) return response({ error: "Could not verify the executive email: " + listError.message }, 500);
+      const batch = existing.users || [];
+      if (batch.some(u => (u.email || "").toLowerCase() === email)) return response({ error: "An account already exists for this email. Do not overwrite its password; use the existing account-management workflow." }, 409);
+      if (batch.length < 1000) break;
+    }
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email, password, email_confirm: true,
+      user_metadata: { full_name: email.split("@")[0], provisioned_by: "nexora_super_admin", organization_id: organizationId },
+      app_metadata: { require_password_change: true, organization_id: organizationId, provisioned_by: "nexora_super_admin" }
+    });
+    if (createError || !created.user) return response({ error: createError?.message || "Could not create the executive account." }, 400);
+    const { error: memberError } = await admin.from("organization_members").upsert({ organization_id: organizationId, user_id: created.user.id, role, status: "invited" }, { onConflict: "organization_id,user_id" });
+    if (memberError) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      return response({ error: "Account creation was rolled back because workspace assignment failed: " + memberError.message }, 500);
+    }
+    return response({ success: true, user: { id: created.user.id, email: created.user.email }, organization: { id: org.id, name: org.name }, role, membershipStatus: "invited", message: "Executive account created. The executive must change the temporary password at first sign-in." });
   }
   if (action === "invite") {
     const email = String(body.email || "").trim().toLowerCase();
