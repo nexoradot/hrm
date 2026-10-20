@@ -211,10 +211,10 @@ function renderEmployeeSelfService(records,error){
   if(error){target.innerHTML='<div class="empty">Your assigned records could not be loaded. Contact HR to check employee self-service access.</div>';continue}
   const rows=records.filter(x=>String(x.module_key||'').toLowerCase()===module.key);
   if(module.key==='expenses'&&rows.length){
-   target.innerHTML='<div style="display:grid;gap:10px">'+rows.map(x=>{
-    const d=x.details&&typeof x.details==='object'?x.details:{},statusText=String(x.status||'submitted').replace(/_/g,' ');
-    return '<article style="border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;overflow-wrap:anywhere"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><strong>'+esc(x.title||'Expense claim')+'</strong>'+pill(statusText)+'</div><p style="margin:7px 0;color:var(--muted);font-size:12px">Reference: '+esc(x.reference_code||'—')+' · '+esc(d.expense_date||x.start_date||'Date not set')+'</p><div style="font-weight:800;font-size:18px;margin:8px 0">KES '+esc(Number(x.amount||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2}))+'</div><p style="margin:0;white-space:normal;overflow-wrap:anywhere">'+esc(d.notes||'No explanation recorded.')+'</p><small style="display:block;margin-top:8px;color:var(--muted)">Evidence: '+esc(d.evidence_name||'Not attached')+'</small></article>'
-   }).join('')+'</div>';
+   target.innerHTML='<div class="table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;min-width:780px;border-collapse:collapse"><thead><tr><th>Reference / date</th><th>Expense</th><th>Amount (KES)</th><th>Status</th><th>Evidence</th><th>Actions</th></tr></thead><tbody>'+rows.map(x=>{
+    const d=x.details&&typeof x.details==='object'?x.details:{},statusText=String(x.status||'submitted').toLowerCase(),editable=['submitted','pending','returned','rejected'].includes(statusText),amt=Number(x.amount??d.amount??d.claim_amount??0);
+    return '<tr><td>'+esc(x.reference_code||'—')+'<br><small>'+esc(d.expense_date||x.start_date||'Date not set')+'</small></td><td><strong>'+esc(d.category||x.title||'Expense claim')+'</strong><br><small>'+esc(d.notes||'')+'</small></td><td><strong>'+esc(amt.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2}))+'</strong></td><td>'+pill(statusText.replace(/_/g,' '))+'</td><td>'+ (d.evidence_path?'<button type="button" class="btn ghost" data-expense-evidence="'+esc(x.id)+'">View evidence</button>':esc(d.evidence_name||'Not attached'))+'</td><td>'+ (editable?'<button type="button" class="btn ghost" data-expense-edit="'+esc(x.id)+'">Edit</button> <button type="button" class="btn ghost" data-expense-delete="'+esc(x.id)+'">Delete</button>':'—')+'</td></tr>'
+   }).join('')+'</tbody></table></div>';
   }else{
    target.innerHTML=rows.length?'<div class="table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch">'+table(['Item','Status','Due date','Details'],rows.map(x=>{
     const details=x.details&&typeof x.details==='object'?(x.details.notes||x.details.description||x.details.summary||''):String(x.details||'');
@@ -223,6 +223,40 @@ function renderEmployeeSelfService(records,error){
   }
  }
 }
+
+async function handleExpenseClaimAction(event){
+ const edit=event.target.closest('[data-expense-edit]'),del=event.target.closest('[data-expense-delete]'),view=event.target.closest('[data-expense-evidence]');
+ if(!edit&&!del&&!view)return;
+ const id=(edit||del||view).getAttribute('data-expense-edit')||(edit||del||view).getAttribute('data-expense-delete')||(edit||del||view).getAttribute('data-expense-evidence');
+ const result=await db.from('hr_operations_records').select('id,organization_id,employee_id,module_key,status,amount,start_date,title,details,reference_code').eq('id',id).eq('organization_id',employee.organization_id).eq('employee_id',employee.id).eq('module_key','expenses').maybeSingle();
+ if(result.error||!result.data){msg('Could not load this claim. Check your access and retry.',true);return}
+ const row=result.data,d=row.details&&typeof row.details==='object'?row.details:{},status=String(row.status||'').toLowerCase();
+ if(view){
+  if(!d.evidence_path){msg('No evidence file is attached to this claim.',true);return}
+  const signed=await db.storage.from('nexora-hr-documents').createSignedUrl(d.evidence_path,300);
+  if(signed.error||!signed.data?.signedUrl){msg('Evidence could not be opened. Check secure file permissions.',true);return}
+  window.open(signed.data.signedUrl,'_blank','noopener');return;
+ }
+ if(!['submitted','pending','returned','rejected'].includes(status)){msg('Claims already approved by HR cannot be edited or deleted here.',true);return}
+ if(del){
+  if(!confirm('Delete this expense claim '+(row.reference_code||'')+'? This cannot be undone.'))return;
+  const removed=await db.from('hr_operations_records').delete().eq('id',id).eq('organization_id',employee.organization_id).eq('employee_id',employee.id).eq('module_key','expenses');
+  if(removed.error){msg('Claim was not deleted. Check employee claim permissions.',true);return}
+  if(d.evidence_path){const storage=await db.storage.from('nexora-hr-documents').remove([d.evidence_path]);if(storage.error)msg('Claim deleted, but evidence cleanup needs administrator review.',true)}
+  else msg('Expense claim deleted.');
+  await loadEmployeeSelfService();return;
+ }
+ const amountInput=prompt('Enter the corrected claim amount in KES:',String(Number(row.amount??d.amount??0)));
+ if(amountInput===null)return;
+ const amount=Number(amountInput);if(!Number.isFinite(amount)||amount<=0){msg('Enter a valid amount greater than zero.',true);return}
+ const notes=prompt('Update the business purpose / explanation:',String(d.notes||''));if(notes===null)return;
+ if(notes.trim().length<8){msg('Please provide a clearer explanation (at least 8 characters).',true);return}
+ const patch={amount,details:{...d,notes:notes.trim(),updated_by_employee_at:new Date().toISOString()},updated_by:user.id,status:'submitted'};
+ const saved=await db.from('hr_operations_records').update(patch).eq('id',id).eq('organization_id',employee.organization_id).eq('employee_id',employee.id).eq('module_key','expenses');
+ if(saved.error){msg('Claim could not be updated. Check employee claim permissions.',true);return}
+ msg('Claim updated and returned to HR review.');await loadEmployeeSelfService();
+}
+
 async function submitEmployeeExpenseClaim(event){
  event.preventDefault();
  const form=event.currentTarget,button=form.querySelector('button[type="submit"]'),status=document.getElementById('employeeExpenseFormStatus');
@@ -258,7 +292,7 @@ async function submitEmployeeExpenseClaim(event){
 }
 async function loadEmployeeSelfService(){
  if(!employee?.id)return;
- const result=await db.from('hr_operations_records').select('id,organization_id,module_key,title,status,priority,employee_id,reference_code,due_date,details,created_at').eq('organization_id',employee.organization_id).eq('employee_id',employee.id).order('created_at',{ascending:false}).limit(250);
+ const result=await db.from('hr_operations_records').select('id,organization_id,module_key,title,status,priority,employee_id,reference_code,due_date,start_date,amount,details,created_at').eq('organization_id',employee.organization_id).eq('employee_id',employee.id).order('created_at',{ascending:false}).limit(250);
  renderEmployeeSelfService(result.data||[],!!result.error);
 }
 
@@ -305,6 +339,7 @@ async function init(){
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),b=e.currentTarget.querySelector('button');b.disabled=true;msg('Signing in…');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed.',true)}finally{b.disabled=false}});
  $('#employeeDocumentUploadForm')?.addEventListener('submit',uploadEmployeeDocument);
  $('#employeeExpenseForm')?.addEventListener('submit',submitEmployeeExpenseClaim);
+ $('#employeeExpensesRecords')?.addEventListener('click',handleExpenseClaimAction);
  $('#logoutBtn').addEventListener('click',async()=>{const b=$('#logoutBtn');b.disabled=true;try{const result=await db.auth.signOut({scope:'local'});if(result.error)throw result.error;user=null;employee=null;leaves=[];attendance=[];reviews=[];payItems=[];periods=[];employeeDocuments=[];announcements=[];$('#appSection').hidden=true;$('#authSection').hidden=false;$('#logoutBtn').hidden=true;$('#loginForm')?.reset();msg('You have signed out.');window.scrollTo({top:0,behavior:'instant'});}catch(err){msg('Could not sign out safely. Please try again. '+(err.message||''),true)}finally{b.disabled=false}});
  $('#portalNav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)tab(b.dataset.tab)});
  document.addEventListener('click',e=>{const jump=e.target.closest('[data-tab-jump]');if(jump){tab(jump.dataset.tabJump);return}if(e.target.closest('#clockInAction'))recordLiveAttendance('in');else if(e.target.closest('#clockOutAction'))recordLiveAttendance('out');else if(e.target.closest('#liveClockAction'))recordLiveAttendance();else if(e.target.closest('[data-attendance-action="in"]'))recordLiveAttendance('in');else if(e.target.closest('[data-attendance-action="out"]'))recordLiveAttendance('out')});
