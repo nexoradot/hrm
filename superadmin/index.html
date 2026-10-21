@@ -24,7 +24,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.__nexoraEarlyReport && window.__nexoraEarlyReport('Supabase library loaded.')" onerror="window.__nexoraEarlyReport && window.__nexoraEarlyReport('FAILED TO LOAD SUPABASE LIBRARY. Check internet/CDN access.')"></script>
-<script defer src="../app.js?v=20261021-payhero-confirmation2" onerror="window.__nexoraEarlyReport && window.__nexoraEarlyReport('FAILED TO LOAD app.js. Confirm app.js is committed at the repository root beside index.html.')"></script>
+<script defer src="../app.js?v=20261021-payhero-invoice1" onerror="window.__nexoraEarlyReport && window.__nexoraEarlyReport('FAILED TO LOAD app.js. Confirm app.js is committed at the repository root beside index.html.')"></script>
 <script defer src="../js/platform-operations.js?v=20261021-payhero-billing1" onerror="window.__nexoraEarlyReport && window.__nexoraEarlyReport('FAILED TO LOAD js/platform-operations.js.')"></script>
 <script>
 /* Startup watchdog: don't let a resource onload message hide a real boot error. */
@@ -329,7 +329,7 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 <p class="muted span2" id="billingCheckoutStatus" role="status" aria-live="polite">Checkout requires PayHero credentials configured in Supabase Edge Function secrets. No payment will be marked active until a successful provider callback is verified.</p>
 <div class="span2 actions"><button class="btn light" id="billingInvoiceButton" type="button" hidden>View / Print confirmed invoice</button></div>
 </form></section>
-<section class="panel"><div class="panel-head"><div><h2>Subscription payment ledger</h2><p>Recent payment attempts, M-Pesa receipts and subscription status.</p></div></div><div class="table-wrap"><table><thead><tr><th>COMPANY</th><th>PLAN</th><th>AMOUNT</th><th>PHONE</th><th>STATUS</th><th>M-PESA RECEIPT</th><th>CREATED</th></tr></thead><tbody id="billingPaymentRows"><tr><td colspan="7">Sign in as a platform administrator to load billing records.</td></tr></tbody></table></div></section>
+<section class="panel"><div class="panel-head"><div><h2>Subscription payment ledger</h2><p>Recent payment attempts, M-Pesa receipts and subscription status.</p></div></div><div class="table-wrap"><table><thead><tr><th>COMPANY</th><th>PLAN</th><th>AMOUNT</th><th>PHONE</th><th>STATUS</th><th>M-PESA RECEIPT</th><th>CREATED</th><th>INVOICE</th></tr></thead><tbody id="billingPaymentRows"><tr><td colspan="8">Sign in as a platform administrator to load billing records.</td></tr></tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><h2>Provider setup checklist</h2><p>Configure secrets in Supabase → Edge Functions → Secrets before accepting live payments.</p></div></div><div class="callout">Payment secrets: <b>PAYHERO_BASIC_AUTH</b> and <b>PAYHERO_CHANNEL_ID</b>, plus standard Supabase Edge Function secrets. For automatic invoice emails, configure <b>RESEND_API_KEY</b> and <b>INVOICE_FROM_EMAIL</b> in Supabase Edge Function secrets, and make sure each workspace has a valid contact email. Never paste secrets here or commit them to GitHub. Payment confirmation is based on the verified provider callback; an M-Pesa prompt alone is not proof of payment.</div></section>
 </section>
 <section class="view" id="view-marketplace">
