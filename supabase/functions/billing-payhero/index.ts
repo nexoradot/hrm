@@ -4,7 +4,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json"}});
-const plans={starter:{name:"Starter",monthly:2500,annual:25000},growth:{name:"Growth",monthly:7500,annual:75000}} as const;
 function formatPhone(value:unknown){let p=String(value||"").replace(/[\s()+-]/g,"");if(p.startsWith("+"))p=p.slice(1);if(p.startsWith("254"))p="0"+p.slice(3);if(/^([17])\d{8}$/.test(p))p="0"+p;if(!/^0[17]\d{8}$/.test(p))throw new Error("Enter a valid Kenyan M-Pesa phone number.");return p;}
 Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
@@ -58,15 +57,22 @@ Deno.serve(async(req)=>{
  if(authErr||!userData.user)return json({error:"Session invalid. Sign in again."},401);
  let body:any;try{body=await req.json()}catch{return json({error:"Invalid JSON body."},400)}
  if(body.action!=="checkout")return json({error:"Unsupported action."},400);
- const orgId=String(body.organization_id||""),planCode=String(body.plan_code||"").toLowerCase() as keyof typeof plans,billingPeriod=body.billing_period==="annual"?"annual":"monthly";
- if(!orgId||!(planCode in plans))return json({error:"Choose a valid workspace and plan."},400);
+ const orgId=String(body.organization_id||""),planCode=String(body.plan_code||"").toLowerCase(),billingPeriod=body.billing_period==="annual"?"annual":"monthly";
+ if(!orgId||!planCode)return json({error:"Choose a valid workspace and plan."},400);
  let phone:string;try{phone=formatPhone(body.phone)}catch(e){return json({error:e.message},400)}
  const {data:pa}=await admin.from("platform_admins").select("user_id").eq("user_id",userData.user.id).eq("status","active").maybeSingle();
  const {data:member}=await admin.from("organization_members").select("role,status").eq("organization_id",orgId).eq("user_id",userData.user.id).eq("status","active").in("role",["owner","hr_manager"]).maybeSingle();
  if(!pa&&!member)return json({error:"Only a platform admin, workspace owner or HR manager can pay for this workspace."},403);
- const {data:org,error:orgErr}=await admin.from("organizations").select("id,name,contact_name").eq("id",orgId).maybeSingle();if(orgErr||!org)return json({error:"Workspace not found."},404);
- const plan=plans[planCode],amount=plan[billingPeriod],reference="NEX-"+crypto.randomUUID().replace(/-/g,"").slice(0,20).toUpperCase();
- const {data:payment,error:insErr}=await admin.from("subscription_payments").insert({organization_id:orgId,plan_code:planCode,plan_name:plan.name,amount_kes:amount,billing_period:billingPeriod,phone_number:phone,external_reference:reference,status:"pending",created_by:userData.user.id}).select("id,amount_kes,external_reference").single();
+ const {data:org,error:orgErr}=await admin.from("organizations").select("id,name,contact_name,workspace_settings").eq("id",orgId).maybeSingle();if(orgErr||!org)return json({error:"Workspace not found."},404);
+ const {data:plan,error:planErr}=await admin.from("subscription_plans").select("plan_key,name,monthly_price,annual_price,active").eq("plan_key",planCode).eq("active",true).maybeSingle();
+ if(planErr||!plan)return json({error:"That subscription plan is unavailable. Refresh the billing page."},400);
+ const rawCustom=org.workspace_settings?.subscription_amount,custom=rawCustom!==null&&rawCustom!==undefined&&String(rawCustom).trim()!==""?Number(rawCustom):null;
+ if(custom!==null&&(!Number.isFinite(custom)||custom<0))return json({error:"The company subscription amount is invalid. Correct it in Companies → Edit."},400);
+ if(custom===0)return json({error:"This company is complimentary (KES 0), so a paid checkout is not required."},400);
+ const amount=custom!==null?(billingPeriod==="annual"?custom*12:custom):Number(billingPeriod==="annual"?plan.annual_price:plan.monthly_price);
+ if(!Number.isInteger(amount)||amount<=0)return json({error:"Set a positive subscription price before starting checkout."},400);
+ const planName=String(plan.name),reference="NEX-"+crypto.randomUUID().replace(/-/g,"").slice(0,20).toUpperCase();
+ const {data:payment,error:insErr}=await admin.from("subscription_payments").insert({organization_id:orgId,plan_code:planCode,plan_name:planName,amount_kes:amount,billing_period:billingPeriod,phone_number:phone,external_reference:reference,status:"pending",created_by:userData.user.id}).select("id,amount_kes,external_reference").single();
  if(insErr||!payment)return json({error:"Could not create payment record."},500);
  const payload={amount,phone_number:phone,channel_id:channelId,provider:"m-pesa",external_reference:reference,customer_name:org.contact_name||org.name,callback_url:supabaseUrl+"/functions/v1/billing-payhero/webhook"};
  let providerResponse:Response;try{providerResponse=await fetch(apiUrl.replace(/\/$/,"")+"/payments",{method:"POST",headers:{"Content-Type":"application/json","Authorization":basicAuth},body:JSON.stringify(payload)})}catch(e){await admin.from("subscription_payments").update({status:"failed",provider_response:{error:String(e)},updated_at:new Date().toISOString()}).eq("id",payment.id);return json({error:"Could not reach PayHero."},502)}
