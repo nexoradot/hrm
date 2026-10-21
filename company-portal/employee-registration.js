@@ -2,13 +2,13 @@
 const $=s=>document.querySelector(s);
 let db=null,user=null,orgId='',uploadedPaths=[];
 const categories=[
- {key:'kra_certificate',label:'KRA PIN Certificate',max:10,types:['application/pdf','image/jpeg','image/png','image/webp']},
- {key:'nssf_certificate',label:'NSSF Certificate',max:1,types:['application/pdf','image/jpeg','image/png','image/webp']},
- {key:'sha_certificate',label:'SHA Certificate',max:1,types:['application/pdf']},
- {key:'id_passport_copy',label:'ID/Passport Copy (both sides)',max:10,types:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','image/webp']},
- {key:'cv',label:'CV',max:1,types:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']},
- {key:'academic_certificates',label:'Academic Certificates',max:5,types:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']},
- {key:'passport_photo',label:'Passport Photograph',max:1,types:['application/pdf','image/jpeg','image/png','image/webp']}
+ {key:'kra_certificate',label:'KRA PIN Certificate',required:false,max:10,types:['application/pdf','image/jpeg','image/png','image/webp']},
+ {key:'nssf_certificate',label:'NSSF Certificate',required:false,max:1,types:['application/pdf','image/jpeg','image/png','image/webp']},
+ {key:'sha_certificate',label:'SHA Certificate',required:false,max:1,types:['application/pdf']},
+ {key:'id_passport_copy',label:'ID/Passport Copy (both sides)',required:false,max:10,types:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','image/webp']},
+ {key:'cv',label:'CV',required:true,max:1,types:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']},
+ {key:'academic_certificates',label:'Academic Certificates',required:false,max:5,types:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']},
+ {key:'passport_photo',label:'Passport Photograph',required:false,max:1,types:['application/pdf','image/jpeg','image/png','image/webp']}
 ];
 function message(t,error=false){const el=$('#message');el.textContent=t;el.className='notice show'+(error?' error':'')}
 function setCvStatus(text,error=false){const el=$('#cvExtractStatus');if(el){el.textContent=text;el.style.color=error?'#b83333':''}const btn=$('#extractCvBtn');const match=String(text).match(/\((\d{1,3})%\)/);if(btn&&btn.disabled&&match)btn.textContent='Extracting '+Math.max(0,Math.min(100,Number(match[1])))+'%'}
@@ -26,7 +26,7 @@ function sectionText(text,labels){
  return out.join('\n').slice(0,1800)
 }
 function filesFor(form,key){return [...form.elements.namedItem(key).files]}
-function validateFiles(form){for(const c of categories){const fs=filesFor(form,c.key);if(!fs.length)throw new Error(c.label+' is required.');if(fs.length>c.max)throw new Error(c.label+' allows a maximum of '+c.max+' file(s).');for(const f of fs){if(f.size>10*1024*1024)throw new Error(f.name+' exceeds 10 MB.');if(f.type&&!c.types.includes(f.type))throw new Error(f.name+' has an unsupported file type for '+c.label+'.')}}}
+function validateFiles(form){for(const c of categories){const fs=filesFor(form,c.key);if(c.required&&!fs.length)throw new Error(c.label+' is required.');if(fs.length>c.max)throw new Error(c.label+' allows a maximum of '+c.max+' file(s).');for(const f of fs){if(f.size>10*1024*1024)throw new Error(f.name+' exceeds 10 MB.');if(f.type&&!c.types.includes(f.type))throw new Error(f.name+' has an unsupported file type for '+c.label+'.')}}}
 function safeName(name){return name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'_').replace(/^_+|_+$/g,'').slice(-100)||'document'}
 async function uploadDocuments(form,registrationId){const result={};for(const c of categories){const uploaded=[];for(const f of filesFor(form,c.key)){const path=orgId+'/'+user.id+'/'+registrationId+'/'+c.key+'/'+safeName(f.name);const up=await db.storage.from('hr-employee-documents').upload(path,f,{upsert:false,contentType:f.type||'application/octet-stream'});if(up.error)throw new Error('Upload failed for '+f.name+': '+up.error.message);uploadedPaths.push(path);uploaded.push({name:f.name,path,content_type:f.type,size:f.size})}result[c.key]={label:c.label,files:uploaded}}return result}
 async function memberships(){const r=await db.from('organization_members').select('organization_id,role,status').eq('user_id',user.id).eq('status','active');if(r.error)throw r.error;const ids=[...new Set((r.data||[]).map(x=>x.organization_id))];if(!ids.length)throw new Error('Your account has no active organisation invitation. Contact HR to be added to the organisation before submitting.');const o=await db.from('organizations').select('id,name,status').in('id',ids).eq('status','active');if(o.error)throw o.error;if(!o.data?.length)throw new Error('No active organisation is available for this account.');return o.data}
