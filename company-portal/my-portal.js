@@ -6,7 +6,8 @@ function msg(text,error=false){const el=$('#message');el.textContent=text;el.hid
 function pill(v){const s=String(v||'pending').toLowerCase();return '<span class="pill '+esc(s)+'">'+esc(s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))+'</span>'}
 function table(headers,rows){return rows.length?'<table><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':'<div class="empty">No records available yet.</div>'}
 function money(v){return new Intl.NumberFormat('en-KE',{style:'currency',currency:'KES',maximumFractionDigits:2}).format(Number(v)||0)}
-function tab(name){document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id==='tab-'+name));document.querySelectorAll('#portalNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===name))}
+function tab(name,updateLocation=true){const target=document.getElementById('tab-'+name);if(!target||!target.classList.contains('section'))name='overview';document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id==='tab-'+name));document.querySelectorAll('#portalNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));if(updateLocation){const hash='#'+name;if(window.location.hash!==hash)history.replaceState(null,'',window.location.pathname+window.location.search+hash)}}
+function restoreTabFromLocation(){const name=String(window.location.hash||'').replace(/^#/,'').trim();if(name&&document.getElementById('tab-'+name))tab(name,false);else tab('overview',false)}
 function annualLeaveBalance(){
  const start=employee?.start_date?new Date(String(employee.start_date).slice(0,10)+'T00:00:00'):null;
  if(!start||Number.isNaN(start.getTime()))return {entitled:null,used:0,pending:0,remaining:null};
@@ -362,11 +363,11 @@ async function load(){
  leaves=l.data||[];attendance=a.data||[];reviews=r.data||[];payItems=pi.data||[];employeeDocuments=docs.data||[];announcements=news.data||[];
  const ids=[...new Set(payItems.map(x=>x.payroll_period_id))];
  if(ids.length){const pr=await db.from('hr_payroll_periods').select('id,period_name,period_start,period_end,payment_date').in('id',ids);if(pr.error)throw pr.error;periods=pr.data||[]}else periods=[];
- $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();bindEmployeeGoalForm();await loadEmployeeSelfService();msg('');
+ $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();bindEmployeeGoalForm();await loadEmployeeSelfService();restoreTabFromLocation();msg('');
 }
 async function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
- db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey);
+ db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'nexora-employee-portal-auth'}});
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),b=e.currentTarget.querySelector('button');b.disabled=true;msg('Signing in…');try{const r=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed.',true)}finally{b.disabled=false}});
  $('#employeeDocumentUploadForm')?.addEventListener('submit',uploadEmployeeDocument);
  $('#employeeExpenseForm')?.addEventListener('submit',submitEmployeeExpenseClaim);
@@ -402,7 +403,8 @@ async function init(){
   }catch(err){msg(err.message||'Could not submit leave request. Please review the form and try again.',true)}
   finally{b.disabled=false;b.textContent=originalLabel}
  });
- const {data:{session}}=await db.auth.getSession();if(session){user=session.user;try{await load()}catch(err){msg(err.message||'Could not load your employee records.',true)}}
+ const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError){msg('Could not restore your saved sign-in session. Please check your connection and retry. '+(sessionError.message||''),true);return}if(session){user=session.user;$('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;const active=$('#message');if(active){active.hidden=false;active.classList.remove('error');active.textContent='Restoring your employee portal…'}try{await load()}catch(err){$('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;msg('You are still signed in, but your employee data could not be refreshed. Retry the page or contact HR if this continues. '+(err.message||''),true)}}
+ window.addEventListener('hashchange',()=>{const name=String(window.location.hash||'').replace(/^#/,'').trim();if(name&&document.getElementById('tab-'+name))tab(name,false)});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
