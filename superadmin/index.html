@@ -324,7 +324,7 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 <label class="span2">Company workspace<select id="billingOrganization" required><option value="">Loading company workspaces…</option></select></label>
 <label>Subscription plan<select id="billingPlan" required><option value="starter">Starter — KES 2,500/month</option><option value="growth">Growth — KES 7,500/month</option></select></label>
 <label>Billing period<select id="billingPeriod"><option value="monthly">Monthly</option><option value="annual">Annual (discounted)</option></select></label>
-<label class="span2">M-Pesa phone number<input id="billingPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required pattern="(?:\\+?254|0)?[17]\\d{8}" title="Enter a valid Kenyan M-Pesa number"></label>
+<label class="span2">M-Pesa phone number<input id="billingPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required pattern="(?:\+?254|0)?[17]\d{8}" title="Enter a valid Kenyan M-Pesa number"></label>
 <div class="span2 actions"><button class="btn primary" id="billingCheckoutButton" type="submit">Send M-Pesa payment prompt</button><button class="btn" id="billingRefresh" type="button">Refresh billing records</button></div>
 <p class="muted span2" id="billingCheckoutStatus" role="status" aria-live="polite">Checkout requires PayHero credentials configured in Supabase Edge Function secrets. No payment will be marked active until a successful provider callback is verified.</p>
 </form></section>
