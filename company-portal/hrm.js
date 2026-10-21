@@ -193,10 +193,47 @@ async function uploadEmployeeDocument(form){if(!canManage())throw new Error('Onl
 async function viewEmployeeDocument(id){
  const doc=employeeDocuments.find(d=>d.id===id);if(!doc)throw new Error('Document not found. Refresh and try again.');
  const result=await db.storage.from('nexora-hr-documents').createSignedUrl(doc.storage_path,120);if(result.error)throw result.error;
- const mime=String(doc.content_type||'').toLowerCase();if(!mime.includes('pdf')&&!mime.startsWith('image/'))throw new Error('In-portal preview supports PDF and image files. Use Download for Word documents.');
+ const signedUrl=result.data.signedUrl;
+ const mime=String(doc.content_type||'').toLowerCase();
+ const name=String(doc.original_file_name||doc.document_name||'').toLowerCase();
+ const isImage=mime.startsWith('image/');
+ const isPdf=mime.includes('pdf')||name.endsWith('.pdf');
+ const isDocx=mime.includes('wordprocessingml')||name.endsWith('.docx');
+ const isOldDoc=(mime.includes('msword')||name.endsWith('.doc'))&&!isDocx;
  let dialog=$('#hrDocumentViewerDialog');
- if(!dialog){dialog=document.createElement('dialog');dialog.id='hrDocumentViewerDialog';dialog.className='hr-document-viewer-dialog';dialog.innerHTML='<div class="hr-document-viewer-shell"><header class="hr-document-viewer-head"><div><strong id="hrDocumentViewerTitle"></strong><small id="hrDocumentViewerMeta"></small></div><div class="module-actions"><a id="hrDocumentViewerOpen" class="btn ghost" target="_blank" rel="noopener">Open in new tab</a><button type="button" class="btn ghost" id="hrDocumentViewerClose">Close</button></div></header><div class="hr-document-viewer-frame-wrap"><iframe id="hrDocumentViewerFrame" title="Secure employee document viewer" referrerpolicy="no-referrer"></iframe></div></div>';document.body.appendChild(dialog);dialog.querySelector('#hrDocumentViewerClose').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{dialog.querySelector('#hrDocumentViewerFrame').src='about:blank'});}
- dialog.querySelector('#hrDocumentViewerTitle').textContent=doc.document_name||doc.original_file_name;dialog.querySelector('#hrDocumentViewerMeta').textContent=(doc.document_type||'document').replace(/_/g,' ')+' · '+(doc.verification_status||'pending')+' · secure link expires in 2 minutes';dialog.querySelector('#hrDocumentViewerFrame').src=result.data.signedUrl;dialog.querySelector('#hrDocumentViewerOpen').href=result.data.signedUrl;if(dialog.showModal)dialog.showModal();else dialog.setAttribute('open','');
+ if(!dialog){
+  dialog=document.createElement('dialog');dialog.id='hrDocumentViewerDialog';dialog.className='hr-document-viewer-dialog';
+  dialog.innerHTML='<div class="hr-document-viewer-shell"><header class="hr-document-viewer-head"><div><strong id="hrDocumentViewerTitle"></strong><small id="hrDocumentViewerMeta"></small></div><div class="module-actions"><a id="hrDocumentViewerDownload" class="btn ghost">Download</a><a id="hrDocumentViewerOpen" class="btn ghost" target="_blank" rel="noopener">Open in new tab</a><button type="button" class="btn ghost" id="hrDocumentViewerClose">Close</button></div></header><div class="hr-document-viewer-frame-wrap" id="hrDocumentViewerBody"><iframe id="hrDocumentViewerFrame" title="Secure employee document viewer" referrerpolicy="no-referrer"></iframe></div></div>';
+  document.body.appendChild(dialog);
+  dialog.querySelector('#hrDocumentViewerClose').addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('close',()=>{const frame=dialog.querySelector('#hrDocumentViewerFrame');if(frame)frame.src='about:blank';dialog.querySelector('#hrDocumentViewerBody').replaceChildren();});
+ }
+ const title=doc.document_name||doc.original_file_name||'Employee document';
+ dialog.querySelector('#hrDocumentViewerTitle').textContent=title;
+ dialog.querySelector('#hrDocumentViewerMeta').textContent=(doc.document_type||'document').replace(/_/g,' ')+' · '+(doc.verification_status||'pending')+' · secure link expires in 2 minutes';
+ const body=dialog.querySelector('#hrDocumentViewerBody');body.replaceChildren();
+ const frame=document.createElement('iframe');frame.id='hrDocumentViewerFrame';frame.title='Secure employee document viewer';frame.referrerPolicy='no-referrer';
+ if(isPdf||isImage){
+  frame.src=signedUrl;body.appendChild(frame);
+  dialog.querySelector('#hrDocumentViewerOpen').href=signedUrl;dialog.querySelector('#hrDocumentViewerOpen').hidden=false;
+ }else if(isDocx){
+  dialog.querySelector('#hrDocumentViewerOpen').hidden=true;
+  const loading=document.createElement('div');loading.className='hr-docx-preview';loading.textContent='Loading Word document preview…';body.appendChild(loading);
+  if(!window.mammoth||typeof window.mammoth.extractRawText!=='function')throw new Error('Word preview library did not load. Use Download to open this document.');
+  const response=await fetch(signedUrl);if(!response.ok)throw new Error('Could not retrieve the secure Word document. Please try again or download it.');
+  const arrayBuffer=await response.arrayBuffer();
+  const extracted=await window.mammoth.extractRawText({arrayBuffer});
+  const pre=document.createElement('pre');pre.className='hr-docx-preview';pre.textContent=extracted.value||'This Word document contains no extractable text.';
+  body.replaceChildren(pre);
+ }else if(isOldDoc){
+  dialog.querySelector('#hrDocumentViewerOpen').hidden=true;
+  const note=document.createElement('div');note.className='hr-doc-preview-note';note.textContent='This is an older .doc Word file. Browser preview supports .docx files; download this file to open it in Microsoft Word or a compatible app.';body.appendChild(note);
+ }else{
+  throw new Error('Preview is available for PDF, images and .docx Word files. Use Download for this file type.');
+ }
+ const downloadUrl=signedUrl+(signedUrl.includes('?')?'&':'?')+'download='+encodeURIComponent(doc.original_file_name||title);
+ dialog.querySelector('#hrDocumentViewerDownload').href=downloadUrl;dialog.querySelector('#hrDocumentViewerDownload').target='_blank';dialog.querySelector('#hrDocumentViewerDownload').rel='noopener';
+ if(dialog.showModal){if(!dialog.open)dialog.showModal();}else dialog.setAttribute('open','');
 }
 async function downloadEmployeeDocument(id){const doc=employeeDocuments.find(d=>d.id===id);if(!doc)throw new Error('Document not found. Refresh and try again.');const result=await db.storage.from('nexora-hr-documents').createSignedUrl(doc.storage_path,60,{download:doc.original_file_name});if(result.error)throw result.error;const link=document.createElement('a');link.href=result.data.signedUrl;link.target='_blank';link.rel='noopener';link.download=doc.original_file_name;document.body.appendChild(link);link.click();link.remove()}
 async function deleteEmployeeDocument(id){const doc=employeeDocuments.find(d=>d.id===id);if(!doc)return;if(!confirm('Permanently delete "'+doc.original_file_name+'" from private storage and remove its HR record?'))return;const b=document.querySelector('[data-delete-hr-document="'+id+'"]');if(b){b.disabled=true;b.textContent='Deleting…'}try{const rem=await db.storage.from('nexora-hr-documents').remove([doc.storage_path]);if(rem.error)throw rem.error;const del=await db.from('hr_employee_documents').delete().eq('id',id).eq('organization_id',orgId);if(del.error)throw del.error;employeeDocuments=employeeDocuments.filter(x=>x.id!==id);renderEmployeeDocuments();notify('Employee document deleted.')}catch(err){if(b)b.disabled=false;notify(err.message||'Could not delete document.',true)}}
