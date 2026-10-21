@@ -95,6 +95,43 @@ body[data-portal="candidate"] .panelhead h2{overflow-wrap:anywhere}
  body[data-portal="candidate"] .welcome:after{right:-75px;top:-90px}
 }
 
+
+/* Candidate welcome hero: compact desktop sizing */
+body[data-portal="candidate"] .welcome{
+  min-height:0!important;
+  height:auto!important;
+  padding:22px 26px!important;
+  gap:20px!important;
+  border-radius:20px!important;
+  align-items:center!important;
+}
+body[data-portal="candidate"] .welcome-copy{max-width:760px!important}
+body[data-portal="candidate"] .welcome h1{
+  font-size:clamp(28px,2.5vw,36px)!important;
+  line-height:1.12!important;
+  letter-spacing:-1px!important;
+  margin:8px 0!important;
+}
+body[data-portal="candidate"] .welcome p{
+  font-size:14px!important;
+  line-height:1.55!important;
+  max-width:700px!important;
+}
+body[data-portal="candidate"] .welcome .trust{margin-top:12px!important;gap:8px 12px!important}
+body[data-portal="candidate"] .welcome .trust span{padding:7px 10px!important}
+body[data-portal="candidate"] .welcome .btn{
+  width:auto!important;
+  min-height:48px!important;
+  padding:12px 18px!important;
+  margin-top:0!important;
+  flex:0 0 auto!important;
+}
+@media(max-width:760px){
+ body[data-portal="candidate"] .welcome{padding:20px 17px!important;align-items:flex-start!important}
+ body[data-portal="candidate"] .welcome h1{font-size:29px!important}
+ body[data-portal="candidate"] .welcome .btn{width:100%!important;margin-top:12px!important}
+}
+
 </style>
 <link rel="stylesheet" href="../assets/nexora-modern.css?v=20261016-portal-consistency2">
 
