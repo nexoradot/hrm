@@ -279,16 +279,17 @@ async function downloadFullEmployeeFile(employeeId){
  async function getAll(table,order='created_at'){const q=db.from(table).select('*').eq('organization_id',orgId).eq('employee_id',employeeId);const result=await q.order(order,{ascending:false}).limit(10000);if(result.error)throw new Error('Could not export '+table+': '+result.error.message);return result.data||[]}
  const results=await Promise.all([
   getAll('hr_leave_requests'),getAll('hr_attendance_records','work_date'),getAll('hr_performance_reviews','review_date'),
-  getAll('hr_payroll_items'),getAll('hr_operations_records'),getAll('hr_employee_documents')
+  getAll('hr_payroll_items'),getAll('hr_operations_records'),getAll('hr_employee_documents'),
+  getAll('hr_employee_registrations'),getAll('hr_employee_status_history')
  ]);
- const full={...base,leaveRequests:results[0],attendance:results[1],performanceReviews:results[2],payrollItems:results[3],operations:results[4],documents:results[5]};
+ const full={...base,leaveRequests:results[0],attendance:results[1],performanceReviews:results[2],payrollItems:results[3],operations:results[4],documents:results[5],registrations:results[6],statusHistory:results[7]};
  const periodIds=[...new Set(full.payrollItems.map(x=>x.payroll_period_id).filter(Boolean))];
  let periods=[];
  if(periodIds.length){const pr=await db.from('hr_payroll_periods').select('*').eq('organization_id',orgId).in('id',periodIds);if(pr.error)throw new Error('Could not export linked payroll periods: '+pr.error.message);periods=pr.data||[]}
  const zip=new window.JSZip(),safe=String(e.employee_number||e.full_name||'employee').normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,80)||'employee',folder=zip.folder(safe);
- const data={exported_at:exportedAt,organization_id:orgId,employee:e,department:base.department,leave_requests:full.leaveRequests,attendance_records:full.attendance,performance_reviews:full.performanceReviews,payroll_items:full.payrollItems,payroll_periods:periods,hr_operations_records:full.operations,document_metadata:full.documents.map(({storage_path,...d})=>d)};
+ const data={exported_at:exportedAt,organization_id:orgId,employee:e,department:base.department,registration_records:full.registrations,employment_status_history:full.statusHistory,leave_requests:full.leaveRequests,attendance_records:full.attendance,performance_reviews:full.performanceReviews,payroll_items:full.payrollItems,payroll_periods:periods,hr_operations_records:full.operations,document_metadata:full.documents.map(({storage_path,...d})=>d)};
  folder.file('employee-record.json',JSON.stringify(data,null,2));folder.file('README.txt','NEXORA HR — Complete employee file\nEmployee: '+(e.full_name||'')+'\nEmployee number: '+(e.employee_number||'')+'\nExported: '+exportedAt+'\n\nRecords were fetched directly from the current organisation for this employee. Source records are not modified or deleted. See document-manifest.json for attached-file status.');
- [['leave-requests.csv',full.leaveRequests],['attendance.csv',full.attendance],['performance-reviews.csv',full.performanceReviews],['payroll-items.csv',full.payrollItems],['payroll-periods.csv',periods],['hr-operations.csv',full.operations],['employee-documents.csv',full.documents.map(({storage_path,...d})=>d)]].forEach(([name,rows])=>folder.file(name,employeeRecordsCsv(rows)));
+ [['leave-requests.csv',full.leaveRequests],['attendance.csv',full.attendance],['performance-reviews.csv',full.performanceReviews],['payroll-items.csv',full.payrollItems],['payroll-periods.csv',periods],['hr-operations.csv',full.operations],['registration-records.csv',full.registrations],['employment-status-history.csv',full.statusHistory],['employee-documents.csv',full.documents.map(({storage_path,...d})=>d)]].forEach(([name,rows])=>folder.file(name,employeeRecordsCsv(rows)));
  // Include printable payslip files for payroll periods already approved or paid.
  const payslipFolder=folder.folder('approved-payslips'),periodById=new Map(periods.map(period=>[period.id,period]));
  const approvedPayslips=full.payrollItems.filter(item=>['approved','paid'].includes(String(periodById.get(item.payroll_period_id)?.status||'').toLowerCase()));
