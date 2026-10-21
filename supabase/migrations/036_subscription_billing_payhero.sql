@@ -36,7 +36,7 @@ create table if not exists public.organization_subscriptions (
 alter table public.subscription_payments enable row level security;
 alter table public.organization_subscriptions enable row level security;
 drop policy if exists subscription_payments_platform_admin_read on public.subscription_payments;
-create policy subscription_payments_platform_admin_read on public.subscription_payments for select to authenticated using (public.is_platform_admin());
+create policy subscription_payments_platform_admin_read on public.subscription_payments for select to authenticated using (exists(select 1 from public.platform_admins p where p.user_id=auth.uid() and p.status='active'));
 drop policy if exists subscription_payments_org_admin_read on public.subscription_payments;
 create policy subscription_payments_org_admin_read on public.subscription_payments for select to authenticated using (
  exists(select 1 from public.organization_members m where m.organization_id=subscription_payments.organization_id and m.user_id=auth.uid() and m.status='active' and m.role in ('owner','hr_manager'))
@@ -44,7 +44,7 @@ create policy subscription_payments_org_admin_read on public.subscription_paymen
 drop policy if exists organization_subscriptions_platform_admin_read on public.organization_subscriptions;
 create policy organization_subscriptions_platform_admin_read on public.organization_subscriptions for select to authenticated using (public.is_platform_admin());
 drop policy if exists organization_subscriptions_org_member_read on public.organization_subscriptions;
-create policy organization_subscriptions_org_member_read on public.organization_subscriptions for select to authenticated using (public.is_org_member(organization_id));
+create policy organization_subscriptions_org_member_read on public.organization_subscriptions for select to authenticated using (exists(select 1 from public.organization_members m where m.organization_id=organization_subscriptions.organization_id and m.user_id=auth.uid() and m.status='active'));
 grant select on public.subscription_payments,public.organization_subscriptions to authenticated;
 comment on table public.subscription_payments is 'Server-verified PayHero M-Pesa subscription payment attempts. Writes are performed by the billing Edge Function.';
 comment on table public.organization_subscriptions is 'Current subscription entitlement per organisation; updated only after verified PayHero payment callbacks.';
