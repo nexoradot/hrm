@@ -137,7 +137,43 @@ function csv(){if(!companies.length)return toast("There are no companies to expo
 });
 async function signOutSuperAdmin(){if(!client)return;try{await client.auth.signOut();adminUser=null;isPlatformAdmin=false;liveMode=false;companies=[];render();updateConnection();updateHealth();showLoginGate(true,"You have been signed out securely.");setAuthMessage("Signed out.");$("#loginGatePassword").value="";toast("Signed out of NEXORA Super Admin.")}catch(err){toast(err.message||"Could not sign out.","error")}}$("#topSignOutBtn")?.addEventListener("click",signOutSuperAdmin);
 $("#authForm").addEventListener("submit",async e=>{e.preventDefault();if(!client)return setAuthMessage("Save the Supabase project URL and public key first.",true);const email=$("#adminEmail").value.trim(),password=$("#adminPassword").value;$("#signInBtn").disabled=true;setAuthMessage("Signing in and verifying platform-admin access…");try{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;adminUser=data.user;const ok=await withTimeout(refreshAuthorization(),25000,"Administrator verification took too long. Check the connection and try again.");if(!ok){await client.auth.signOut();adminUser=null;isPlatformAdmin=false;throw new Error("This account is not authorized as a NEXORA platform administrator. No admin access granted.")}setAuthMessage("Signed in successfully. Live company records loaded.");log("Platform administrator signed in","Authenticated admin session verified by platform_admins table.","✓");toast("Signed in. Supabase company management is active.","success")}catch(err){setAuthMessage(err.message||"Sign-in failed.",true);toast(err.message||"Sign-in failed.","error")}finally{$("#signInBtn").disabled=false;updateConnection()}});$("#signOutBtn").addEventListener("click",signOutSuperAdmin);
-$("#announcementForm")?.addEventListener("submit",e=>{e.preventDefault();const title=$("#announcementTitle").value.trim(),message=$("#announcementMessage").value.trim(),audience=$("#announcementAudience").value;if(!title||!message)return;log("Announcement saved: "+title,audience+" · Demo draft only.","✉");$("#announcementStatus").textContent="Saved locally as a demo draft. Not sent to customers.";toast("Announcement draft saved in this browser.","success");e.currentTarget.reset()});const NEXORA_DEFAULT_SUPABASE_CONFIG={url:"https://prjwtxbmewskkpcfiklo.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByand0eGJtZXdza2twY2Zpa2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1ODkxNDIsImV4cCI6MjEwNzE2NTE0Mn0.fR25_4H3hO4MDvjIdtld26Xeb0Y1IYYHgpNV_uUTfdo"};let cfg=read(CK,null);if(!cfg){cfg=NEXORA_DEFAULT_SUPABASE_CONFIG;save(CK,cfg)}if(cfg){try{connect(cfg.url,cfg.key)}catch(err){console.error(err);showLoginGate(true,err.message);loginTrace("Startup connection error: "+err.message)}}$("#dateLabel").textContent=new Intl.DateTimeFormat("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(new Date()).toUpperCase();$("#year").textContent=new Date().getFullYear();render();updateConnection();showLoginGate(true,"Ready. Enter your NEXORA platform administrator credentials.");
+$("#announcementForm")?.addEventListener("submit",e=>{e.preventDefault();const title=$("#announcementTitle").value.trim(),message=$("#announcementMessage").value.trim(),audience=$("#announcementAudience").value;if(!title||!message)return;log("Announcement saved: "+title,audience+" · Demo draft only.","✉");$("#announcementStatus").textContent="Saved locally as a demo draft. Not sent to customers.";toast("Announcement draft saved in this browser.","success");e.currentTarget.reset()});async function loadBilling(){
+ const status=$("#billingCheckoutStatus"),select=$("#billingOrganization"),rows=$("#billingPaymentRows");
+ if(!client||!isPlatformAdmin){if(status)status.textContent="Sign in as a platform administrator to manage subscription billing.";return;}
+ try{
+  await requireAdmin();
+  const prior=select?.value||"";
+  if(select){select.innerHTML='<option value="">Select company workspace</option>'+companies.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name||"Unnamed company")+'</option>').join("");if(companies.some(c=>c.id===prior))select.value=prior;}
+  const result=await client.from("subscription_payments").select("id,organization_id,plan_code,plan_name,amount_kes,billing_period,phone_number,status,mpesa_receipt_number,external_reference,created_at,completed_at").order("created_at",{ascending:false}).limit(100);
+  if(result.error)throw result.error;
+  const items=result.data||[],count=$("#billingPaymentCount"),paid=$("#billingPaidCount");
+  if(count)count.textContent=String(items.length);if(paid)paid.textContent=String(items.filter(p=>p.status==="completed").length);
+  if(rows)rows.innerHTML=items.map(p=>{const org=companies.find(c=>c.id===p.organization_id);return '<tr><td>'+esc(org?.name||"Workspace")+'</td><td>'+esc(p.plan_name||p.plan_code)+' <small>/ '+esc(p.billing_period||"monthly")+'</small></td><td>KES '+Number(p.amount_kes||0).toLocaleString("en-KE")+'</td><td>'+esc(p.phone_number||"—")+'</td><td><span class="pill">'+esc(p.status||"pending")+'</span></td><td>'+esc(p.mpesa_receipt_number||"—")+'</td><td>'+esc(p.created_at?new Date(p.created_at).toLocaleString():"—")+'</td></tr>'}).join("")||'<tr><td colspan="7">No subscription payment attempts recorded yet.</td></tr>';
+  const provider=$("#billingProviderStatus");if(provider)provider.textContent="PayHero · configured on server";
+  if(status&&status.textContent.includes("Loading"))status.textContent="Ready. Choose a company and send an M-Pesa prompt.";
+ }catch(error){
+  if(rows)rows.innerHTML='<tr><td colspan="7">'+esc(error.message||"Could not load billing records.")+'</td></tr>';
+  if(status)status.textContent="Billing records unavailable: "+(error.message||"Check database migration and admin access.");
+ }
+}
+$("#billingRefresh")?.addEventListener("click",loadBilling);
+$("#billingCheckoutForm")?.addEventListener("submit",async event=>{
+ event.preventDefault();const button=$("#billingCheckoutButton"),status=$("#billingCheckoutStatus");
+ if(!client||!isPlatformAdmin){if(status)status.textContent="Sign in as a platform administrator first.";return;}
+ const organization_id=$("#billingOrganization").value,plan_code=$("#billingPlan").value,billing_period=$("#billingPeriod").value,phone=$("#billingPhone").value.trim();
+ if(!organization_id||!phone){if(status)status.textContent="Choose a company and enter the M-Pesa phone number.";return;}
+ button.disabled=true;button.textContent="Sending payment prompt…";if(status)status.textContent="Creating secure checkout with PayHero…";
+ try{
+  const {data,error}=await client.functions.invoke("billing-payhero",{body:{action:"checkout",organization_id,plan_code,billing_period,phone}});
+  if(error)throw new Error(data?.error||error.message||"Could not start checkout.");
+  if(!data?.success)throw new Error(data?.error||"PayHero did not start the payment.");
+  if(status)status.textContent=(data.message||"M-Pesa prompt sent.")+" Amount: KES "+Number(data.amount_kes||0).toLocaleString("en-KE")+". Reference: "+data.reference+". Complete the prompt on the phone; the subscription activates after PayHero confirms payment.";
+  log("Subscription payment initiated","Workspace "+organization_id+" · "+plan_code+" · "+data.reference,"KES");
+  await loadBilling();
+ }catch(error){if(status)status.textContent=error.message||"Could not start payment. Verify PayHero secrets and try again.";toast(error.message||"Could not start subscription payment.","error");}
+ finally{button.disabled=false;button.textContent="Send M-Pesa payment prompt";}
+});
+const NEXORA_DEFAULT_SUPABASE_CONFIG={url:"https://prjwtxbmewskkpcfiklo.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByand0eGJtZXdza2twY2Zpa2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1ODkxNDIsImV4cCI6MjEwNzE2NTE0Mn0.fR25_4H3hO4MDvjIdtld26Xeb0Y1IYYHgpNV_uUTfdo"};let cfg=read(CK,null);if(!cfg){cfg=NEXORA_DEFAULT_SUPABASE_CONFIG;save(CK,cfg)}if(cfg){try{connect(cfg.url,cfg.key)}catch(err){console.error(err);showLoginGate(true,err.message);loginTrace("Startup connection error: "+err.message)}}$("#dateLabel").textContent=new Intl.DateTimeFormat("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(new Date()).toUpperCase();$("#year").textContent=new Date().getFullYear();render();updateConnection();showLoginGate(true,"Ready. Enter your NEXORA platform administrator credentials.");
 (async function bootstrapSession(){
  const button=$("#loginGateButton");if(button)button.disabled=true;
  try{
