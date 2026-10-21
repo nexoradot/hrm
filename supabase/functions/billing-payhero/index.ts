@@ -73,7 +73,7 @@ Deno.serve(async(req)=>{
  if(!Number.isInteger(amount)||amount<=0)return json({error:"Set a positive subscription price before starting checkout."},400);
  const planName=String(plan.name),reference="NEX-"+crypto.randomUUID().replace(/-/g,"").slice(0,20).toUpperCase();
  const {data:payment,error:insErr}=await admin.from("subscription_payments").insert({organization_id:orgId,plan_code:planCode,plan_name:planName,amount_kes:amount,billing_period:billingPeriod,phone_number:phone,external_reference:reference,status:"pending",created_by:userData.user.id}).select("id,amount_kes,external_reference").single();
- if(insErr||!payment)return json({error:"Could not create payment record."},500);
+ if(insErr||!payment){console.error("Subscription payment insert failed",insErr?.code,insErr?.message);return json({error:"Could not create payment record.",detail:insErr?.message||"No payment row was returned.",code:insErr?.code||null},500);}
  const payload={amount,phone_number:phone,channel_id:channelId,provider:"m-pesa",external_reference:reference,customer_name:org.contact_name||org.name,callback_url:supabaseUrl+"/functions/v1/billing-payhero/webhook"};
  let providerResponse:Response;try{providerResponse=await fetch(apiUrl.replace(/\/$/,"")+"/payments",{method:"POST",headers:{"Content-Type":"application/json","Authorization":basicAuth},body:JSON.stringify(payload)})}catch(e){await admin.from("subscription_payments").update({status:"failed",provider_response:{error:String(e)},updated_at:new Date().toISOString()}).eq("id",payment.id);return json({error:"Could not reach PayHero."},502)}
  const raw=await providerResponse.text();let result:any;try{result=JSON.parse(raw)}catch{result={message:"Invalid response from PayHero"}}
