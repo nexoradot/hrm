@@ -15,15 +15,30 @@ Deno.serve(async(req)=>{
  if(url.pathname.endsWith("/webhook")){
   let body:any;try{body=await req.json()}catch{return json({error:"Invalid webhook JSON."},400)}
   const response=body?.response||body?.data||body,ref=String(response?.ExternalReference||response?.external_reference||response?.externalReference||""),status=String(response?.Status||response?.status||body?.status||"").toLowerCase(),code=Number(response?.ResultCode??response?.result_code??-1);
-  const success=code===0&&([true,"true","success","completed"].includes(typeof body?.status==="string"?body.status.toLowerCase():body?.status)||["success","completed","paid"].includes(status)),failed=code!==0||["failed","cancelled","canceled","declined","rejected"].includes(status);
+  let success=code===0&&([true,"true","success","completed"].includes(typeof body?.status==="string"?body.status.toLowerCase():body?.status)||["success","completed","paid"].includes(status)),failed=code!==0||["failed","cancelled","canceled","declined","rejected"].includes(status);
   if(!ref)return json({error:"Missing external reference."},400);
   const {data:p,error}=await admin.from("subscription_payments").select("*").eq("external_reference",ref).maybeSingle();
   if(error)return json({error:"Could not find subscription payment."},500);if(!p)return json({success:true,status:"unmatched"});
   if(p.status==="completed")return json({success:true,status:"completed"});
   const now=new Date();
   if(success){
+   // Verify public callbacks against PayHero before activating paid features.
+   const providerRef=String(response?.Reference||response?.reference||"");
+   if(!providerRef){success=false;}else{
+    try{
+     const check=await fetch(apiUrl.replace(/\/$/,"")+"/transaction-status?reference="+encodeURIComponent(providerRef),{headers:{"Authorization":basicAuth,"Accept":"application/json"}});
+     const rawStatus=await check.text();let verified:any;try{verified=JSON.parse(rawStatus)}catch{verified={}};
+     const remote=verified?.data?.response||verified?.data||verified?.response||verified?.result||verified;
+     const remoteStatus=String(remote?.status??remote?.Status??remote?.payment_status??remote?.transaction_status??"").toLowerCase();
+     const remoteCode=Number(remote?.ResultCode??remote?.result_code??remote?.resultCode??-1);
+     success=check.ok&&(remoteCode===0||["success","successful","completed","complete","paid","confirmed"].includes(remoteStatus));
+     if(!success)console.warn("PayHero callback not confirmed by status API",check.status,remoteStatus,remoteCode);
+    }catch(err){success=false;console.error("PayHero verification request failed",String(err));}
+   }
+  }
+  if(success){
    const receipt=response?.MpesaReceiptNumber||response?.mpesa_receipt_number||response?.receipt_number||null,amount=Number(response?.Amount??response?.amount??0);
-   if(amount&&amount!==Number(p.amount_kes))return json({error:"Payment amount mismatch; manual reconciliation required."},409);
+   if(amount!==Number(p.amount_kes))return json({error:"Payment amount missing or mismatched; manual reconciliation required."},409);
    const upd=await admin.from("subscription_payments").update({status:"completed",mpesa_receipt_number:receipt,payhero_reference:response?.Reference||response?.reference||null,checkout_request_id:response?.CheckoutRequestID||response?.checkout_request_id||null,provider_response:body,completed_at:now.toISOString(),updated_at:now.toISOString()}).eq("id",p.id).neq("status","completed");
    if(upd.error)return json({error:"Could not save payment confirmation."},500);
    const {data:current}=await admin.from("organization_subscriptions").select("current_period_end").eq("organization_id",p.organization_id).maybeSingle();
