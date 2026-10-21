@@ -6,6 +6,7 @@ const corsHeaders = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Hea
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json"}});
 function formatPhone(value:unknown){let p=String(value||"").replace(/[\s()+-]/g,"");if(p.startsWith("+"))p=p.slice(1);if(p.startsWith("254"))p="0"+p.slice(3);if(/^([17])\d{8}$/.test(p))p="0"+p;if(!/^0[17]\d{8}$/.test(p))throw new Error("Enter a valid Kenyan M-Pesa phone number.");return p;}
 Deno.serve(async(req)=>{
+ try {
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
  if(req.method!=="POST")return json({error:"POST required."},405);
  const supabaseUrl=Deno.env.get("SUPABASE_URL")||"",serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"",anonKey=Deno.env.get("SUPABASE_ANON_KEY")||"",basicAuth=Deno.env.get("PAYHERO_BASIC_AUTH")||"",channelId=Number(Deno.env.get("PAYHERO_CHANNEL_ID")||0),apiUrl=Deno.env.get("PAYHERO_API_URL")||"https://backend.payhero.co.ke/api/v2";
@@ -81,4 +82,8 @@ Deno.serve(async(req)=>{
  const checkoutId=result.CheckoutRequestID||result.checkout_request_id||result.checkoutRequestID||null,referenceFromProvider=result.reference||result.transaction_reference||result.transactionReference||null;
  await admin.from("subscription_payments").update({checkout_request_id:checkoutId,payhero_reference:referenceFromProvider,provider_response:result,updated_at:new Date().toISOString()}).eq("id",payment.id);
  return json({success:true,message:"M-Pesa prompt sent. Complete payment on your phone.",payment_id:payment.id,reference,amount_kes:amount,checkout_request_id:checkoutId});
+ } catch (err) {
+  console.error("billing-payhero unhandled exception", err instanceof Error ? err.stack || err.message : String(err));
+  return json({error:"Billing checkout encountered an internal error.",detail:err instanceof Error ? err.message : String(err)},500);
+ }
 });
