@@ -343,4 +343,48 @@ body[data-portal="candidate"] .authwrap.auth-modern{box-shadow:0 26px 75px rgba(
 </div></div></section>
 <div id="jobModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle"><div class="modalcard"><div class="modalhead"><div><span id="jobModalEmployer" class="tag">Employer</span><h2 id="jobModalTitle">Vacancy details</h2><p id="jobModalMeta" class="muted"></p><div id="jobModalChips" class="chips"></div></div><button type="button" class="btn ghost small" onclick="document.getElementById('jobModal').classList.remove('open')" aria-label="Close job details">✕ Close</button></div><div id="jobModalBody" class="modalbody"></div><button id="modalApply" type="button" class="btn">Apply for this role →</button></div></div>
 </main>
+
+<style id="candidate-compact-welcome-final">
+/* Final override: compact candidate dashboard hero on desktop and mobile. */
+body[data-portal="candidate"] .page{margin-top:18px!important}
+body[data-portal="candidate"] .welcome{
+  min-height:0!important;
+  height:auto!important;
+  padding:22px 26px!important;
+  gap:20px!important;
+  border-radius:20px!important;
+  align-items:center!important;
+}
+body[data-portal="candidate"] .welcome-copy{max-width:900px!important}
+body[data-portal="candidate"] .welcome h1{
+  font-size:clamp(27px,2.25vw,36px)!important;
+  line-height:1.12!important;
+  letter-spacing:-1px!important;
+  margin:8px 0!important;
+}
+@media(min-width:900px){body[data-portal="candidate"] .welcome h1 br{display:none}}
+body[data-portal="candidate"] .welcome p{
+  font-size:14px!important;
+  line-height:1.55!important;
+  max-width:760px!important;
+}
+body[data-portal="candidate"] .welcome .trust{margin-top:12px!important;gap:8px 12px!important}
+body[data-portal="candidate"] .welcome .trust span{padding:6px 10px!important}
+body[data-portal="candidate"] .welcome .btn{
+  width:auto!important;
+  min-height:48px!important;
+  padding:12px 18px!important;
+  margin-top:0!important;
+  flex:0 0 auto!important;
+}
+body[data-portal="candidate"] .welcome:after{width:210px;height:210px;top:-100px}
+@media(max-width:760px){
+ body[data-portal="candidate"] .page{margin-top:14px!important}
+ body[data-portal="candidate"] .welcome{padding:20px 17px!important;align-items:flex-start!important}
+ body[data-portal="candidate"] .welcome h1{font-size:29px!important}
+ body[data-portal="candidate"] .welcome h1 br{display:initial}
+ body[data-portal="candidate"] .welcome .btn{width:100%!important;margin-top:12px!important}
+}
+</style>
+
 </body></html>
