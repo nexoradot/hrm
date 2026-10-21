@@ -23,7 +23,7 @@ Deno.serve(async(req)=>{
   const now=new Date();
   if(success){
    // Verify public callbacks against PayHero before activating paid features.
-   const providerRef=String(response?.Reference||response?.reference||"");
+   const providerRef=String(p.payhero_reference||response?.Reference||response?.reference||"");
    if(!providerRef){success=false;}else{
     try{
      const check=await fetch(apiUrl.replace(/\/$/,"")+"/transaction-status?reference="+encodeURIComponent(providerRef),{headers:{"Authorization":basicAuth,"Accept":"application/json"}});
