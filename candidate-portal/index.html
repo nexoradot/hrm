@@ -17,6 +17,10 @@
 @media(max-width:650px){.topinner,.page{width:calc(100% - 24px)}.topinner{min-height:66px}.welcome{display:block;padding:23px 20px}.welcome .btn{margin-top:18px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stat{padding:13px}.panel{padding:17px}.grid{grid-template-columns:1fr}.authwrap{grid-template-columns:1fr;margin:12px auto}.authaside{min-height:190px;padding:22px}.authaside h2{font-size:23px}.authbody{padding:22px}.uploadrow{align-items:flex-start}.userarea .userlabel{display:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
+/* Prevent the signed-in welcome banner from duplicating the registration hero on logged-out screens. */
+body:has(#portalAuth:not([hidden])) .welcome{display:none!important}
+@media(max-width:760px){body:has(#portalAuth:not([hidden])) .page{margin-top:16px}}
+
 /* Candidate registration and sign-in refresh */
 .authwrap.auth-modern{max-width:1000px;margin:30px auto 34px;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);border:1px solid #e3e7f2;border-radius:24px;box-shadow:0 24px 70px #15204416}
 .auth-modern .authaside{position:relative;isolation:isolate;overflow:hidden;min-height:640px;padding:32px;background:radial-gradient(circle at 100% 0,#7164ee 0,transparent 35%),linear-gradient(155deg,#111a33 0%,#25265b 62%,#4e42bd 100%)}
