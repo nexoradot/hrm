@@ -155,8 +155,7 @@ function renderExecutiveOperations(){
 function exportExecutiveReport(){
  const dept=staff.reduce((o,e)=>{const k=e.department_name||e.department_id||'Unassigned';o[k]=(o[k]||0)+1;return o},{});
  const rows=[['NEXORA Executive Report',new Date().toISOString()],['Workspace',orgs.find(o=>o.id===orgId)?.name||orgId],[],['Department','Employee count'],...Object.entries(dept),[],['Attendance date','Employee','Status','Clock in','Clock out'],...attendanceRecords.map(a=>{const e=staff.find(x=>x.id===a.employee_id);return [a.work_date,e?.full_name||'Employee',a.attendance_status||'',a.clock_in||'',a.clock_out||'']}),[],['Audit date','Action','Entity type','Entity id'],...workspaceAuditEvents.map(a=>[a.created_at,a.action,a.entity_type,a.entity_id])];
- const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r
-');
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexora-executive-report-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 async function loadData(){message('Refreshing executive data…');const [p,i,e,a,att,wa,ex]=await Promise.all([
