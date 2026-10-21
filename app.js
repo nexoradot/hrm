@@ -164,6 +164,7 @@ async function loadBilling(){
  if(!client||!isPlatformAdmin){if(status)status.textContent="Sign in as a platform administrator to manage subscription billing.";return;}
  try{
   await requireAdmin();
+  await loadBillingPlans();
   const prior=select?.value||"";
   if(select){select.innerHTML='<option value="">Select company workspace</option>'+companies.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name||"Unnamed company")+'</option>').join("");if(companies.some(c=>c.id===prior))select.value=prior;}
   const result=await client.from("subscription_payments").select("id,organization_id,plan_code,plan_name,amount_kes,billing_period,phone_number,status,mpesa_receipt_number,external_reference,created_at,completed_at").order("created_at",{ascending:false}).limit(100);
