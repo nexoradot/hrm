@@ -2,6 +2,7 @@
 
 **Brand:** VELNORA  
 **Tagline:** SECURE WORKFORCE. SMARTER DECISIONS.  
+**Brand palette:** Midnight Navy `#0B1220`, Teal `#0F766E`, Aqua `#0EA5A4`, Sky Blue `#38BDF8`, Slate `#64748B`, Mist `#F0FDFA`.  
 **Category:** Human Resources, Recruitment & Workforce Management
 
 VELNORA is being developed as a connected ecosystem that combines a public jobs marketplace, candidate portal, employer recruitment workspace, HR consultancy workspace, company HRM capabilities and a central Super Admin console.
