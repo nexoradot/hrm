@@ -2,8 +2,8 @@
 <html lang="en-KE">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101a33"><meta name="description" content="NEXORA employer workspace for recruitment and workforce management.">
-<title>Employer HRM Workspace | NEXORA</title>
+<meta name="theme-color" content="#101a33"><meta name="description" content="VELNORA employer workspace for recruitment and workforce management.">
+<title>Employer HRM Workspace | VELNORA</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <script>
 /* Reliable employer portal bootstrap: bounded waits and visible failures. */
@@ -32,7 +32,7 @@
       return;
     }
     if (!window.NEXORA_CONFIG || !window.NEXORA_CONFIG.url || !window.NEXORA_CONFIG.anonKey) {
-      fail('NEXORA configuration did not load. Please refresh; if this continues, report a configuration loading error.');
+      fail('VELNORA configuration did not load. Please refresh; if this continues, report a configuration loading error.');
       return;
     }
     var app = document.createElement('script');
@@ -48,7 +48,7 @@
       window.setTimeout(function () {
         var el = document.getElementById('loginMessage');
         var text = el ? (el.textContent || '').trim() : '';
-        if (!finished && (!text || /Connecting securely|did not finish initializing|Secure library loaded\. Starting employer portal|Loading NEXORA connection settings|Connection settings loaded|Loading secure sign-in service|Trying backup secure sign-in service/i.test(text))) {
+        if (!finished && (!text || /Connecting securely|did not finish initializing|Secure library loaded\. Starting employer portal|Loading VELNORA connection settings|Connection settings loaded|Loading secure sign-in service|Trying backup secure sign-in service/i.test(text))) {
           fail('The portal script downloaded but did not complete startup. Reload the page; if this persists, the browser Console will show the underlying JavaScript error.');
         }
       }, 2500);
@@ -57,7 +57,7 @@
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
-      fail('Could not load the NEXORA portal script from GitHub Pages. Refresh and check your connection.');
+      fail('Could not load the VELNORA portal script from GitHub Pages. Refresh and check your connection.');
     };
     document.head.appendChild(app);
   }
@@ -93,15 +93,15 @@
     };
     document.head.appendChild(script);
   }
-  show('Loading NEXORA connection settings…');
+  show('Loading VELNORA connection settings…');
   var config = document.createElement('script');
   config.src = '../js/supabase-config.js?v=20261014-employerfix13';
   config.onload = function () { show('Connection settings loaded. Preparing secure sign-in…'); loadSdk(0); };
   config.onerror = function () {
-    fail('NEXORA connection settings could not load from GitHub Pages. Please refresh and try again.');
+    fail('VELNORA connection settings could not load from GitHub Pages. Please refresh and try again.');
   };
   var startupTimer = window.setTimeout(function () {
-    if (!finished) fail('Startup timed out. The last step did not finish. Please send a screenshot of this message to NEXORA support.');
+    if (!finished) fail('Startup timed out. The last step did not finish. Please send a screenshot of this message to VELNORA support.');
   }, 15000);
   document.head.appendChild(config);
   }
@@ -123,7 +123,7 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 <style id="nexora-unified-dashboard-design">
-/* NEXORA design system: consistent premium surfaces across platform dashboards. */
+/* VELNORA design system: consistent premium surfaces across platform dashboards. */
 :root{
  --nx-ink:#17243b;--nx-muted:#6b7b92;--nx-line:#e4eaf3;--nx-canvas:#f4f7fc;
  --nx-brand:#5148cf;--nx-brand-dark:#38339b;--nx-brand-soft:#efefff;
@@ -350,19 +350,19 @@ footer{padding-top:24px}
 <body data-portal="company">
 <div id="portalAuth" class="auth-wrap">
   <section class="auth-card">
-    <div class="auth-logo"><span class="brand-mark">N</span><div><div class="brand-name">NEXORA</div><span class="brand-sub">INTELLIGENCE FOR EVERY WORKFORCE</span></div></div>
+    <div class="auth-logo"><span class="brand-mark">N</span><div><div class="brand-name">VELNORA</div><span class="brand-sub">SECURE WORKFORCE. SMARTER DECISIONS.</span></div></div>
     <div class="eyebrow">Employer workspace</div><h1>Your people. One connected workspace.</h1>
     <p>Sign in with an employer account assigned to an active company organisation.</p>
-    <form id="portalLogin"><label class="field">Work email<input name="email" type="email" autocomplete="username" required></label><label class="field">Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit" style="width:100%;margin-top:8px">Sign in to NEXORA <span aria-hidden="true">→</span></button></form>
+    <form id="portalLogin"><label class="field">Work email<input name="email" type="email" autocomplete="username" required></label><label class="field">Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit" style="width:100%;margin-top:8px">Sign in to VELNORA <span aria-hidden="true">→</span></button></form>
     <p id="loginMessage" role="status">Connecting securely to your workspace…</p>
-    <div class="notice">Access is controlled by your organisation membership. If your company is missing or unverified, contact your NEXORA administrator.</div>
-    <a href="../public-site/" class="muted">← Return to NEXORA website</a>
+    <div class="notice">Access is controlled by your organisation membership. If your company is missing or unverified, contact your VELNORA administrator.</div>
+    <a href="../public-site/" class="muted">← Return to VELNORA website</a>
   </section>
 </div>
 <div id="companyWorkspace" hidden>
 <div class="shell">
 <aside class="sidebar" id="employerSidebar">
-  <a class="brand" href="../public-site/" aria-label="NEXORA home"><span class="brand-mark">N</span><span><span class="brand-name">NEXORA</span><span class="brand-sub">WORKFORCE INTELLIGENCE</span></span></a>
+  <a class="brand" href="../public-site/" aria-label="VELNORA home"><span class="brand-mark">N</span><span><span class="brand-name">VELNORA</span><span class="brand-sub">WORKFORCE INTELLIGENCE</span></span></a>
   <button class="mobile-menu" id="mobileEmployerMenu" type="button" aria-expanded="false">☰ Menu</button>
   <div class="workspace-label">Workspace</div>
   <nav class="nav" aria-label="Employer workspace navigation">
@@ -379,7 +379,7 @@ footer{padding-top:24px}
   <div class="side-bottom"><strong>People · Process · Progress</strong>One connected workforce platform.<br><br>Workspace access is organisation-scoped.</div>
 </aside>
 <div class="main">
-<header class="topbar"><div class="crumb">NEXORA / <b id="currentSectionName">Overview</b></div><div class="top-actions"><span class="status-chip"><span class="status-dot"></span>Secure workspace</span><span class="avatar" aria-hidden="true">HR</span><button id="portalLogout" class="logout" type="button">Sign out</button></div></header>
+<header class="topbar"><div class="crumb">VELNORA / <b id="currentSectionName">Overview</b></div><div class="top-actions"><span class="status-chip"><span class="status-dot"></span>Secure workspace</span><span class="avatar" aria-hidden="true">HR</span><button id="portalLogout" class="logout" type="button">Sign out</button></div></header>
 <main class="content">
 <p id="portalMessage" role="status" style="margin:0 0 12px;color:var(--purple);font-size:12px" aria-live="polite"></p><div class="org-panel panel"><label>Current organisation<select id="employerOrganization" aria-label="Select organisation"></select></label><div id="organizationStatus" class="org-status">Loading organisation access…</div></div>
 <section class="section-view" data-section="overview">
@@ -399,12 +399,12 @@ footer{padding-top:24px}
 <button class="quick" type="button" data-go="reports"><span class="quick-icon">▥</span><span><strong>Workforce reports</strong><small>View module availability</small></span></button>
 </div></section>
 </div>
-<div class="note">Module availability: recruitment is connected to the current NEXORA database. Employee records, attendance, leave, performance, payroll and reporting require their own approved database tables, access policies and workflow setup before they can process live company data.</div>
+<div class="note">Module availability: recruitment is connected to the current VELNORA database. Employee records, attendance, leave, performance, payroll and reporting require their own approved database tables, access policies and workflow setup before they can process live company data.</div>
 </section>
 <section class="section-view" data-section="recruitment" hidden>
 <div class="welcome"><div><div class="eyebrow">Talent acquisition</div><h1>Recruitment</h1><p>Create vacancies, track moderation status and review applications within your organisation.</p></div><button class="secondary" id="refreshEmployer" type="button">↻ Refresh data</button></div>
 <div class="two-col">
-<section class="panel"><div class="panel-head"><h2>Submit a vacancy</h2></div><p class="muted">Vacancies enter moderation and are not public until approved by NEXORA.</p>
+<section class="panel"><div class="panel-head"><h2>Submit a vacancy</h2></div><p class="muted">Vacancies enter moderation and are not public until approved by VELNORA.</p>
 <form id="jobCreate">
 <label class="field">Job title<input name="title" required maxlength="160" placeholder="e.g. Human Resources Officer"></label>
 <label class="field">Short summary<textarea name="summary" required rows="2" placeholder="A concise overview for candidates"></textarea></label>
@@ -424,10 +424,10 @@ footer{padding-top:24px}
 <section class="section-view" data-section="attendance" hidden><div class="notice"><strong>Live Attendance workspace</strong><p style="margin:5px 0 10px">Open the connected HRM module to manage organisation records and workflows.</p><a class="primary" href="./hrm.html?section=attendance">Open Attendance Management →</a></div><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Time & presence</div><h2>Attendance management</h2><p>Plan shifts, capture attendance, review exceptions and prepare timesheets.</p></div><div class="module-cards"><article class="module-card"><span class="quick-icon">◷</span><h3>Daily attendance</h3><p>Check-in/out records and authorised corrections.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">▦</span><h3>Shift planning</h3><p>Team schedules, shift assignments and work patterns.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">▥</span><h3>Timesheets</h3><p>Reviewed working hours and export-ready summaries.</p><span class="module-state">Backend setup required</span></article></div></section>
 <section class="section-view" data-section="leave" hidden><div class="notice"><strong>Live Leave workspace</strong><p style="margin:5px 0 10px">Open the connected HRM module to manage organisation records and workflows.</p><a class="primary" href="./hrm.html?section=leave">Open Leave Management →</a></div><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Employee self-service</div><h2>Leave management</h2><p>Configure leave policies, let employees submit requests and route approvals to authorised managers.</p></div><div class="module-cards"><article class="module-card"><span class="quick-icon">＋</span><h3>Leave requests</h3><p>Request submission, manager decisions and employee notifications.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">◷</span><h3>Leave balances</h3><p>Policy-based accruals, available balances and leave history.</p><span class="module-state">Policy setup required</span></article><article class="module-card"><span class="quick-icon">▦</span><h3>Leave calendar</h3><p>Team availability and approved absences.</p><span class="module-state">Backend setup required</span></article></div></section>
 <section class="section-view" data-section="performance" hidden><div class="notice"><strong>Live Performance workspace</strong><p style="margin:5px 0 10px">Open the connected HRM module to manage organisation records and workflows.</p><a class="primary" href="./hrm.html?section=performance">Open Performance Management →</a></div><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Growth & accountability</div><h2>Performance management</h2><p>Build a structured cycle for objectives, check-ins, reviews and professional development.</p></div><div class="module-cards"><article class="module-card"><span class="quick-icon">↗</span><h3>Goals & KPIs</h3><p>Agreed objectives, progress updates and review periods.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">◎</span><h3>Performance reviews</h3><p>Manager and employee review workflows with appropriate access.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">♧</span><h3>Learning & development</h3><p>Training plans, skills and development actions.</p><span class="module-state">Backend setup required</span></article></div></section>
-<section class="section-view" data-section="payroll" hidden><div class="notice"><strong>Live Payroll workspace</strong><p style="margin:5px 0 10px">Open the connected HRM module to manage organisation records and workflows.</p><a class="primary" href="./hrm.html?section=payroll">Open Payroll Management →</a></div><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Compensation & pay</div><h2>Payroll workspace</h2><p>Prepare controlled payroll periods, earnings, deductions and statutory reports after company payroll settings have been configured.</p></div><div class="module-cards"><article class="module-card"><span class="quick-icon">▣</span><h3>Payroll runs</h3><p>Draft, validate, approve and close payroll periods.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">↔</span><h3>Earnings & deductions</h3><p>Configured pay components and authorised adjustments.</p><span class="module-state">Policy setup required</span></article><article class="module-card"><span class="quick-icon">▤</span><h3>Payroll reports</h3><p>Payroll summaries, payslip access and export workflows.</p><span class="module-state">Security review required</span></article></div><div class="notice">Payroll is not yet processing live pay. Before activation, NEXORA must implement and test Kenyan statutory rules, approvals, payroll access controls and audit trails.</div></section>
+<section class="section-view" data-section="payroll" hidden><div class="notice"><strong>Live Payroll workspace</strong><p style="margin:5px 0 10px">Open the connected HRM module to manage organisation records and workflows.</p><a class="primary" href="./hrm.html?section=payroll">Open Payroll Management →</a></div><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Compensation & pay</div><h2>Payroll workspace</h2><p>Prepare controlled payroll periods, earnings, deductions and statutory reports after company payroll settings have been configured.</p></div><div class="module-cards"><article class="module-card"><span class="quick-icon">▣</span><h3>Payroll runs</h3><p>Draft, validate, approve and close payroll periods.</p><span class="module-state">Backend setup required</span></article><article class="module-card"><span class="quick-icon">↔</span><h3>Earnings & deductions</h3><p>Configured pay components and authorised adjustments.</p><span class="module-state">Policy setup required</span></article><article class="module-card"><span class="quick-icon">▤</span><h3>Payroll reports</h3><p>Payroll summaries, payslip access and export workflows.</p><span class="module-state">Security review required</span></article></div><div class="notice">Payroll is not yet processing live pay. Before activation, VELNORA must implement and test Kenyan statutory rules, approvals, payroll access controls and audit trails.</div></section>
 <section class="section-view" data-section="reports" hidden><div class="notice"><strong>Live Reports workspace</strong><p style="margin:5px 0 10px">Open the connected HRM module to manage organisation records and workflows.</p><a class="primary" href="./hrm.html?section=reports">Open Reports Management →</a></div><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Workforce insights</div><h2>Reports & analytics</h2><p>Bring approved data from recruitment and HR operations into a consistent view for authorised decision-makers.</p></div><div class="module-cards"><article class="module-card"><span class="quick-icon">◎</span><h3>Recruitment funnel</h3><p>Vacancy status, application volume and hiring-stage distribution.</p><span class="module-state">Recruitment data available</span></article><article class="module-card"><span class="quick-icon">♙</span><h3>People reports</h3><p>Headcount, movement and workforce profile reports.</p><span class="module-state">Employee module required</span></article><article class="module-card"><span class="quick-icon">▥</span><h3>Exports</h3><p>Permission-controlled downloads for approved reports.</p><span class="module-state">Report controls required</span></article></div></section>
-<section class="section-view" data-section="settings" hidden><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Organisation administration</div><h2>Company settings</h2><p>Manage organisation details, authorised members, permissions and module configuration.</p></div><section class="panel"><h2>Selected organisation</h2><p id="settingsOrgName" class="muted">Choose an organisation above to see its status.</p><div class="notice">Organisation membership and verification are currently controlled through NEXORA's platform administration. Self-service role management and company profile editing will be added with the organisation-settings backend.</div></section></section>
-<footer>© <span id="employerYear"></span> NEXORA · Intelligence for every workforce · Company data is restricted by organisation membership.</footer>
+<section class="section-view" data-section="settings" hidden><div class="module-banner"><div class="eyebrow" style="color:#c9c1ff">Organisation administration</div><h2>Company settings</h2><p>Manage organisation details, authorised members, permissions and module configuration.</p></div><section class="panel"><h2>Selected organisation</h2><p id="settingsOrgName" class="muted">Choose an organisation above to see its status.</p><div class="notice">Organisation membership and verification are currently controlled through VELNORA's platform administration. Self-service role management and company profile editing will be added with the organisation-settings backend.</div></section></section>
+<footer>© <span id="employerYear"></span> VELNORA · Secure workforce. Smarter decisions. · Company data is restricted by organisation membership.</footer>
 </main></div></div></div>
 <script>
 document.getElementById('employerYear').textContent=new Date().getFullYear();

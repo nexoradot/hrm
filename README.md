@@ -1,10 +1,10 @@
-# NEXORA — Human Resources & Workforce Management
+# VELNORA — Human Resources & Workforce Management
 
-**Brand:** NEXORA  
-**Tagline:** INTELLIGENCE FOR EVERY WORKFORCE  
+**Brand:** VELNORA  
+**Tagline:** SECURE WORKFORCE. SMARTER DECISIONS.  
 **Category:** Human Resources, Recruitment & Workforce Management
 
-NEXORA is being developed as a connected ecosystem that combines a public jobs marketplace, candidate portal, employer recruitment workspace, HR consultancy workspace, company HRM capabilities and a central Super Admin console.
+VELNORA is being developed as a connected ecosystem that combines a public jobs marketplace, candidate portal, employer recruitment workspace, HR consultancy workspace, company HRM capabilities and a central Super Admin console.
 
 ## Live entry points
 
