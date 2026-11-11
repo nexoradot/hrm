@@ -290,8 +290,15 @@ body[data-portal="candidate"] .authwrap.auth-modern{box-shadow:0 26px 75px rgba(
     <form id="portalLogin" class="auth-form">
       <div class="field"><label for="candidateLoginEmail">Email address</label><input id="candidateLoginEmail" name="email" type="email" required autocomplete="username" placeholder="you@example.com"></div>
       <div class="field"><label for="candidateLoginPassword">Password</label><input id="candidateLoginPassword" name="password" type="password" required minlength="8" autocomplete="current-password" placeholder="Enter your password"></div>
-      <button class="btn auth-submit" type="submit">Sign in to your account <span aria-hidden="true">→</span></button>
+      <p class="auth-form-note"><button type="button" class="auth-inline-link" id="candidateForgotPassword">Forgot your password?</button></p><button class="btn auth-submit" type="submit">Sign in to your account <span aria-hidden="true">→</span></button>
       <p class="auth-form-note">New to VELNORA? <button type="button" class="auth-inline-link" id="inlineCreateAccount">Create a free account</button></p>
+    </form>
+    <form id="candidatePasswordResetForm" class="auth-form" hidden>
+      <div class="signup-intro"><span class="signup-step">SECURE YOUR ACCOUNT</span><p>Choose a new password for your VELNORA account. Use at least 8 characters.</p></div>
+      <div class="field"><label for="candidateNewPassword">New password</label><input id="candidateNewPassword" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></div>
+      <div class="field"><label for="candidateConfirmPassword">Confirm new password</label><input id="candidateConfirmPassword" name="confirm_password" type="password" required minlength="8" autocomplete="new-password" placeholder="Re-enter your new password"></div>
+      <button class="btn auth-submit" type="submit">Update password <span aria-hidden="true">→</span></button>
+      <p class="auth-form-note"><button type="button" class="auth-inline-link" id="cancelPasswordReset">Back to sign in</button></p>
     </form>
     <form id="candidateSignup" class="auth-form" hidden>
       <div class="signup-intro"><span class="signup-step">FREE CANDIDATE ACCOUNT</span><p>Start with your name and email. You can complete your career profile after signing in.</p></div>
