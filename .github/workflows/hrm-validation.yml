@@ -95,6 +95,7 @@ jobs:
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
           grep -q "KE-2026-Y4-NSSF-CAPS" company-portal/hrm.js
           grep -q "Math.min(gross,9000)" company-portal/hrm.js
+          grep -q "add column if not exists category" supabase/migrations/043_job_categories.sql
           ! grep -q "hello@nexora.co.ke" public-site/index.html
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
           grep -q "create table if not exists public.hr_workspace_settings" supabase/migrations/010_hr_workspace_settings.sql
