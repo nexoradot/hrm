@@ -38,7 +38,8 @@ test('NSSF is capped at KES 6,480 employee contribution above KES 108,000', () =
 test('Employer NSSF matches employee NSSF and is not deducted twice', () => {
   const result = calculate(employee, { basic_pay: 108000 });
   assert.equal(result.employer_nssf, result.nssf);
-  assert.equal(result.net_pay, result.gross_pay - result.paye - result.nssf - result.shif - result.housing_levy - result.employee_pension_contribution - result.other_deductions);
+  const expectedNet = Math.round((result.gross_pay - result.paye - result.nssf - result.shif - result.housing_levy - result.employee_pension_contribution - result.other_deductions + Number.EPSILON) * 100) / 100;
+  assert.equal(result.net_pay, expectedNet);
 });
 
 test('SHIF minimum and housing levy use the expected rates', () => {
