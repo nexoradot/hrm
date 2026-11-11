@@ -159,7 +159,7 @@ function showPayslip(itemId){
  const tier1=Number(snapshot.nssf_tier_i??p.nssf_tier_i??Math.min(nssfPensionablePay,9000)*.06),tier2=Number(snapshot.nssf_tier_ii??p.nssf_tier_ii??Math.min(Math.max(nssfPensionablePay-9000,0),99000)*.06);
  const val=(...keys)=>{for(const k of keys){const v=e?.[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return String(v)}return '—'};
  const amount=v=>Number(v||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
- const earnings=[['Basic Salary',p.basic_pay],['Allowances',p.allowances],['Overtime Pay',p.overtime_pay]].filter(r=>Number(r[1]||0)!==0);
+ const earnings=[['Basic Salary',p.basic_pay],['Regular Cash Allowances',p.allowances],['Overtime Pay',p.overtime_pay],['Other Taxable Cash Earnings',p.other_taxable_cash_earnings]].filter(r=>Number(r[1]||0)!==0);
  const deductions=[['NSSF Tier I',tier1],['NSSF Tier II',tier2],['PAYE',p.paye],['SHA / SHIF',p.shif],['Housing Levy Fund',p.housing_levy],['Pension Contribution',p.employee_pension_contribution],['Other Deductions',p.other_deductions]].filter(r=>Number(r[1]||0)!==0);
  const totalEarnings=earnings.reduce((s,r)=>s+Number(r[1]||0),0),totalDeductions=deductions.reduce((s,r)=>s+Number(r[1]||0),0);
  const rows=list=>list.map(r=>'<tr><td>'+esc(r[0])+'</td><td class="amt">'+amount(r[1])+'</td></tr>').join('');
