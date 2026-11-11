@@ -699,7 +699,7 @@ tbody tr:hover{background:#faf9ff}
 </style>
 
 <link rel="stylesheet" href="../assets/nexora-modern.css?v=20261016-ultra1">
-<style id="nexora-auth-visibility-fix">#appShell[hidden],#authScreen[hidden],#forcePasswordForm[hidden],#loginForm[hidden]{display:none!important}</style>
+<style id="nexora-auth-visibility-fix">#appShell[hidden],#authScreen[hidden],#forcePasswordForm[hidden],#loginForm[hidden]{display:none!important}#hrPasswordResetForm[hidden]{display:none!important}</style>
 <style id="hr-loading-notifications-styles">
 .hr-toast-stack{position:fixed;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));z-index:100001;display:flex;flex-direction:column;gap:10px;width:min(390px,calc(100vw - 28px));pointer-events:none}
 .hr-toast{display:flex;align-items:flex-start;gap:11px;padding:14px 13px;border:1px solid #d9e6e3;border-radius:15px;background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(18,36,65,.18);color:#172b4d;pointer-events:auto;animation:hr-toast-in .24s ease-out;transition:opacity .24s ease,transform .24s ease}
@@ -769,8 +769,18 @@ tbody tr:hover{background:#faf9ff}
   <div id="authMessage" class="message" role="status" hidden></div>
   <label class="field">Work email<input name="email" type="email" autocomplete="username" required placeholder="you@company.com"></label>
   <label class="field">Password<input name="password" type="password" autocomplete="current-password" required placeholder="Your password"></label>
+  <p class="auth-note"><button class="auth-link" id="hrForgotPassword" type="button">Forgot your password?</button></p>
   <button class="btn primary" type="submit">Sign in securely</button>
   <p class="auth-note">Access is limited to active organisation owners and HR managers. Contact your platform administrator if you need access.</p>
+ </form>
+ <form id="hrPasswordResetForm" class="auth-card" hidden>
+  <div class="brand"><div class="brand-mark">N</div><div><strong>VELNORA</strong><small>SECURE WORKFORCE. SMARTER DECISIONS.</small></div></div>
+  <div class="eyebrow">Account recovery</div><h1>Set a new password</h1><p class="muted">Choose a new password for your VELNORA HR account.</p>
+  <div id="hrPasswordResetMessage" class="message" role="status" hidden></div>
+  <label class="field">New password<input name="password" type="password" autocomplete="new-password" minlength="12" required placeholder="At least 12 characters"></label>
+  <label class="field">Confirm new password<input name="confirm_password" type="password" autocomplete="new-password" minlength="12" required placeholder="Re-enter your new password"></label>
+  <button class="btn primary" type="submit">Update password</button>
+  <p class="auth-note"><button class="auth-link" id="hrCancelPasswordReset" type="button">Back to sign in</button></p>
  </form>
  <form id="forcePasswordForm" class="auth-card" hidden>
   <div class="brand"><div class="brand-mark">N</div><div><strong>VELNORA</strong><small>SECURE WORKFORCE. SMARTER DECISIONS.</small></div></div>
