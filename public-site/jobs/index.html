@@ -10,7 +10,7 @@
 .hero{position:relative;isolation:isolate;overflow:hidden;margin-top:24px;padding:clamp(28px,4vw,48px);border-radius:22px;background:radial-gradient(circle at 90% 5%,#5e54dc 0,transparent 34%),linear-gradient(115deg,#151b33 0%,#242654 65%,#40358e 100%);color:#fff;box-shadow:0 18px 42px #17213a18}
 .hero:after{content:"";position:absolute;z-index:-1;right:9%;top:-115px;width:250px;height:250px;border:1px solid #ffffff22;border-radius:50%;box-shadow:0 0 0 28px #ffffff08,0 0 0 58px #ffffff06;pointer-events:none}
 .hero .eyebrow{color:#c8c1ff}.hero h1{max-width:760px;color:#fff;font-size:clamp(34px,5vw,52px);margin:10px 0 13px}.hero p{max-width:670px;color:#e0e4f7;line-height:1.75;margin-bottom:0}
-.filters{margin:22px 0 18px;padding:16px;background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 8px 24px #17213a08}
+.filters{margin:22px 0 18px;padding:16px;background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 8px 24px #17213a08;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
 #candidateAccess{margin:28px 0 24px;padding:20px 22px;border-radius:17px;box-shadow:0 8px 28px #17213a0a}
 #candidateAccess>p:first-of-type{margin:5px 0 12px}
 #candidateAccess .auth-tabs{margin:12px 0}
@@ -41,7 +41,7 @@ body.auth-open #candidateAccess{display:block}
 </style></head><body data-portal="public"><header class="head"><div class="wrap"><a class="brand" href="../" aria-label="VELNORA home"><img src="../assets/nexora-logo.svg" alt="VELNORA — Secure workforce. Smarter decisions."></a><nav class="headnav"><a href="../">Home</a><a href="../../candidate-portal/">Candidate portal</a><a class="primary" href="../../company-portal/">For employers</a></nav></div></header>
 <main class="wrap"><section class="hero"><div class="eyebrow">VELNORA TALENT MARKETPLACE</div><h1>Find work that moves you forward.</h1><p class="muted">Explore published vacancies, compare opportunities and apply through your candidate account. New roles appear as employers publish and VELNORA approves them.</p></section>
 
-<section class="filters" aria-label="Filter vacancies"><label>Search<input id="jobSearch" placeholder="Job title, skill, employer or location" aria-label="Search jobs"></label><label>Location<input id="jobLocation" type="search" placeholder="City, county or remote" aria-label="Filter by location"></label><label>Employment type<select id="jobType"><option value="all">All types</option><option value="full_time">Full-time</option><option value="part_time">Part-time</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="internship">Internship</option><option value="casual">Casual</option></select></label><label>Work arrangement<select id="jobWorkplace"><option value="all">All arrangements</option><option value="onsite">On-site</option><option value="hybrid">Hybrid</option><option value="remote">Remote</option></select></label></section>
+<section class="filters" aria-label="Filter vacancies"><label>Search<input id="jobSearch" placeholder="Job title, skill, employer or location" aria-label="Search jobs"></label><label>Location<input id="jobLocation" type="search" placeholder="City, county or remote" aria-label="Filter by location"></label><label>Category<select id="jobCategory" aria-label="Filter by job category"><option value="all">All categories</option><option value="healthcare">Healthcare</option><option value="technology">IT & Technology</option><option value="finance">Banking & Finance</option><option value="education">Education</option><option value="administration">Administration</option><option value="hospitality">Hospitality</option></select></label><label>Employment type<select id="jobType"><option value="all">All types</option><option value="full_time">Full-time</option><option value="part_time">Part-time</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="internship">Internship</option><option value="casual">Casual</option></select></label><label>Work arrangement<select id="jobWorkplace"><option value="all">All arrangements</option><option value="onsite">On-site</option><option value="hybrid">Hybrid</option><option value="remote">Remote</option></select></label></section>
 <div class="listing-heading"><div><h2>Latest opportunities</h2><p>Browse published roles. Sign in only when you're ready to apply.</p></div><div class="listing-actions"><button id="openCandidateAccess" class="light" type="button">Sign in / Create account</button><button id="refreshJobs" class="light" type="button">Refresh listings ↻</button></div></div><div id="publicJobs" class="jobs"><div class="empty">Loading published vacancies…</div></div>
 <section class="panel auth" id="candidateAccess"><h2>Candidate account</h2><p class="muted">Sign in to apply, or create a profile to start your job search.</p><div class="auth-tabs"><button type="button" class="light" id="showLogin" aria-pressed="true">Sign in</button><button type="button" class="light" id="showSignup" aria-pressed="false">Create account</button></div>
 <form id="portalLogin"><label>Email address<input type="email" name="email" required autocomplete="username"></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button class="primary">Sign in to apply</button></form>
@@ -58,13 +58,15 @@ document.getElementById('jobModal').addEventListener('click',e=>{if(e.target.id=
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{
   const params=new URLSearchParams(window.location.search);
-  const q=params.get('q')||'';const locationTerm=params.get('location')||'';const type=params.get('employment_type')||'';
+  const q=params.get('q')||'';const locationTerm=params.get('location')||'';const type=params.get('employment_type')||'';const category=params.get('category')||'';const arrangement=params.get('workplace_type')||'';
   const search=document.getElementById('jobSearch');const locationInput=document.getElementById('jobLocation');
-  const typeSelect=document.getElementById('jobType');const workplace=document.getElementById('jobWorkplace');
+  const typeSelect=document.getElementById('jobType');const workplace=document.getElementById('jobWorkplace');const categorySelect=document.getElementById('jobCategory');
   if(search&&q)search.value=q;
   if(locationInput&&locationTerm&&!/^remote$/i.test(locationTerm))locationInput.value=locationTerm;
   if(/^remote$/i.test(locationTerm)||type==='remote'){if(workplace)workplace.value='remote';}
   else if(type&&typeSelect&&Array.from(typeSelect.options).some(o=>o.value===type))typeSelect.value=type;
-  if(q||locationTerm||type){search?.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('.filters')?.scrollIntoView({block:'start',behavior:'auto'});}
+  if(arrangement&&workplace&&Array.from(workplace.options).some(o=>o.value===arrangement))workplace.value=arrangement;
+  if(category&&categorySelect&&Array.from(categorySelect.options).some(o=>o.value===category))categorySelect.value=category;
+  if(q||locationTerm||type||arrangement||category){search?.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('.filters')?.scrollIntoView({block:'start',behavior:'auto'});}
 });
 </script></body></html>
