@@ -10,10 +10,11 @@ on:
       - "**/*.sql"
       - ".github/workflows/**"
   push:
-    branches: [main]
+    branches: [main, "audit/**"]
     paths:
       - "**/*.html"
       - "**/*.js"
+      - "**/*.cjs"
       - "**/*.ts"
       - "**/*.sql"
       - ".github/workflows/**"
