@@ -1,10 +1,11 @@
-name: NEXORA platform validation
+name: VELNORA platform validation
 
 on:
   pull_request:
     paths:
       - "**/*.html"
       - "**/*.js"
+      - "**/*.cjs"
       - "**/*.ts"
       - "**/*.sql"
       - ".github/workflows/**"
@@ -38,6 +39,9 @@ jobs:
           done < <(find . -type f -name '*.js' -not -path './.git/*' -print0)
           test "$count" -gt 0
           echo "Syntax-checked $count JavaScript files."
+
+      - name: Test Kenya statutory payroll calculations
+        run: node --test tests/payroll-calculator.test.cjs
 
       - name: Check local HTML assets and navigation targets
         run: |
@@ -88,6 +92,9 @@ jobs:
           grep -q "organization_members" js/superadmin-account-management.js
           grep -q "hr_workspace_settings" company-portal/hrm.js
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
+          grep -q "KE-2026-Y4-NSSF-CAPS" company-portal/hrm.js
+          grep -q "Math.min(gross,9000)" company-portal/hrm.js
+          ! grep -q "hello@nexora.co.ke" public-site/index.html
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
           grep -q "create table if not exists public.hr_workspace_settings" supabase/migrations/010_hr_workspace_settings.sql
           grep -q "create or replace function public.redeem_hr_employee_invitation" supabase/migrations/008_hr_employee_invitations.sql
