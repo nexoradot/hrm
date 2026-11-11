@@ -8,23 +8,23 @@ VELNORA is being developed as a connected ecosystem that combines a public jobs 
 
 ## Live entry points
 
-- Production base / Super Admin: https://nexoradot.github.io/hrm/
-- Public website: https://nexoradot.github.io/hrm/public-site/
-- Jobs marketplace: https://nexoradot.github.io/hrm/public-site/jobs/
-- Candidate portal: https://nexoradot.github.io/hrm/candidate-portal/
-- Employer recruitment portal: https://nexoradot.github.io/hrm/company-portal/
-- HRM workspace (requires migrations 005–006 and 016 plus authorised organisation access): https://nexoradot.github.io/hrm/company-portal/hrm.html
-- Employee self-service portal (requires employee account linking and migration 006): https://nexoradot.github.io/hrm/company-portal/my-portal.html
-- Consultancy portal: https://nexoradot.github.io/hrm/consultancy-portal/
+- Public website: https://velnora.co.ke/ (the repository root redirects to `public-site/`)
+- Jobs marketplace: https://velnora.co.ke/public-site/jobs/
+- Candidate portal: https://velnora.co.ke/candidate-portal/
+- Employer recruitment portal: https://velnora.co.ke/company-portal/
+- HRM workspace (requires the relevant HRM migrations and authorised organisation access): https://velnora.co.ke/company-portal/hrm.html
+- Employee self-service portal: https://velnora.co.ke/company-portal/my-portal.html
+- Consultancy portal: https://velnora.co.ke/consultancy-portal/
+- Super Admin: https://velnora.co.ke/superadmin/
 
 ## Product areas
 
 1. **Public website:** platform overview, solutions, pricing, contact and navigation to role-specific workspaces.
-2. **Jobs marketplace:** search published vacancies; filter by location, employment type and workplace arrangement; inspect a job detail view; sign in or create a candidate account before applying.
+2. **Jobs marketplace:** search published vacancies; filter by category, location, employment type and workplace arrangement; inspect a job detail view; sign in or create a candidate account before applying.
 3. **Candidate portal:** candidate profile, application history, private candidate-document workflows and consent-based consultancy discovery/sharing.
 4. **Employer portal:** organization workspace, vacancy submission for moderation and applicant status management.
 5. **Consultancy portal:** candidate discovery for opted-in profiles, consent requests and approved document access.
-6. **Company HRM:** workforce command centre with employee/department management, salary setup, automatic employee-number suggestions, onboarding task creation, private employee-document upload/download, leave, attendance, performance, payroll-period preparation, operational registers and CSV reporting. Apply migrations 005–006 and 016 in a development project and test tenant isolation before production. Payroll line arithmetic is not a statutory tax engine; PAYE, NSSF, SHIF and housing levy still require validated calculations and review. No money is sent and no statutory returns are filed.
+6. **Company HRM:** workforce command centre with employee/department management, salary setup, automatic employee-number suggestions, onboarding task creation, private employee-document upload/download, leave, attendance, performance, payroll-period preparation, operational registers and CSV reporting. Apply migrations 005–006 and 016 in a development project and test tenant isolation before production. The payroll calculator applies from February 2026 and uses Kenya NSSF Year 4 limits (Tier I up to KES 9,000 and Tier II up to KES 108,000), SHIF and housing levy rates, and KRA PAYE bands/reliefs. NSSF is calculated on a separately recorded pensionable-pay basis; generated payroll defaults to basic salary and HR must verify contractual pensionable earnings while excluding fluctuating emoluments such as bonuses, commissions, overtime, shift pay, house allowance and service charge. The Affordable Housing Levy base is separately recorded as basic pay plus regular cash allowances, excluding irregular payments such as overtime and bonuses; see migration `045_payroll_gross_salary_bases.sql`. NSSF and other employee pension contributions share the KES 30,000 monthly PAYE deduction cap. Finance must still validate employee-specific taxable benefits and deductions before approval. VELNORA does not transfer money or file statutory returns.
 7. **Super Admin:** central organization, user, verification, moderation and platform governance functions, subject to the deployed code and database policies.
 
 ## Technology and architecture
@@ -61,8 +61,9 @@ VELNORA is being developed as a connected ecosystem that combines a public jobs 
 ## Deployment and security notes
 
 - A GitHub commit or merged pull request does **not** prove that GitHub Pages has finished deploying or that production workflows work.
-- The recruitment portal depends on the relevant Supabase migrations, policies, tables and Storage bucket. Confirm the migration status in a development project before applying changes to production.
+- The portals depend on the matching Supabase migrations, policies, tables and private Storage buckets. The marketplace category selector is introduced by `supabase/migrations/043_job_categories.sql`; apply it before enabling category-based public job search. The NSSF pensionable-pay basis is added by `supabase/migrations/044_payroll_nssf_pensionable_pay.sql`; apply it before using the revised payroll calculator. The separate Affordable Housing Levy and other taxable cash earnings bases are added by `supabase/migrations/045_payroll_gross_salary_bases.sql`. The migration directory contains historical duplicate numeric prefixes (`017` and `035`); reconcile the deployed migration history before applying or renaming any migration. Do not apply these files by guessed numeric order.
 - Never place a Supabase service-role key in browser code. Only use the public anon key with restrictive Row Level Security policies.
+- Set the Supabase Auth Site URL to `https://velnora.co.ke` and allowlist the candidate reset redirect `https://velnora.co.ke/candidate-portal/` and HRM reset redirect `https://velnora.co.ke/company-portal/hrm.html` (plus any approved preview URLs) before enabling password recovery in production.
 - Candidate CVs and identity/qualification documents must remain in private storage. Use short-lived signed URLs and verify that access is authorized by the candidate's active consent record.
 - Review consent revocation, organization verification, company-level separation, applicant access and file-download permissions before production launch.
 - Subscription cards and unimplemented HRM modules must not be described as active services until payment, permissions, data handling and operational flows have been tested.
@@ -70,7 +71,7 @@ VELNORA is being developed as a connected ecosystem that combines a public jobs 
 
 ## Development workflow
 
-The marketplace changes are prepared on `feature/nexora-marketplace-upgrade`. Review the pull request and test against a non-production Supabase project before merging. Do not run unverified migrations against the live project.
+The VELNORA experience and HRM hardening work is prepared on `audit/velnora-experience-hardening`. Review the pull request and validate it against a restored development Supabase project before merging or deploying. Do not run unverified migrations against production.
 
 
 ## AG German Institute employee onboarding
@@ -78,3 +79,8 @@ The marketplace changes are prepared on `feature/nexora-marketplace-upgrade`. Re
 - HR review queue: `company-portal/employee-registration-review.html`
 - Requires migrations 005–007 to be reviewed and applied in the target Supabase project.
 - Form fields follow the AG German Institute Google Form supplied by the project owner. Files use a private storage bucket and short-lived signed URLs in the HR review screen.
+
+
+### Payroll deployment validation
+
+Before enabling the revised payroll calculator, apply migrations 043, 044 and 045 in order after reconciling the existing migration ledger. Confirm that each employee's NSSF pensionable earnings and Affordable Housing Levy salary base match the employment contract and applicable statutory guidance. The calculator is a preparation and review aid: Finance must verify employee-specific reliefs, non-cash taxable benefits and adjustments before approval or statutory filing.
