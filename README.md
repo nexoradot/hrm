@@ -20,7 +20,7 @@ VELNORA is being developed as a connected ecosystem that combines a public jobs 
 ## Product areas
 
 1. **Public website:** platform overview, solutions, pricing, contact and navigation to role-specific workspaces.
-2. **Jobs marketplace:** search published vacancies; filter by location, employment type and workplace arrangement; inspect a job detail view; sign in or create a candidate account before applying.
+2. **Jobs marketplace:** search published vacancies; filter by category, location, employment type and workplace arrangement; inspect a job detail view; sign in or create a candidate account before applying.
 3. **Candidate portal:** candidate profile, application history, private candidate-document workflows and consent-based consultancy discovery/sharing.
 4. **Employer portal:** organization workspace, vacancy submission for moderation and applicant status management.
 5. **Consultancy portal:** candidate discovery for opted-in profiles, consent requests and approved document access.
@@ -61,7 +61,7 @@ VELNORA is being developed as a connected ecosystem that combines a public jobs 
 ## Deployment and security notes
 
 - A GitHub commit or merged pull request does **not** prove that GitHub Pages has finished deploying or that production workflows work.
-- The portals depend on the matching Supabase migrations, policies, tables and private Storage buckets. The migration directory contains historical duplicate numeric prefixes (`017` and `035`); reconcile the deployed migration history before applying or renaming any migration. Do not apply these files by guessed numeric order.
+- The portals depend on the matching Supabase migrations, policies, tables and private Storage buckets. The marketplace category selector is introduced by `supabase/migrations/043_job_categories.sql`; apply it before enabling category-based public job search. The migration directory contains historical duplicate numeric prefixes (`017` and `035`); reconcile the deployed migration history before applying or renaming any migration. Do not apply these files by guessed numeric order.
 - Never place a Supabase service-role key in browser code. Only use the public anon key with restrictive Row Level Security policies.
 - Set the Supabase Auth Site URL to `https://velnora.co.ke` and allowlist the candidate reset redirect `https://velnora.co.ke/candidate-portal/` (plus any approved preview URLs) before enabling password recovery in production.
 - Candidate CVs and identity/qualification documents must remain in private storage. Use short-lived signed URLs and verify that access is authorized by the candidate's active consent record.
