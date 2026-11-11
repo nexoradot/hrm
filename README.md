@@ -79,3 +79,8 @@ The VELNORA experience and HRM hardening work is prepared on `audit/velnora-expe
 - HR review queue: `company-portal/employee-registration-review.html`
 - Requires migrations 005–007 to be reviewed and applied in the target Supabase project.
 - Form fields follow the AG German Institute Google Form supplied by the project owner. Files use a private storage bucket and short-lived signed URLs in the HR review screen.
+
+
+### Payroll deployment validation
+
+Before enabling the revised payroll calculator, apply migrations 043, 044 and 045 in order after reconciling the existing migration ledger. Confirm that each employee's NSSF pensionable earnings and Affordable Housing Levy salary base match the employment contract and applicable statutory guidance. The calculator is a preparation and review aid: Finance must verify employee-specific reliefs, non-cash taxable benefits and adjustments before approval or statutory filing.
