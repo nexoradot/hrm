@@ -49,6 +49,18 @@ test('SHIF minimum and housing levy use the expected rates', () => {
   assert.equal(result.employer_housing_levy, 135);
 });
 
+test('NSSF uses pensionable pay and excludes fluctuating allowances and overtime when excluded from the base', () => {
+  const result = calculate(employee, { basic_pay: 50000, allowances: 5000, overtime_pay: 5000, nssf_pensionable_pay: 50000 });
+  assert.equal(result.gross_pay, 60000);
+  assert.equal(result.nssf_pensionable_pay, 50000);
+  assert.equal(result.nssf, 3000);
+  assert.equal(result.calculation_snapshot.nssf_pensionable_pay, 50000);
+});
+
+test('NSSF pensionable pay cannot exceed gross pay', () => {
+  assert.throws(() => calculate(employee, { basic_pay: 50000, nssf_pensionable_pay: 55000 }));
+});
+
 test('NSSF and other pension contributions share the KES 30,000 PAYE deduction cap', () => {
   const pensionEmployee = { ...employee, employee_pension_contribution: 30000 };
   const result = calculate(pensionEmployee, { basic_pay: 200000 });
@@ -58,7 +70,7 @@ test('NSSF and other pension contributions share the KES 30,000 PAYE deduction c
 
 test('Calculator records a versioned statutory rule set', () => {
   const result = calculate(employee, { basic_pay: 50000 });
-  assert.equal(result.calculation_snapshot.rule_set, 'KE-2026-Y4-NSSF-CAPS');
+  assert.equal(result.calculation_snapshot.rule_set, 'KE-2026-Y4-NSSF-PENSIONABLE-BASE');
 });
 
 test('Negative payroll inputs are rejected', () => {
