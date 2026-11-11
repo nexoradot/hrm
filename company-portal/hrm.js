@@ -181,7 +181,7 @@ function addPayrollItem(){
   if([basic,allowances,overtime,other].some(v=>!Number.isFinite(v)||v<0))throw new Error('Payroll amounts must be valid non-negative numbers.');
   const calculated=kenyaPayrollCalc(employee,{basic_pay:basic,allowances,overtime_pay:overtime,other_deductions:other});
   if(calculated.gross_pay<=0)throw new Error('Gross pay must be greater than zero.');
-  const payload={...calculated,organization_id:orgId,payroll_period_id:d.payroll_period_id,employee_id:d.employee_id,calculation_snapshot:{...calculated.calculation_snapshot,manual_entry:true,source:'manual_payroll_line'}};
+  const payload={...calculated,organization_id:orgId,payroll_period_id:d.payroll_period_id,employee_id:d.employee_id,payslip_number:'VEL-'+targetPeriod.period_start.slice(0,7).replace('-','')+'-'+employee.id.slice(0,8).toUpperCase(),calculation_snapshot:{...calculated.calculation_snapshot,manual_entry:true,source:'manual_payroll_line'}};
   const existing=payrollItems.find(p=>p.payroll_period_id===d.payroll_period_id&&p.employee_id===d.employee_id);
   const result=existing?await db.from('hr_payroll_items').update(payload).eq('id',existing.id).eq('organization_id',orgId):await db.from('hr_payroll_items').insert(payload);
   if(result.error)throw result.error;
