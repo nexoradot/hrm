@@ -40,10 +40,10 @@
   async function viewJobDetails(jobId){
     if(!user){message('Sign in or create a free candidate account to view full vacancy details.',true);openCandidateAccess('signin');return;}
     const listing=jobsCache.find(x=>x.id===jobId);if(!listing)return;
-    const r=await sb.from('jobs').select('id,title,public_employer_name,summary,description,requirements,location,country_code,employment_type,workplace_type,salary_min,salary_max,salary_currency,show_salary,closing_date').eq('id',jobId).eq('status','published').maybeSingle();
+    const r=await sb.from('jobs').select('id,title,public_employer_name,summary,description,requirements,location,country_code,category,employment_type,workplace_type,salary_min,salary_max,salary_currency,show_salary,closing_date').eq('id',jobId).eq('status','published').maybeSingle();
     if(r.error)throw r.error;if(!r.data)throw new Error('This vacancy is no longer available.');const j=r.data;const modal=$('#jobModal');if(!modal)return;
     $('#jobModalEmployer').textContent=j.public_employer_name||'Employer';$('#jobModalTitle').textContent=j.title||'Vacancy';
-    $('#jobModalMeta').textContent=[j.location,j.country_code,String(j.employment_type||'').replaceAll('_',' '),String(j.workplace_type||'').replaceAll('_',' ')].filter(Boolean).join(' · ');
+    $('#jobModalMeta').textContent=[j.category,j.location,j.country_code,String(j.employment_type||'').replaceAll('_',' '),String(j.workplace_type||'').replaceAll('_',' ')].filter(Boolean).join(' · ');
     const salary=j.show_salary&&j.salary_min!=null?((j.salary_currency||'KES')+' '+Number(j.salary_min).toLocaleString()+(j.salary_max!=null?'–'+Number(j.salary_max).toLocaleString():'+')):'';
     $('#jobModalChips').innerHTML=[j.closing_date?'Closes '+fmt(j.closing_date):'Open until filled',salary].filter(Boolean).map(x=>'<span class="chip">'+esc(x)+'</span>').join('');
     $('#jobModalBody').textContent=(j.description||j.summary||'No additional description provided.')+'\n\nRequirements:\n'+(j.requirements||'Please review the role details with the employer.');$('#modalApply').dataset.apply=j.id;modal.classList.add('open');
