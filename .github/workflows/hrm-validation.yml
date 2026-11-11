@@ -97,6 +97,12 @@ jobs:
           grep -q "Math.min(gross,9000)" company-portal/hrm.js
           grep -q "add column if not exists category" supabase/migrations/043_job_categories.sql
           ! grep -q "hello@nexora.co.ke" public-site/index.html
+          grep -q "resetPasswordForEmail" portal.js
+          grep -q "PASSWORD_RECOVERY" portal.js
+          grep -q "resetPasswordForEmail" company-portal/hrm.js
+          grep -q "PASSWORD_RECOVERY" company-portal/hrm.js
+          grep -q "id="jobCategory"" public-site/jobs/index.html
+          grep -q "category:String(f.get(\x27category\x27)||\x27general\x27)" portal.js
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
           grep -q "create table if not exists public.hr_workspace_settings" supabase/migrations/010_hr_workspace_settings.sql
           grep -q "create or replace function public.redeem_hr_employee_invitation" supabase/migrations/008_hr_employee_invitations.sql
