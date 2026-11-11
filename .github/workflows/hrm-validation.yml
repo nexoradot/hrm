@@ -94,9 +94,10 @@ jobs:
           grep -q "organization_members" js/superadmin-account-management.js
           grep -q "hr_workspace_settings" company-portal/hrm.js
           grep -q "advance_hr_payroll_period" company-portal/hrm.js
-          grep -q "KE-2026-Y4-NSSF-CAPS" company-portal/hrm.js
+          grep -q "KE-2026-Y4-NSSF-PENSIONABLE-BASE" company-portal/hrm.js
           grep -q "Math.min(gross,9000)" company-portal/hrm.js
           grep -q "add column if not exists category" supabase/migrations/043_job_categories.sql
+          grep -q "nssf_pensionable_pay" supabase/migrations/044_payroll_nssf_pensionable_pay.sql
           ! grep -q "hello@nexora.co.ke" public-site/index.html
           grep -q "resetPasswordForEmail" portal.js
           grep -q "PASSWORD_RECOVERY" portal.js
