@@ -48,6 +48,13 @@ test('SHIF minimum and housing levy use the expected rates', () => {
   assert.equal(result.employer_housing_levy, 135);
 });
 
+test('NSSF and other pension contributions share the KES 30,000 PAYE deduction cap', () => {
+  const pensionEmployee = { ...employee, employee_pension_contribution: 30000 };
+  const result = calculate(pensionEmployee, { basic_pay: 200000 });
+  assert.equal(result.calculation_snapshot.nssf_and_pension_allowable_deduction, 30000);
+  assert.equal(result.calculation_snapshot.taxable_pay, 200000 - result.shif - result.housing_levy - 30000);
+});
+
 test('Calculator records a versioned statutory rule set', () => {
   const result = calculate(employee, { basic_pay: 50000 });
   assert.equal(result.calculation_snapshot.rule_set, 'KE-2026-Y4-NSSF-CAPS');
