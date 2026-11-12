@@ -614,6 +614,8 @@ function renderOverview(){
  setKpi('statProbation',employees.filter(e=>String(e.employment_status||'').trim().toLowerCase()==='probation').length);
  const todayISO=today();
  setKpi('statExpiredContracts',employees.filter(e=>{const end=String(e.contract_end_date||'').slice(0,10);return end&&end<todayISO&&String(e.employment_status||'').toLowerCase()!=='terminated'}).length);
+ setKpi('statOnLeave',employees.filter(e=>String(e.employment_status||'').toLowerCase()==='on_leave').length);
+ const dateNode=$('#dashboardDate');if(dateNode)dateNode.textContent=new Date().toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
  $('#statDocuments').textContent=documentAttention.length;
  $('#statPayroll').textContent=payrollAttention.length;
  
