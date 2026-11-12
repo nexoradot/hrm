@@ -186,6 +186,9 @@ body:has(#authSection:not([hidden])) #message{width:min(1120px,100%);margin:0 au
 .clock-live-btn.is-complete{background:#e5f6ee!important;color:#08744d!important;border:1px solid #b8e8d0!important;box-shadow:none!important;opacity:1!important}
 .clock-live-btn.is-blocked,.clock-live-btn:disabled:not(.is-complete){background:#edf1f6!important;color:#7b8799!important;border:1px solid #dfe5ed!important;box-shadow:none!important;opacity:1!important;cursor:not-allowed!important}
 .clock-live-btn:not(:disabled):hover{filter:brightness(.96)}
+
+/* Accessible password visibility control */
+.password-control{position:relative;display:flex;align-items:center}.password-control input{width:100%;padding-right:88px!important}.password-visibility{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:66px;padding:8px 9px;border:0;border-radius:9px;background:#eef1ff;color:#5c50d9;font-size:11px;font-weight:800;transition:background .18s,transform .18s}.password-visibility:hover{background:#e4e2ff}.password-visibility:active{transform:translateY(-50%) scale(.97)}.password-visibility svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.password-visibility:focus-visible{outline:3px solid #8bdde3;outline-offset:2px}
 </style>
 <style id="nexora-employee-polish">
 /* Employee self-service refinement: calm, readable, mobile-first data presentation. */
@@ -406,7 +409,7 @@ body{margin:0!important}
    <div class="auth-card-top"><span class="auth-card-icon">↗</span><span class="auth-kicker">EMPLOYEE SELF-SERVICE</span></div>
    <h2>Welcome back</h2><p class="auth-intro">Sign in to continue to your personal workspace.</p>
    <label class="field">Work email address<input name="email" type="email" required autocomplete="username" placeholder="you@company.com"></label>
-   <label class="field">Password<input name="password" type="password" required autocomplete="current-password" placeholder="Enter your password"></label>
+   <label class="field password-field">Password<div class="password-control"><input id="employeeLoginPassword" name="password" type="password" required autocomplete="current-password" placeholder="Enter your password"><button class="password-visibility" type="button" id="toggleEmployeePassword" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><span>Show</span></button></div></label>
    <button class="btn primary" type="submit"><span>Sign in securely</span><span aria-hidden="true">→</span></button>
    <p class="auth-security"><span>✓</span> Your account and HR information are protected.</p>
    <p class="footer">Need access? Contact your HR team to verify your employee record and work email.</p>
