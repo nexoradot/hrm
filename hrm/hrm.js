@@ -608,6 +608,9 @@ function renderOverview(){
  const payrollAttention=payroll.filter(p=>!['paid','cancelled'].includes(String(p.status||'').toLowerCase()));
  $('#statEmployees').textContent=active.length;
  $('#statOnboarding').textContent=openOnboarding.length;
+ $('#statPermanent').textContent=employees.filter(e=>e.is_permanent===true&&e.employment_status!=='terminated').length;
+ $('#statContract').textContent=employees.filter(e=>String(e.employment_type||'').toLowerCase()==='contract'&&e.employment_status!=='terminated').length;
+ $('#statProbation').textContent=employees.filter(e=>String(e.employment_status||'').toLowerCase()==='probation').length;
  $('#statDocuments').textContent=documentAttention.length;
  $('#statPayroll').textContent=payrollAttention.length;
  
