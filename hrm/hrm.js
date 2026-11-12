@@ -608,9 +608,10 @@ function renderOverview(){
  const payrollAttention=payroll.filter(p=>!['paid','cancelled'].includes(String(p.status||'').toLowerCase()));
  $('#statEmployees').textContent=active.length;
  $('#statOnboarding').textContent=openOnboarding.length;
- $('#statPermanent').textContent=employees.filter(e=>String(e.is_permanent).toLowerCase()==='true'&&e.employment_status!=='terminated').length;
- $('#statContract').textContent=employees.filter(e=>String(e.employment_type||'').toLowerCase()==='contract'&&e.employment_status!=='terminated').length;
- $('#statProbation').textContent=employees.filter(e=>String(e.employment_status||'').toLowerCase()==='probation').length;
+ const setKpi=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=String(value)};
+ setKpi('statPermanent',employees.filter(e=>String(e.is_permanent).toLowerCase()==='true'&&String(e.employment_status||'').toLowerCase()!=='terminated').length);
+ setKpi('statContract',employees.filter(e=>String(e.employment_type||'').trim().toLowerCase()==='contract'&&String(e.employment_status||'').toLowerCase()!=='terminated').length);
+ setKpi('statProbation',employees.filter(e=>String(e.employment_status||'').trim().toLowerCase()==='probation').length);
  $('#statDocuments').textContent=documentAttention.length;
  $('#statPayroll').textContent=payrollAttention.length;
  
