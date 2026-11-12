@@ -613,7 +613,7 @@ function renderOverview(){
  setKpi('statContract',employees.filter(e=>String(e.employment_type||'').trim().toLowerCase()==='contract'&&String(e.employment_status||'').toLowerCase()!=='terminated').length);
  setKpi('statProbation',employees.filter(e=>String(e.employment_status||'').trim().toLowerCase()==='probation').length);
  const todayISO=today();
- const expiredEmployeeIds=new Set(contracts.filter(c=>c.employee_id&&c.end_date&&String(c.end_date).slice(0,10)<todayISO).map(c=>c.employee_id));
+ const expiredEmployeeIds=new Set(contracts.filter(c=>c.employee_id&&c.end_date&&!['cancelled','canceled','void','terminated'].includes(String(c.status||'').toLowerCase())&&String(c.end_date).slice(0,10)<todayISO).map(c=>c.employee_id));
  employees.filter(e=>String(e.employment_type||'').toLowerCase()==='contract'&&e.contract_end_date&&String(e.contract_end_date).slice(0,10)<todayISO).forEach(e=>{if(!contracts.some(c=>c.employee_id===e.id))expiredEmployeeIds.add(e.id)});
  setKpi('statExpiredContracts',expiredEmployeeIds.size);
  setKpi('statOnLeave',employees.filter(e=>String(e.employment_status||'').toLowerCase()==='on_leave').length);
@@ -681,7 +681,7 @@ function renderOverview(){
  // Contract lifecycle: use the stored contract_end_date and the local calendar date.
  const todayDate=new Date();todayDate.setHours(0,0,0,0);const todayKey=todayDate.getFullYear()+'-'+String(todayDate.getMonth()+1).padStart(2,'0')+'-'+String(todayDate.getDate()).padStart(2,'0');
  const contractMap=new Map();
- contracts.forEach(c=>{if(!c.employee_id)return;const employee=employees.find(e=>e.id===c.employee_id);if(!employee||String(employee.employment_status||'').toLowerCase()==='terminated')return;const end=String(c.end_date||'').slice(0,10);if(end)contractMap.set(c.employee_id,{employee,end})});
+ contracts.forEach(c=>{if(!c.employee_id||['cancelled','canceled','void','terminated'].includes(String(c.status||'').toLowerCase()))return;const employee=employees.find(e=>e.id===c.employee_id);if(!employee||String(employee.employment_status||'').toLowerCase()==='terminated')return;const end=String(c.end_date||'').slice(0,10);if(end)contractMap.set(c.employee_id,{employee,end})});
  employees.filter(e=>String(e.employment_type||'').toLowerCase()==='contract'&&String(e.employment_status||'').toLowerCase()!=='terminated'&&e.contract_end_date&&!contractMap.has(e.id)).forEach(e=>contractMap.set(e.id,{employee:e,end:String(e.contract_end_date).slice(0,10)}));
  const contractRows=[...contractMap.values()];
  const contractCounts={expired:0,due:0,current:0};
