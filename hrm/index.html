@@ -550,6 +550,23 @@ body{background:#f3f5fc!important;color:var(--nx-ink)!important}
 :root[data-theme="dark"] .nx-mini-bars .bar-track,:root[data-theme="dark"] .dept-track{background:#26364d}
 @media(max-width:700px){.theme-palette{padding:10px}.theme-swatches{gap:12px}.appearance-toggle{padding:8px}.appearance-toggle .theme-label{display:none}}
 
+
+/* Account profile menu */
+.account-menu-wrap{position:relative}
+.account-trigger{width:38px;height:38px;border:2px solid #dce7f2;border-radius:50%;padding:0;overflow:hidden;background:#e1f7f8;color:#176c79;font-weight:850;display:grid;place-items:center}
+.account-trigger img{width:100%;height:100%;object-fit:cover;display:block}
+.account-popover{position:absolute;right:0;top:calc(100% + 10px);width:245px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px;box-shadow:0 16px 45px #10213a25;z-index:40}
+.account-popover[hidden]{display:none}
+.account-summary{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line);margin-bottom:6px;min-width:0}
+.account-summary strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.account-summary small{display:block;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.account-menu-action{width:100%;border:0;background:transparent;color:var(--ink);padding:10px;border-radius:9px;text-align:left;font-weight:650}
+.account-menu-action:hover{background:var(--bg)}
+.account-menu-action.danger{color:#bd3b3b}
+.profile-photo-preview{width:86px;height:86px;border-radius:50%;object-fit:cover;background:#e1f7f8;display:block;margin:0 auto 12px;border:3px solid var(--line)}
+:root[data-theme="dark"] .account-popover{background:#142238;border-color:var(--line)}
+:root[data-theme="dark"] .account-menu-action{color:var(--ink)}
+
 </style><style id="nexora-enterprise-polish">
 /* Enterprise refinement: clearer hierarchy, accessible focus, data-first surfaces. */
 :root{--nexora-shadow:0 12px 32px rgba(20,37,65,.055);--nexora-ring:rgba(67,213,223,.22)}
@@ -1007,7 +1024,7 @@ tbody tr:hover{background:#faf9ff}
   <div class="aside-foot"><b>Secure company workspace</b>Organisation data is isolated by database policies.<br><br>© VELNORA HR</div>
  </aside>
  <main>
-  <header class="topbar"><button type="button" class="mobile-hr-toggle" id="mobileHrMenu" aria-label="Open HR navigation" aria-expanded="false">☰</button><div><div class="crumb">VELNORA / HR WORKSPACE</div><h1 id="pageTitle">Overview</h1></div><div class="user-tools"><button type="button" class="global-search-trigger" id="globalSearchTrigger" aria-haspopup="dialog" aria-controls="globalSearchDialog"><span aria-hidden="true">⌕</span><span class="search-trigger-label">Search navigation</span><kbd>⌘ K</kbd></button><select id="organizationSelect" class="org-select" aria-label="Select organisation"></select><button type="button" class="appearance-toggle" id="themeToggle" aria-label="Switch to dark mode" title="Toggle light and dark mode"><span id="themeToggleIcon">☾</span><span class="theme-label" id="themeToggleLabel">Dark mode</span></button><div class="avatar" id="userAvatar">HR</div><button id="logoutBtn" class="btn ghost">Sign out</button></div></header>
+  <header class="topbar"><button type="button" class="mobile-hr-toggle" id="mobileHrMenu" aria-label="Open HR navigation" aria-expanded="false">☰</button><div><div class="crumb">VELNORA / HR WORKSPACE</div><h1 id="pageTitle">Overview</h1></div><div class="user-tools"><button type="button" class="global-search-trigger" id="globalSearchTrigger" aria-haspopup="dialog" aria-controls="globalSearchDialog"><span aria-hidden="true">⌕</span><span class="search-trigger-label">Search navigation</span><kbd>⌘ K</kbd></button><select id="organizationSelect" class="org-select" aria-label="Select organisation"></select><button type="button" class="appearance-toggle" id="themeToggle" aria-label="Switch to dark mode" title="Toggle light and dark mode"><span id="themeToggleIcon">☾</span><span class="theme-label" id="themeToggleLabel">Dark mode</span></button><div class="account-menu-wrap"><button type="button" class="account-trigger" id="accountMenuTrigger" aria-label="Open profile menu" aria-haspopup="menu" aria-expanded="false"><span id="userAvatar">HR</span></button><div class="account-popover" id="accountPopover" role="menu" hidden><div class="account-summary"><div class="avatar" id="accountMenuAvatar">HR</div><div style="min-width:0"><strong id="accountMenuName">My account</strong><small id="accountMenuEmail"></small></div></div><button type="button" class="account-menu-action" id="openMyProfile" role="menuitem">My profile</button><button type="button" class="account-menu-action danger" id="logoutBtn" role="menuitem">Sign out</button></div></div></div></header>
   <div class="content"><div id="globalMessage" class="message" role="status" hidden></div>
    <section id="section-overview" class="section active nx-dashboard">
     <div class="welcome nx-welcome nx-command-header"><div><div class="eyebrow">WORKFORCE COMMAND CENTRE</div><h2 id="welcomeTitle">Good to have you here.</h2><div class="muted">Here is your organisation's workforce overview for today.</div></div><div class="nx-header-tools"><span class="nx-date-chip" id="dashboardDate"></span><button class="btn ghost" id="refreshDashboard" type="button">↻ Refresh data</button></div></div>
