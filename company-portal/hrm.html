@@ -760,7 +760,8 @@ tbody tr:hover{background:#faf9ff}
 }
 </style>
 
-<style id="hr-password-recovery-styles">.auth-link{border:0;background:transparent;color:#087f8c;padding:0;text-decoration:underline;text-underline-offset:3px;font-weight:750;cursor:pointer}.auth-link:focus-visible{outline:3px solid rgba(8,127,140,.25);outline-offset:3px;border-radius:4px}</style></head>
+<style id="hr-password-recovery-styles">.auth-link{border:0;background:transparent;color:#087f8c;padding:0;text-decoration:underline;text-underline-offset:3px;font-weight:750;cursor:pointer}.auth-link:focus-visible{outline:3px solid rgba(8,127,140,.25);outline-offset:3px;border-radius:4px}</style><style id="hr-password-visibility-toggle">.hr-password-input-wrap{position:relative;display:flex;align-items:center}.hr-password-input-wrap input{width:100%;padding-right:52px!important}.hr-password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:38px;height:38px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:#68778d;cursor:pointer;z-index:2}.hr-password-toggle:hover{background:#edf2f8;color:#087f8c}.hr-password-toggle:focus-visible{outline:3px solid rgba(112,100,237,.3);outline-offset:2px}.hr-eye-icon{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hr-password-toggle[aria-pressed="true"]{color:#087f8c}</style>
+</head>
 <body>
 <div id="authScreen" class="auth-wrap">
  <form id="loginForm" class="auth-card">
@@ -768,7 +769,7 @@ tbody tr:hover{background:#faf9ff}
   <div class="eyebrow">Workforce management</div><h1>Welcome to Velnora HR</h1><p class="muted">Sign in to your organisation's secure HR workspace.</p>
   <div id="authMessage" class="message" role="status" hidden></div>
   <label class="field">Work email<input name="email" type="email" autocomplete="username" required placeholder="you@company.com"></label>
-  <label class="field">Password<input name="password" type="password" autocomplete="current-password" required placeholder="Your password"></label>
+  <label class="field hr-password-field">Password<div class="hr-password-input-wrap"><input id="hrLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Your password"><button class="hr-password-toggle" type="button" id="hrTogglePassword" aria-label="Show password" aria-pressed="false"><svg class="hr-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
   <p class="auth-note"><button class="auth-link" id="hrForgotPassword" type="button">Forgot your password?</button></p>
   <button class="btn primary" type="submit">Sign in securely</button>
   <p class="auth-note">Access is limited to active organisation owners and HR managers. Contact your platform administrator if you need access.</p>
@@ -912,6 +913,7 @@ tbody tr:hover{background:#faf9ff}
 @media(max-width:760px){.hr-employee-file-content{padding:10px}.employee-file-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.employee-file-section{padding:12px}}
 @media(max-width:430px){.employee-file-fields{grid-template-columns:minmax(0,1fr)}}
 </style>
+<script id="hr-password-visibility-toggle-script">(()=>{const init=()=>{const input=document.getElementById("hrLoginPassword");const toggle=document.getElementById("hrTogglePassword");if(!input||!toggle||toggle.dataset.bound==="true")return;toggle.dataset.bound="true";toggle.addEventListener("click",()=>{const show=input.type==="password";input.type=show?"text":"password";toggle.setAttribute("aria-pressed",String(show));toggle.setAttribute("aria-label",show?"Hide password":"Show password");toggle.innerHTML=show?'<svg class="hr-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0112 5c6.4 0 10 7 10 7a16 16 0 01-4 4.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7c1.2 0 2.3-.2 3.3-.6"/></svg>':'<svg class="hr-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';});};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();})();</script>
 </body></html>
 <style>
 
