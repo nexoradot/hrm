@@ -71,6 +71,16 @@ footer{margin-top:0;border-top:1px solid #e7ebf2;background:#fff}
 @media(max-width:900px){.wrap{width:calc(100% - 32px)}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-intro{grid-column:1/-1}.filters label:first-of-type{grid-column:1/-1}.hero{margin-top:18px}.job-title-link{font-size:20px}}
 @media(max-width:600px){.wrap{width:calc(100% - 24px)}.head .wrap{align-items:center}.brand img{width:170px}.headnav{gap:12px;font-size:11px}.headnav a{white-space:nowrap}.hero{padding:27px 20px;border-radius:16px}.hero h1{font-size:37px;letter-spacing:-1.5px}.hero p{font-size:13px}.hero-trust{gap:9px 14px;font-size:11px}.filters{grid-template-columns:1fr;margin-top:14px;padding:15px}.filters label:first-of-type{grid-column:auto}.filter-intro{display:block}.filter-intro span{display:block;margin-top:4px}.listing-heading{margin:27px 0 13px;align-items:flex-start}.listing-heading h2{font-size:22px}.listing-actions{width:100%}.listing-actions button{flex:1;font-size:11px;padding:9px 8px}.job-card-main{padding:17px 16px 0}.job-title-link{font-size:19px}.job-company{font-size:13px}.job-pills{gap:6px}.job-pill{font-size:11px;padding:4px 8px}.job-status-row{margin:0 -16px;padding:9px 16px}.job-description-row{min-height:80px}.job-description-row p{font-size:12px}.job-card-footer{padding:10px 16px;gap:8px}.easy-apply{font-size:12px}.job-actions{width:100%}.job-actions button{flex:1}.modal-card{padding:18px}}
 @media(prefers-reduced-motion:reduce){.job-card,.filters input,.filters select{transition:none}}
+
+/* Compact vacancy-page hero: balanced typography and less vertical space. */
+#velnora-jobs-page-refresh ~ * {}
+.hero{margin-top:20px;padding:28px 34px;border-radius:18px}
+.hero h1{max-width:680px;font-size:clamp(30px,3.4vw,42px);line-height:1.12;letter-spacing:-1.25px;margin:8px 0 10px}
+.hero p{max-width:720px;font-size:14px;line-height:1.6}
+.hero-trust{margin-top:16px;gap:8px 18px;font-size:11px}
+.hero:after{width:230px;height:230px;top:-115px}
+@media(max-width:760px){.hero{margin-top:16px;padding:24px 22px}.hero h1{font-size:clamp(28px,6vw,36px);letter-spacing:-1px}}
+@media(max-width:560px){.hero{padding:21px 18px}.hero h1{font-size:29px}.hero p{font-size:13px}.hero-trust{margin-top:13px}}
 </style></head><body data-portal="public"><header class="head"><div class="wrap"><a class="brand" href="../" aria-label="VELNORA home"><img src="../assets/nexora-logo.svg" alt="VELNORA — Secure workforce. Smarter decisions."></a><nav class="headnav" aria-label="Main navigation"><a href="../">Home</a><a href="./" aria-current="page">Find jobs</a><a href="../../candidate-portal/">Candidate sign in</a></nav></div></header>
 <main class="wrap jobs-page"><section class="hero"><div class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</div><h1>Find a job that fits your ambition.</h1><p>Explore current opportunities from participating employers. Search by role, location or skill, narrow the results and apply securely through your VELNORA candidate account.</p><div class="hero-trust"><span>✓ Published opportunities</span><span>✓ Clear job details</span><span>✓ Secure candidate applications</span></div></section>
 
