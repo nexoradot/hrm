@@ -676,6 +676,17 @@ function renderOverview(){
  const typeData=[...typeMap.entries()].sort((a,b)=>b[1]-a[1]).map(([key,count],i)=>({label:nice(key),count,color:typePalette[i%typePalette.length]}));
  const typeTotal=typeData.reduce((n,x)=>n+x.count,0),typeCirc=2*Math.PI*48;let typeOffset=0;
  const typeArcs=typeData.map(x=>{const len=typeTotal?x.count/typeTotal*typeCirc:0;const node='<circle cx="66" cy="66" r="48" fill="none" stroke="'+x.color+'" stroke-width="14" stroke-dasharray="'+len+' '+Math.max(0,typeCirc-len)+'" stroke-dashoffset="'+(-typeOffset)+'"/>';typeOffset+=len;return node}).join('');
+
+ // Workforce demographics: profile gender values are grouped without guessing missing data.
+ const genderColors=['#5546e8','#0f9baa','#e4ad4d','#15936f','#d46b72','#9aa5b8'];
+ const genderMap=new Map();
+ employees.filter(e=>String(e.employment_status||'').toLowerCase()!=='terminated').forEach(e=>{const key=String(e.gender||'not_recorded').trim().toLowerCase()||'not_recorded';genderMap.set(key,(genderMap.get(key)||0)+1)});
+ const genderData=[...genderMap.entries()].sort((a,b)=>b[1]-a[1]).map(([key,count],i)=>({label:key==='not_recorded'?'Not recorded':nice(key),count,color:genderColors[i%genderColors.length]}));
+ const genderTotal=genderData.reduce((n,x)=>n+x.count,0),genderCirc=2*Math.PI*48;let genderOffset=0;
+ const genderArcs=genderData.map(x=>{const len=genderTotal?x.count/genderTotal*genderCirc:0;const node='<circle cx="66" cy="66" r="48" fill="none" stroke="'+x.color+'" stroke-width="14" stroke-dasharray="'+len+' '+Math.max(0,genderCirc-len)+'" stroke-dashoffset="'+(-genderOffset)+'"/>';genderOffset+=len;return node}).join('');
+ const genderHost=$('#employeeDemographics');
+ if(genderHost)genderHost.innerHTML=genderTotal?'<div class="nx-donut-wrap"><svg class="nx-donut" viewBox="0 0 132 132" role="img" aria-label="Employee gender profile">'+genderArcs+'<text class="nx-donut-center" x="66" y="73" text-anchor="middle">'+genderTotal+'</text></svg><div class="nx-donut-legend">'+genderData.map(x=>'<div class="nx-legend-row"><span class="nx-legend-label"><i class="nx-legend-dot" style="background:'+x.color+'"></i>'+esc(x.label)+'</span><b>'+x.count+'</b></div>').join('')+'</div></div>':'<div class="chart-empty">Employee profile details will appear here when recorded.</div>';
+
  const typeHost=$('#employmentTypeChart');
  if(typeHost)typeHost.innerHTML=typeTotal?'<div class="nx-donut-wrap"><svg class="nx-donut" viewBox="0 0 132 132" role="img" aria-label="Employee counts by employment type">'+typeArcs+'<text class="nx-donut-center" x="66" y="73" text-anchor="middle">'+typeTotal+'</text></svg><div class="nx-donut-legend">'+typeData.map(x=>'<div class="nx-legend-row"><span class="nx-legend-label"><i class="nx-legend-dot" style="background:'+x.color+'"></i>'+esc(x.label)+'</span><b>'+x.count+'</b></div>').join('')+'</div></div>':'<div class="chart-empty">Add employee records to see employment type distribution.</div>';
  // Contract lifecycle: use the stored contract_end_date and the local calendar date.
@@ -697,6 +708,12 @@ function renderOverview(){
  if(openOnboarding.length)actions.push({icon:'＋',tone:'violet',title:openOnboarding.length+' onboarding task'+(openOnboarding.length===1?'':'s')+' still open',detail:'Complete new-starter induction and checklist items',label:'Continue',go:'onboarding'});
  if(documentAttention.length)actions.push({icon:'▤',tone:'amber',title:documentAttention.length+' document item'+(documentAttention.length===1?'':'s')+' need attention',detail:'Review requested, pending or expired document records',label:'Review',go:'documents'});
  if(payrollAttention.length)actions.push({icon:'↗',tone:'violet',title:payrollAttention.length+' payroll period'+(payrollAttention.length===1?'':'s')+' not finalised',detail:'Review payroll calculations, approvals and payment status',label:'Open payroll',go:'payroll'});
+ const contractDeadlines=contracts.filter(c=>c.end_date&&!['cancelled','canceled','void','terminated','expired'].includes(String(c.status||'').toLowerCase())).map(c=>{const end=String(c.end_date).slice(0,10);const days=Math.ceil((new Date(end+'T00:00:00')-new Date(today()+'T00:00:00'))/86400000);return {...c,days,end}}).filter(c=>c.days>=0&&c.days<=90);
+ const due30=contractDeadlines.filter(c=>c.days<=30).length,due60=contractDeadlines.filter(c=>c.days>30&&c.days<=60).length,due90=contractDeadlines.filter(c=>c.days>60&&c.days<=90).length;
+ if(due30)actions.push({icon:'⌛',tone:'amber',title:due30+' contract'+(due30===1?'':'s')+' expiring within 30 days',detail:'Immediate renewal or exit planning required',label:'Review',go:'employees'});
+ else if(due60)actions.push({icon:'◷',tone:'amber',title:due60+' contract'+(due60===1?'':'s')+' expiring in 31–60 days',detail:'Plan renewals ahead of time',label:'Review',go:'employees'});
+ else if(due90)actions.push({icon:'◷',tone:'violet',title:due90+' contract'+(due90===1?'':'s')+' expiring in 61–90 days',detail:'Upcoming contract milestones',label:'Review',go:'employees'});
+
  if(!actions.length)actions.push({icon:'✓',tone:'',title:'No urgent actions identified',detail:'Your current HR records have no flagged items',label:'View overview',go:'overview'});
  $('#actionCount').textContent=actions.length+' item'+(actions.length===1?'':'s');
  $('#statPriorities').textContent=actions.length;
