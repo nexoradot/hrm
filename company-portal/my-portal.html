@@ -419,6 +419,26 @@ body:has(#authSection:not([hidden])) .auth-layout .field input{width:100%;min-wi
  .password-visibility-toggle{transition:none}
 }
 
+
+/* Final mobile sign-in cleanup: remove employee-app navigation before authentication. */
+body:has(#authSection:not([hidden])) .topbar{display:none!important}
+body:has(#authSection:not([hidden])) .mobile-portal-toggle,
+body:has(#authSection:not([hidden])) #dashSearchTrigger,
+body:has(#authSection:not([hidden])) #logoutBtn{display:none!important}
+body:has(#authSection:not([hidden])) .shell{padding-top:clamp(12px,3vh,28px)!important}
+body:has(#authSection:not([hidden])) #authSection{padding:0 0 20px!important}
+@media(max-width:800px){
+ body:has(#authSection:not([hidden])) .auth-layout{max-width:560px!important}
+ body:has(#authSection:not([hidden])) .auth-story{padding:21px 22px 17px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content{padding:22px 0 17px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content h1{font-size:clamp(29px,7vw,36px)!important;margin:12px 0 9px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content>p{font-size:12px!important;line-height:1.55!important}
+ body:has(#authSection:not([hidden])) .auth-feature-list{margin-top:14px!important;gap:9px!important}
+ body:has(#authSection:not([hidden])) .auth-feature>span{width:31px!important;height:31px!important}
+ body:has(#authSection:not([hidden])) .auth-story-foot{font-size:9px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card{padding:22px 22px 24px!important}
+}
+
 </style>
 </head>
 <body>
