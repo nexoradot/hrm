@@ -520,6 +520,36 @@ body{background:#f3f5fc!important;color:var(--nx-ink)!important}
 @media(max-width:1300px){.nx-reference-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}.nx-reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:700px){.nx-reference-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.nx-reference-grid{grid-template-columns:1fr!important}.nx-command-header{align-items:flex-start!important;flex-direction:column!important}.nx-header-tools{width:100%;justify-content:space-between}.nx-reference-card{min-height:250px!important}.nx-reference-stats .nx-solid-stat{min-height:128px!important}.nx-reference-stats .nx-solid-stat strong{font-size:30px!important}}
 
+
+/* VELNORA appearance controls */
+.stat[data-section]{cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;position:relative}
+.stat[data-section]:hover{transform:translateY(-3px);box-shadow:0 12px 28px #14233a18}
+.stat[data-section]:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.theme-palette{padding:14px 10px;border-top:1px solid #2b3c55}
+.theme-palette strong{display:block;color:#dce7f5;font-size:11px;margin-bottom:10px;letter-spacing:.5px}
+.theme-swatches{display:flex;gap:9px;align-items:center}
+.theme-swatch{width:23px;height:23px;border-radius:50%;border:2px solid #ffffff55;padding:0;box-shadow:0 0 0 1px #ffffff20}
+.theme-swatch[aria-pressed=true]{outline:2px solid #fff;outline-offset:3px}
+.theme-swatch[data-accent="teal"]{background:#19a7a1}.theme-swatch[data-accent="blue"]{background:#3977dc}.theme-swatch[data-accent="violet"]{background:#8063d9}.theme-swatch[data-accent="amber"]{background:#d58b2c}
+.appearance-toggle{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 11px;font-weight:750;display:flex;align-items:center;gap:7px;white-space:nowrap}
+:root[data-accent="blue"]{--cyan:#3977dc;--green:#14856d}
+:root[data-accent="violet"]{--cyan:#8063d9;--green:#8063d9}
+:root[data-accent="amber"]{--cyan:#d58b2c;--green:#b7791f}
+:root[data-accent="teal"]{--cyan:#19a7a1;--green:#14856d}
+:root[data-theme="dark"]{--ink:#e7edf7;--muted:#9baac0;--line:#2a3a51;--bg:#0d1728;--white:#142238}
+:root[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+:root[data-theme="dark"] .topbar,:root[data-theme="dark"] .stat,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .modal,:root[data-theme="dark"] .quick-actions button{background:#142238;color:var(--ink);border-color:var(--line)}
+:root[data-theme="dark"] .topbar{background:#111e32}
+:root[data-theme="dark"] .org-select,:root[data-theme="dark"] .field input,:root[data-theme="dark"] .field select,:root[data-theme="dark"] .field textarea,:root[data-theme="dark"] .toolbar input,:root[data-theme="dark"] .toolbar select{background:#0e1a2c;color:var(--ink);border-color:var(--line)}
+:root[data-theme="dark"] .btn.ghost,:root[data-theme="dark"] .icon-btn,:root[data-theme="dark"] .appearance-toggle{background:#22334b;color:#e7edf7;border-color:#344963}
+:root[data-theme="dark"] td{border-color:#26364d}
+:root[data-theme="dark"] th{border-color:#2a3a51;color:#aab8cc}
+:root[data-theme="dark"] .person-avatar{background:#263a54;color:#dce8f8}
+:root[data-theme="dark"] .quick-actions button:hover{background:#1a2d45}
+:root[data-theme="dark"] .nx-reference-card{background:#142238;border-color:#2a3a51}
+:root[data-theme="dark"] .nx-mini-bars .bar-track,:root[data-theme="dark"] .dept-track{background:#26364d}
+@media(max-width:700px){.theme-palette{padding:10px}.theme-swatches{gap:12px}.appearance-toggle{padding:8px}.appearance-toggle .theme-label{display:none}}
+
 </style><style id="nexora-enterprise-polish">
 /* Enterprise refinement: clearer hierarchy, accessible focus, data-first surfaces. */
 :root{--nexora-shadow:0 12px 32px rgba(20,37,65,.055);--nexora-ring:rgba(67,213,223,.22)}
@@ -967,21 +997,27 @@ tbody tr:hover{background:#faf9ff}
    <a href="my-portal/" class="employee-portal-nav"><span class="ico">♙</span>Employee Portal ↗</a>
    <button data-section="api_docs"><span class="ico">&lt;/&gt;</span>API docs</button>
    <button data-section="help_center"><span class="ico">?</span>Help center</button>
-  </nav></div>
+  </nav>
+  <div class="theme-palette"><strong>ACCENT COLOUR</strong><div class="theme-swatches" role="group" aria-label="Choose accent colour">
+   <button type="button" class="theme-swatch" data-accent="teal" aria-label="Teal accent" aria-pressed="true"></button>
+   <button type="button" class="theme-swatch" data-accent="blue" aria-label="Blue accent" aria-pressed="false"></button>
+   <button type="button" class="theme-swatch" data-accent="violet" aria-label="Violet accent" aria-pressed="false"></button>
+   <button type="button" class="theme-swatch" data-accent="amber" aria-label="Amber accent" aria-pressed="false"></button>
+  </div></div></div>
   <div class="aside-foot"><b>Secure company workspace</b>Organisation data is isolated by database policies.<br><br>© VELNORA HR</div>
  </aside>
  <main>
-  <header class="topbar"><button type="button" class="mobile-hr-toggle" id="mobileHrMenu" aria-label="Open HR navigation" aria-expanded="false">☰</button><div><div class="crumb">VELNORA / HR WORKSPACE</div><h1 id="pageTitle">Overview</h1></div><div class="user-tools"><button type="button" class="global-search-trigger" id="globalSearchTrigger" aria-haspopup="dialog" aria-controls="globalSearchDialog"><span aria-hidden="true">⌕</span><span class="search-trigger-label">Search navigation</span><kbd>⌘ K</kbd></button><select id="organizationSelect" class="org-select" aria-label="Select organisation"></select><div class="avatar" id="userAvatar">HR</div><button id="logoutBtn" class="btn ghost">Sign out</button></div></header>
+  <header class="topbar"><button type="button" class="mobile-hr-toggle" id="mobileHrMenu" aria-label="Open HR navigation" aria-expanded="false">☰</button><div><div class="crumb">VELNORA / HR WORKSPACE</div><h1 id="pageTitle">Overview</h1></div><div class="user-tools"><button type="button" class="global-search-trigger" id="globalSearchTrigger" aria-haspopup="dialog" aria-controls="globalSearchDialog"><span aria-hidden="true">⌕</span><span class="search-trigger-label">Search navigation</span><kbd>⌘ K</kbd></button><select id="organizationSelect" class="org-select" aria-label="Select organisation"></select><button type="button" class="appearance-toggle" id="themeToggle" aria-label="Switch to dark mode" title="Toggle light and dark mode"><span id="themeToggleIcon">☾</span><span class="theme-label" id="themeToggleLabel">Dark mode</span></button><div class="avatar" id="userAvatar">HR</div><button id="logoutBtn" class="btn ghost">Sign out</button></div></header>
   <div class="content"><div id="globalMessage" class="message" role="status" hidden></div>
    <section id="section-overview" class="section active nx-dashboard">
     <div class="welcome nx-welcome nx-command-header"><div><div class="eyebrow">WORKFORCE COMMAND CENTRE</div><h2 id="welcomeTitle">Good to have you here.</h2><div class="muted">Here is your organisation's workforce overview for today.</div></div><div class="nx-header-tools"><span class="nx-date-chip" id="dashboardDate"></span><button class="btn ghost" id="refreshDashboard" type="button">↻ Refresh data</button></div></div>
     <div class="stats nx-stats nx-reference-stats">
-      <article class="stat nx-stat nx-solid-stat nx-blue"><div class="stat-top">Active Employees <span class="stat-icon">♟</span></div><strong id="statEmployees">—</strong><small>Active workforce</small></article>
-      <article class="stat nx-stat nx-solid-stat nx-green"><div class="stat-top">Permanent Staff <span class="stat-icon">◆</span></div><strong id="statPermanent">—</strong><small>Confirmed permanent employees</small></article>
-      <article class="stat nx-stat nx-solid-stat nx-purple"><div class="stat-top">Contract Staff <span class="stat-icon">▤</span></div><strong id="statContract">—</strong><small>Fixed-term workforce</small></article>
-      <article class="stat nx-stat nx-solid-stat nx-amber"><div class="stat-top">On Probation <span class="stat-icon">◷</span></div><strong id="statProbation">—</strong><small>Awaiting confirmation</small></article>
-      <article class="stat nx-stat nx-solid-stat nx-red"><div class="stat-top">Expired Contracts <span class="stat-icon">⌛</span></div><strong id="statExpiredContracts">—</strong><small>Renewal / exit action</small></article>
-      <article class="stat nx-stat nx-solid-stat nx-sky"><div class="stat-top">On Leave <span class="stat-icon">♧</span></div><strong id="statOnLeave">—</strong><small>Currently away from work</small></article>
+      <article role="button" tabindex="0" aria-label="Open employee directory" data-section="employees" class="stat nx-stat nx-solid-stat nx-blue"><div class="stat-top">Active Employees <span class="stat-icon">♟</span></div><strong id="statEmployees">—</strong><small>Active workforce</small></article>
+      <article role="button" tabindex="0" aria-label="Open employee directory" data-section="employees" class="stat nx-stat nx-solid-stat nx-green"><div class="stat-top">Permanent Staff <span class="stat-icon">◆</span></div><strong id="statPermanent">—</strong><small>Confirmed permanent employees</small></article>
+      <article role="button" tabindex="0" aria-label="Open employee directory" data-section="employees" class="stat nx-stat nx-solid-stat nx-purple"><div class="stat-top">Contract Staff <span class="stat-icon">▤</span></div><strong id="statContract">—</strong><small>Fixed-term workforce</small></article>
+      <article role="button" tabindex="0" aria-label="Open probation tracking" data-section="probation" class="stat nx-stat nx-solid-stat nx-amber"><div class="stat-top">On Probation <span class="stat-icon">◷</span></div><strong id="statProbation">—</strong><small>Awaiting confirmation</small></article>
+      <article role="button" tabindex="0" aria-label="Open contract renewals" data-section="contract_renewals" class="stat nx-stat nx-solid-stat nx-red"><div class="stat-top">Expired Contracts <span class="stat-icon">⌛</span></div><strong id="statExpiredContracts">—</strong><small>Renewal / exit action</small></article>
+      <article role="button" tabindex="0" aria-label="Open leave management" data-section="leave" class="stat nx-stat nx-solid-stat nx-sky"><div class="stat-top">On Leave <span class="stat-icon">♧</span></div><strong id="statOnLeave">—</strong><small>Currently away from work</small></article>
     </div>
     <div class="nx-reference-grid">
       <section class="panel nx-reference-card nx-trend-card"><div class="panel-head"><div><div class="panel-kicker">PEOPLE OVER TIME</div><h3>Workforce Trend</h3><p>Total employees over the last 6 months</p></div><span class="pill active">Live data</span></div><div id="workforceTrend" aria-label="Workforce trend chart"></div><div class="chart-key"><span><i class="key-dot purple"></i>Employee growth</span></div></section>
