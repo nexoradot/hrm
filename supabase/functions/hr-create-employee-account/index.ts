@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
   if (!/^[0-9a-f-]{36}$/i.test(organizationId) || !/^[0-9a-f-]{36}$/i.test(employeeId)) return reply({ error: "A valid organisation and employee record are required." }, 400);
   if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return reply({ error: "Enter a valid employee work email before creating a login." }, 400);
   if (!fullName) return reply({ error: "Employee name is required." }, 400);
-  if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
-    return reply({ error: "Password must be at least 12 characters and include uppercase, lowercase, a number and a symbol." }, 400);
+  if (password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    return reply({ error: "Password must be at least 6 characters and include uppercase, lowercase, a number and a symbol." }, 400);
   }
 
   const { data: org, error: orgError } = await admin.from("organizations").select("id,status").eq("id", organizationId).maybeSingle();
