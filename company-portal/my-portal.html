@@ -439,6 +439,78 @@ body:has(#authSection:not([hidden])) #authSection{padding:0 0 20px!important}
  body:has(#authSection:not([hidden])) .auth-layout .auth-card{padding:22px 22px 24px!important}
 }
 
+
+/* VELNORA premium sign-in redesign — desktop split / compact mobile */
+body:has(#authSection:not([hidden])){background:radial-gradient(ellipse at 96% 6%,#dff7f8 0,transparent 34%),linear-gradient(135deg,#f5f8fc,#edf2fa)!important}
+body:has(#authSection:not([hidden])) .shell{max-width:1540px!important;padding:clamp(14px,2.4vw,34px)!important}
+body:has(#authSection:not([hidden])) .topbar{display:none!important}
+body:has(#authSection:not([hidden])) #authSection{padding:clamp(8px,2vh,22px) 0 20px!important}
+body:has(#authSection:not([hidden])) .auth-layout{width:min(1320px,100%)!important;max-width:1320px!important;min-height:690px!important;grid-template-columns:minmax(0,1.05fr) minmax(430px,.88fr)!important;gap:0!important;border:1px solid #e2eaf2!important;border-radius:30px!important;box-shadow:0 28px 85px #10294a18!important;background:#fff!important;overflow:hidden!important}
+body:has(#authSection:not([hidden])) .auth-story{min-height:690px!important;padding:42px clamp(30px,4.2vw,64px) 30px!important;background:radial-gradient(ellipse at 88% 85%,#08a5b044,transparent 38%),linear-gradient(145deg,#0a1b36 0%,#102c50 58%,#075767 100%)!important}
+body:has(#authSection:not([hidden])) .auth-story:before{width:520px;height:520px;right:-260px;top:90px;border-color:#70e4e52b;box-shadow:0 0 0 44px #70e4e50a,0 0 0 90px #70e4e507}
+body:has(#authSection:not([hidden])) .auth-story:after{content:"";position:absolute;z-index:-1;left:-5%;right:-5%;bottom:-1px;height:34%;opacity:.95;background:linear-gradient(180deg,transparent,#061b35aa 80%),linear-gradient(90deg,transparent 4%,#0a2948 4% 5%,transparent 5% 17%,#0a2948 17% 18%,transparent 18% 32%,#0a2948 32% 33%,transparent 33% 48%,#0a2948 48% 49%,transparent 49% 64%,#0a2948 64% 65%,transparent 65% 80%,#0a2948 80% 81%,transparent 81%),repeating-linear-gradient(0deg,transparent 0 35px,#6adce533 36px 37px),linear-gradient(165deg,transparent 0 20%,#153c60 20% 23%,#0c2948 23% 100%);clip-path:polygon(0 24%,38% 0,100% 18%,100% 100%,0 100%);border-top:2px solid #5edce7}
+body:has(#authSection:not([hidden])) .auth-story-top{position:relative;z-index:1}
+body:has(#authSection:not([hidden])) .auth-story-mark{width:54px;height:54px;border-radius:16px;background:linear-gradient(145deg,#16d8d7,#0ba5bc)!important;color:#06213b!important;font-size:31px;box-shadow:0 12px 28px #00c5d540}
+body:has(#authSection:not([hidden])) .auth-story-top strong{font-size:clamp(22px,2.4vw,29px);letter-spacing:2.8px}
+body:has(#authSection:not([hidden])) .auth-story-top small{font-size:10px;letter-spacing:1.6px}
+body:has(#authSection:not([hidden])) .auth-story-content{position:relative;z-index:1;max-width:620px;padding:50px 0 40px!important}
+body:has(#authSection:not([hidden])) .auth-story-content h1{font-size:clamp(43px,5vw,68px)!important;line-height:1.04!important;letter-spacing:-3px!important;margin:20px 0 18px!important}
+body:has(#authSection:not([hidden])) .auth-story-content h1 em{color:#18d0d1!important}
+body:has(#authSection:not([hidden])) .auth-story-content>p{font-size:clamp(14px,1.3vw,17px)!important;line-height:1.65!important;color:#d2e1ef!important;max-width:520px}
+body:has(#authSection:not([hidden])) .auth-feature-list{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important;margin-top:32px!important}
+body:has(#authSection:not([hidden])) .auth-feature{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:10px!important;min-width:0}
+body:has(#authSection:not([hidden])) .auth-feature>span{width:54px!important;height:54px!important;border-radius:15px!important;border:1px solid #5be0e65c!important;background:linear-gradient(145deg,#1b7e9580,#ffffff0c)!important;color:#29e1e5!important;font-size:25px!important}
+body:has(#authSection:not([hidden])) .auth-feature strong{font-size:13px!important;line-height:1.35!important}
+body:has(#authSection:not([hidden])) .auth-feature small{font-size:11px!important;line-height:1.45!important;color:#c1d4e8!important}
+body:has(#authSection:not([hidden])) .auth-story-foot{position:relative;z-index:1;font-size:11px!important}
+body:has(#authSection:not([hidden])) .auth-layout .auth-card{width:100%!important;max-width:560px!important;justify-self:center!important;align-self:center!important;padding:clamp(34px,4.5vw,66px)!important;background:linear-gradient(145deg,#fff,#fbfcff)!important}
+body:has(#authSection:not([hidden])) .auth-card-top{display:flex!important;flex-direction:column!important;align-items:center!important;gap:9px!important;margin-bottom:28px!important}
+body:has(#authSection:not([hidden])) .auth-card-icon{width:58px!important;height:58px!important;border-radius:16px!important;background:linear-gradient(145deg,#12d3d5,#0da4bc)!important;color:#08213b!important;font-size:33px!important;box-shadow:0 10px 25px #10b8c52b}
+body:has(#authSection:not([hidden])) .auth-card-top .auth-kicker{color:#5d708c!important;font-size:11px!important;letter-spacing:2px!important}
+body:has(#authSection:not([hidden])) .auth-layout .auth-card h2{text-align:center!important;font-size:clamp(34px,3.5vw,45px)!important;letter-spacing:-2px!important}
+body:has(#authSection:not([hidden])) .auth-intro{text-align:center!important;font-size:15px!important;margin:0 0 30px!important;color:#60718b!important}
+body:has(#authSection:not([hidden])) .auth-layout .field{font-size:13px!important;font-weight:750!important;color:#152b49!important;margin-top:19px!important}
+body:has(#authSection:not([hidden])) .auth-layout .field input{min-height:56px!important;border:1px solid #d3deec!important;border-radius:13px!important;background:#f8faff!important;font-size:15px!important;padding:14px 16px!important}
+body:has(#authSection:not([hidden])) .auth-layout .field input:focus{border-color:#0fbac5!important;box-shadow:0 0 0 4px #10bac51b!important}
+body:has(#authSection:not([hidden])) .password-input-wrap input{padding-right:95px!important}
+body:has(#authSection:not([hidden])) .password-visibility-toggle{right:8px!important;min-height:38px!important;border:0!important;background:#f0efff!important;color:#5645cf!important;font-size:12px!important}
+body:has(#authSection:not([hidden])) .auth-layout .btn.primary{min-height:59px!important;margin-top:25px!important;border-radius:14px!important;background:linear-gradient(105deg,#6935e9,#4222b9)!important;box-shadow:0 13px 26px #5930d72c!important;font-size:16px!important}
+body:has(#authSection:not([hidden])) .auth-security{font-size:12px!important;color:#41536c!important;margin-top:21px!important}
+body:has(#authSection:not([hidden])) .auth-security span{width:26px!important;height:26px!important;font-size:15px!important;background:#dff7f0!important}
+body:has(#authSection:not([hidden])) .auth-layout .footer{text-align:center!important;font-size:12px!important;color:#73839a!important;padding-top:20px!important}
+body:has(#authSection:not([hidden])) #message{max-width:1320px!important}
+@media(max-width:1050px){
+ body:has(#authSection:not([hidden])) .auth-layout{grid-template-columns:minmax(0,1fr) minmax(350px,.92fr)!important}
+ body:has(#authSection:not([hidden])) .auth-feature-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:18px!important}
+ body:has(#authSection:not([hidden])) .auth-feature{flex-direction:row!important;align-items:center!important}
+ body:has(#authSection:not([hidden])) .auth-story{min-height:650px!important}
+}
+@media(max-width:800px){
+ body:has(#authSection:not([hidden])) .shell{max-width:620px!important;padding:12px!important}
+ body:has(#authSection:not([hidden])) .auth-layout{display:flex!important;flex-direction:column!important;min-height:0!important;border-radius:23px!important}
+ body:has(#authSection:not([hidden])) .auth-story{min-height:0!important;padding:25px 24px 20px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content{padding:25px 0 22px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content h1{font-size:clamp(34px,8vw,45px)!important;letter-spacing:-1.8px!important;margin:14px 0 10px!important}
+ body:has(#authSection:not([hidden])) .auth-story-content>p{font-size:13px!important;line-height:1.55!important}
+ body:has(#authSection:not([hidden])) .auth-feature-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:13px 10px!important;margin-top:18px!important}
+ body:has(#authSection:not([hidden])) .auth-feature{flex-direction:row!important;align-items:center!important;gap:9px!important}
+ body:has(#authSection:not([hidden])) .auth-feature>span{width:36px!important;height:36px!important;flex:0 0 36px!important;font-size:17px!important;border-radius:11px!important}
+ body:has(#authSection:not([hidden])) .auth-feature strong{font-size:11px!important}
+ body:has(#authSection:not([hidden])) .auth-feature small{font-size:10px!important}
+ body:has(#authSection:not([hidden])) .auth-story-foot{font-size:9px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card{max-width:none!important;padding:28px 24px 29px!important}
+ body:has(#authSection:not([hidden])) .auth-card-top{margin-bottom:18px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card h2{font-size:34px!important}
+ body:has(#authSection:not([hidden])) .auth-intro{font-size:13px!important;margin-bottom:19px!important}
+}
+@media(max-width:420px){
+ body:has(#authSection:not([hidden])) .auth-story{padding:21px 19px 17px!important}
+ body:has(#authSection:not([hidden])) .auth-feature-list{grid-template-columns:1fr!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card{padding:24px 19px 25px!important}
+ body:has(#authSection:not([hidden])) .auth-layout .auth-card h2{font-size:31px!important}
+}
+@media(prefers-reduced-motion:reduce){body:has(#authSection:not([hidden])) .auth-layout *{animation:none!important;transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -449,8 +521,8 @@ body:has(#authSection:not([hidden])) #authSection{padding:0 0 20px!important}
  <div class="auth-layout">
   <div class="auth-story">
    <div class="auth-story-top"><span class="auth-story-mark">N</span><span><strong>VELNORA</strong><small>WORKFORCE INTELLIGENCE</small></span></div>
-   <div class="auth-story-content"><span class="auth-kicker"><i></i> YOUR WORKDAY, SIMPLIFIED</span><h1>People first.<br><em>Work made easier.</em></h1><p>One secure place for your work life. Keep track of attendance, request leave, access payslips and stay connected to your organisation.</p>
-    <div class="auth-feature-list"><div class="auth-feature"><span>◷</span><div><strong>Attendance, made simple</strong><small>Clock in and view your work history</small></div></div><div class="auth-feature"><span>▤</span><div><strong>Your HR details in one place</strong><small>Leave, documents and performance</small></div></div><div class="auth-feature"><span>↗</span><div><strong>Private by design</strong><small>Access only your authorised records</small></div></div></div>
+   <div class="auth-story-content"><span class="auth-kicker"><i></i> EMPLOYEE PORTAL</span><h1>People first.<br><em>Work made easier.</em></h1><p>Your secure self-service platform for attendance, leave, payslips, HR records and more — all in one place.</p>
+    <div class="auth-feature-list"><div class="auth-feature"><span>◷</span><div><strong>Attendance</strong><small>Clock in and view history</small></div></div><div class="auth-feature"><span>▤</span><div><strong>Leave &amp; Requests</strong><small>Apply and track leave</small></div></div><div class="auth-feature"><span>▧</span><div><strong>Payslips</strong><small>Access and download</small></div></div><div class="auth-feature"><span>♙</span><div><strong>My Records</strong><small>View your HR details</small></div></div></div>
    </div><div class="auth-story-foot"><span class="auth-pulse"></span> Secure employee self-service <span class="auth-story-divider">•</span> VELNORA HR</div>
    <div class="auth-orb auth-orb-one"></div><div class="auth-orb auth-orb-two"></div>
   </div>
