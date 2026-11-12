@@ -632,6 +632,34 @@ function renderOverview(){
  const labels=months.map((m,i)=>'<text x="'+x(i)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(m.label)+'</text>').join('');
  const dots=months.map((m,i)=>'<circle cx="'+x(i)+'" cy="'+y(m.count)+'" r="3.8" fill="#0f9baa" stroke="#fff" stroke-width="2"><title>'+esc(m.label)+': '+m.count+' new records</title></circle><circle cx="'+x(i)+'" cy="'+y(m.total)+'" r="3.3" fill="#8277f3" stroke="#fff" stroke-width="2"><title>'+esc(m.label)+': '+m.total+' cumulative records in period</title></circle>').join('');
  $('#workforceTrend').innerHTML='<svg class="trend-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Monthly employee record creation and cumulative records over six months">'+grid+'<path d="'+area+'" fill="#0f9baa" opacity=".08"/><polyline points="'+points+'" fill="none" stroke="#0f9baa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="'+cumulativePoints+'" fill="none" stroke="#8277f3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+labels+'</svg>';
+ // Live workforce composition: every category is calculated from the loaded employee records.
+ const statusGroups=[
+  {label:'Active',match:['active'],color:'#15936f'},
+  {label:'Probation',match:['probation'],color:'#0f9baa'},
+  {label:'On leave',match:['on_leave'],color:'#8277f3'},
+  {label:'Inactive',match:['inactive'],color:'#e4ad4d'},
+  {label:'Terminated',match:['terminated'],color:'#d46b72'}
+ ];
+ const composition=statusGroups.map(g=>({...g,count:employees.filter(e=>g.match.includes(String(e.employment_status||'').toLowerCase())).length})).filter(g=>g.count>0);
+ const totalComposition=composition.reduce((n,g)=>n+g.count,0);
+ const circumference=2*Math.PI*53;
+ let offset=0;
+ const arcs=composition.map(g=>{const length=totalComposition?g.count/totalComposition*circumference:0;const node='<circle cx="72" cy="72" r="53" fill="none" stroke="'+g.color+'" stroke-width="15" stroke-dasharray="'+length+' '+Math.max(0,circumference-length)+'" stroke-dashoffset="'+(-offset)+'"/>';offset+=length;return node;}).join('');
+ const compositionHost=$('#employeeComposition');
+ if(compositionHost)compositionHost.innerHTML=totalComposition?'<div class="nx-donut-wrap"><svg class="nx-donut" viewBox="0 0 144 144" role="img" aria-label="Employee composition by employment status">'+arcs+'<text class="nx-donut-center" x="72" y="79" text-anchor="middle">'+totalComposition+'</text></svg><div class="nx-donut-legend">'+composition.map(g=>'<div class="nx-legend-row"><span class="nx-legend-label"><i class="nx-legend-dot" style="background:'+g.color+'"></i>'+esc(g.label)+'</span><b>'+g.count+'</b></div>').join('')+'</div></div>':'<div class="chart-empty">Add employee records to see workforce composition.</div>';
+ // Attendance for the most recent seven calendar days; absent days remain visible as zero.
+ const attendanceDays=[];
+ for(let i=6;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const records=attendance.filter(a=>String(a.work_date||'').slice(0,10)===key&&['present','late','remote'].includes(String(a.attendance_status||'').toLowerCase()));attendanceDays.push({label:d.toLocaleDateString('en-KE',{weekday:'short'}),count:records.length});}
+ const attendanceMax=Math.max(1,...attendanceDays.map(d=>d.count));
+ const attendanceHost=$('#attendanceInsights');
+ if(attendanceHost)attendanceHost.innerHTML=attendance.some(a=>a.work_date)?attendanceDays.map(d=>'<div class="nx-mini-bar-row"><span>'+esc(d.label)+'</span><div class="nx-mini-bar-track"><div class="nx-mini-bar-fill" style="width:'+Math.round(d.count/attendanceMax*100)+'%"></div></div><b>'+d.count+'</b></div>').join(''):'<div class="chart-empty">Attendance records will appear here once daily attendance is recorded.</div>';
+ // Leave categories count all recorded requests and never infer a balance from request volume.
+ const leaveLabels=['annual','sick','maternity','paternity','compassionate','unpaid','other'];
+ const leaveCounts=leaveLabels.map(type=>({label:nice(type),count:leaves.filter(l=>String(l.leave_type||'other').toLowerCase()===type).length})).filter(x=>x.count>0);
+ const leaveMax=Math.max(1,...leaveCounts.map(x=>x.count));
+ const leaveHost=$('#leaveInsights');
+ if(leaveHost)leaveHost.innerHTML=leaveCounts.length?leaveCounts.map(x=>'<div class="nx-mini-bar-row"><span>'+esc(x.label)+'</span><div class="nx-mini-bar-track"><div class="nx-mini-bar-fill leave" style="width:'+Math.round(x.count/leaveMax*100)+'%"></div></div><b>'+x.count+'</b></div>').join(''):'<div class="chart-empty">Leave request categories will appear here as requests are recorded.</div>';
+
  const actions=[];
  if(pending.length)actions.push({icon:'◷',tone:'amber',title:pending.length+' leave request'+(pending.length===1?'':'s')+' need review',detail:'Pending employee leave decisions',label:'Review',go:'leave'});
  if(!present.length)actions.push({icon:'✓',tone:'',title:'No attendance entries for today',detail:'Check the daily attendance register',label:'Open register',go:'attendance'});
