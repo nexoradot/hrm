@@ -880,6 +880,11 @@ tbody tr:hover{background:#faf9ff}
       <section class="panel dashboard-panel nx-chart-panel"><div class="panel-head"><div><div class="panel-kicker">PEOPLE OVER TIME</div><h3>Workforce trend</h3><p>Employee records created over the last six months</p></div><span class="pill active">Live data</span></div><div id="workforceTrend" aria-label="Workforce trend chart"></div><div class="chart-key"><span><i class="key-dot purple"></i>Employee growth</span></div></section>
       <section class="panel dashboard-panel nx-department-panel"><div class="panel-head"><div><div class="panel-kicker">TEAM STRUCTURE</div><h3>Employees by department</h3><p>Distribution across your organisation</p></div><button class="btn ghost" data-goto="departments">Departments →</button></div><div id="departmentBreakdown" class="dept-bars"></div></section>
     </div>
+    <div class="nx-insight-grid">
+      <section class="panel nx-insight-card"><div class="panel-head"><div><div class="panel-kicker">WORKFORCE MIX</div><h3>Employee composition</h3><p>Current employment status across the organisation</p></div><span class="pill active">Live data</span></div><div id="employeeComposition" class="nx-donut-wrap"></div></section>
+      <section class="panel nx-insight-card"><div class="panel-head"><div><div class="panel-kicker">TIME & ATTENDANCE</div><h3>Attendance this week</h3><p>Recorded attendance by day · present, late and remote</p></div><button class="btn ghost" data-goto="attendance">Attendance →</button></div><div id="attendanceInsights" class="nx-mini-bars"></div></section>
+      <section class="panel nx-insight-card"><div class="panel-head"><div><div class="panel-kicker">ABSENCE MANAGEMENT</div><h3>Leave request mix</h3><p>Requests by leave category</p></div><button class="btn ghost" data-goto="leave">Leave →</button></div><div id="leaveInsights" class="nx-mini-bars"></div></section>
+    </div>
     <div class="dashboard-bottom nx-bottom-grid">
       <section class="panel dashboard-panel"><div class="panel-head"><div><div class="panel-kicker">RECENT CHANGES</div><h3>Recent activity</h3><p>Latest recorded workforce updates</p></div><button class="btn ghost" data-goto="reports">View all</button></div><div id="workforceActivity" class="activity-list"></div></section>
       <section class="panel dashboard-panel"><div class="panel-head"><div><div class="panel-kicker">PRIORITIES</div><h3>Upcoming actions</h3><p>Items that need your attention</p></div><span id="actionCount" class="pill pending">0 actions</span></div><div id="hrActionCentre" class="action-list"></div></section>
@@ -978,4 +983,25 @@ tbody tr:hover{background:#faf9ff}
 .leave-policy-panel .form-actions{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 @media(max-width:620px){.leave-policy-panel .form-grid{grid-template-columns:1fr}.leave-policy-preview,.leave-policy-panel .form-actions{grid-column:1}}
 
+</style>
+
+<style id="nx-dashboard-insights">
+.nx-insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 17px}
+.nx-insight-card{min-width:0;margin:0}
+.nx-donut-wrap{display:grid;grid-template-columns:145px minmax(0,1fr);align-items:center;gap:12px;min-height:180px}
+.nx-donut{width:145px;height:145px;max-width:100%;transform:rotate(-90deg)}
+.nx-donut-center{font-size:22px;font-weight:850;fill:#17243b;transform:rotate(90deg);transform-origin:72px 72px}
+.nx-donut-legend{display:grid;gap:9px;min-width:0}
+.nx-legend-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#66758b}
+.nx-legend-label{display:flex;align-items:center;gap:7px;min-width:0}
+.nx-legend-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.nx-legend-row b{color:#253650;font-size:11px}
+.nx-mini-bars{display:grid;gap:13px;padding:8px 0}
+.nx-mini-bar-row{display:grid;grid-template-columns:54px minmax(0,1fr) 28px;align-items:center;gap:9px;font-size:10px;color:#718096}
+.nx-mini-bar-track{height:9px;border-radius:20px;background:#edf1f7;overflow:hidden}
+.nx-mini-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#087f8c,#54d3dc)}
+.nx-mini-bar-fill.leave{background:linear-gradient(90deg,#7064ed,#b4aafa)}
+.nx-mini-bar-row b{text-align:right;color:#33435e;font-size:11px}
+@media(max-width:1150px){.nx-insight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nx-insight-card:last-child{grid-column:1/-1}}
+@media(max-width:680px){.nx-insight-grid{grid-template-columns:1fr;gap:12px}.nx-insight-card:last-child{grid-column:auto}.nx-donut-wrap{grid-template-columns:125px minmax(0,1fr);gap:8px}.nx-donut{width:125px;height:125px}.nx-donut-center{transform:rotate(90deg) scale(.87);transform-origin:72px 72px}}
 </style>
