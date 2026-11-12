@@ -666,6 +666,25 @@ function renderOverview(){
  const leaveHost=$('#leaveInsights');
  if(leaveHost)leaveHost.innerHTML=leaveCounts.length?leaveCounts.map(x=>'<div class="nx-mini-bar-row"><span>'+esc(x.label)+'</span><div class="nx-mini-bar-track"><div class="nx-mini-bar-fill leave" style="width:'+Math.round(x.count/leaveMax*100)+'%"></div></div><b>'+x.count+'</b></div>').join(''):'<div class="chart-empty">Leave request categories will appear here as requests are recorded.</div>';
 
+
+ // Employment type distribution (based on the complete, organisation-scoped employee dataset).
+ const typePalette=['#5546e8','#0f9baa','#15936f','#e4ad4d','#d46b72','#8277f3'];
+ const typeMap=new Map();
+ employees.filter(e=>String(e.employment_status||'').toLowerCase()!=='terminated').forEach(e=>{const key=String(e.employment_type||'unspecified').trim().toLowerCase()||'unspecified';typeMap.set(key,(typeMap.get(key)||0)+1)});
+ const typeData=[...typeMap.entries()].sort((a,b)=>b[1]-a[1]).map(([key,count],i)=>({label:nice(key),count,color:typePalette[i%typePalette.length]}));
+ const typeTotal=typeData.reduce((n,x)=>n+x.count,0),typeCirc=2*Math.PI*48;let typeOffset=0;
+ const typeArcs=typeData.map(x=>{const len=typeTotal?x.count/typeTotal*typeCirc:0;const node='<circle cx="66" cy="66" r="48" fill="none" stroke="'+x.color+'" stroke-width="14" stroke-dasharray="'+len+' '+Math.max(0,typeCirc-len)+'" stroke-dashoffset="'+(-typeOffset)+'"/>';typeOffset+=len;return node}).join('');
+ const typeHost=$('#employmentTypeChart');
+ if(typeHost)typeHost.innerHTML=typeTotal?'<div class="nx-donut-wrap"><svg class="nx-donut" viewBox="0 0 132 132" role="img" aria-label="Employee counts by employment type">'+typeArcs+'<text class="nx-donut-center" x="66" y="73" text-anchor="middle">'+typeTotal+'</text></svg><div class="nx-donut-legend">'+typeData.map(x=>'<div class="nx-legend-row"><span class="nx-legend-label"><i class="nx-legend-dot" style="background:'+x.color+'"></i>'+esc(x.label)+'</span><b>'+x.count+'</b></div>').join('')+'</div></div>':'<div class="chart-empty">Add employee records to see employment type distribution.</div>';
+ // Contract lifecycle: use the stored contract_end_date and the local calendar date.
+ const todayDate=new Date();todayDate.setHours(0,0,0,0);const todayKey=todayDate.getFullYear()+'-'+String(todayDate.getMonth()+1).padStart(2,'0')+'-'+String(todayDate.getDate()).padStart(2,'0');
+ const contractRows=employees.filter(e=>String(e.employment_type||'').toLowerCase()==='contract'&&String(e.employment_status||'').toLowerCase()!=='terminated'&&e.contract_end_date);
+ const contractCounts={expired:0,due:0,current:0};
+ contractRows.forEach(e=>{const end=String(e.contract_end_date).slice(0,10);const endDate=new Date(end+'T00:00:00');const days=Math.ceil((endDate-todayDate)/86400000);if(end<todayKey)contractCounts.expired++;else if(days<=30)contractCounts.due++;else contractCounts.current++});
+ const contractItems=[{label:'Expired',count:contractCounts.expired,cls:'expired'},{label:'Due within 30 days',count:contractCounts.due,cls:'leave'},{label:'Current',count:contractCounts.current,cls:''}];
+ const contractMax=Math.max(1,...contractItems.map(x=>x.count));const contractHost=$('#contractHealthChart');
+ if(contractHost)contractHost.innerHTML=contractRows.length?contractItems.map(x=>'<div class="nx-mini-bar-row"><span>'+x.label+'</span><div class="nx-mini-bar-track"><div class="nx-mini-bar-fill '+x.cls+'" style="width:'+Math.round(x.count/contractMax*100)+'%"></div></div><b>'+x.count+'</b></div>').join('')+'<p class="muted" style="margin:12px 0 0;font-size:12px">'+(employees.filter(e=>String(e.employment_type||'').toLowerCase()==='contract'&&String(e.employment_status||'').toLowerCase()!=='terminated').length-contractRows.length)+' contract employee(s) without an end date</p>':'<div class="chart-empty">No active contract employees with contract end dates yet.</div>';
+
  const actions=[];
  if(pending.length)actions.push({icon:'◷',tone:'amber',title:pending.length+' leave request'+(pending.length===1?'':'s')+' need review',detail:'Pending employee leave decisions',label:'Review',go:'leave'});
  if(!present.length)actions.push({icon:'✓',tone:'',title:'No attendance entries for today',detail:'Check the daily attendance register',label:'Open register',go:'attendance'});
