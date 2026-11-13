@@ -1,5 +1,7 @@
 name: VELNORA platform validation
 
+# The HR workspace now lives under hrm/. Keep its entry-point path in one
+# place so the integrity checks cannot drift back to the retired directory.
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -23,6 +25,8 @@ on:
 jobs:
   syntax-and-integrity:
     runs-on: ubuntu-latest
+    env:
+      HRM_ENTRYPOINT: hrm/hrm.js
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -64,12 +68,12 @@ jobs:
           }
           walk(root);
           const errors = [];
-          const attrPattern = /(?:^|\s)(?:src|href|action)\s*=\s*(["'])(.*?)\1/gi;
+          const attrPattern = /(?:^|\\s)(?:src|href|action)\\s*=\\s*(["'])(.*?)\\1/gi;
           for (const file of htmlFiles) {
             const html = fs.readFileSync(file, 'utf8');
             for (const match of html.matchAll(attrPattern)) {
               const raw = match[2].trim();
-              if (!raw || raw.startsWith('#') || raw.startsWith('/') || /^(?:https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(raw)) continue;
+              if (!raw || raw.startsWith('#') || raw.startsWith('/') || /^(?:https?:|mailto:|tel:|javascript:|data:|blob:|\\/\\/)/i.test(raw)) continue;
               if (raw.includes('${') || raw.includes('{{')) continue;
               const clean = decodeURIComponent(raw.split(/[?#]/, 1)[0]);
               if (!clean) continue;
@@ -81,29 +85,31 @@ jobs:
             }
           }
           if (errors.length) {
-            console.error(errors.join('\n'));
+            console.error(errors.join('\\n'));
             process.exit(1);
           }
           console.log(`Checked ${htmlFiles.length} HTML files for missing local assets/links.`);
           NODE
 
       - name: Verify key platform workflows are present
+        shell: bash
         run: |
           set -euo pipefail
+          test -f "$HRM_ENTRYPOINT"
           grep -q "admin-user-admin" js/superadmin-account-management.js
           grep -q "organization_members" js/superadmin-account-management.js
-          grep -q "hr_workspace_settings" hrm/hrm.js
-          grep -q "advance_hr_payroll_period" hrm/hrm.js
-          grep -q "KE-2026-Y4-NSSF-AHL-PENSIONABLE-BASE" hrm/hrm.js
-          grep -q "Math.min(nssfPensionablePay,9000)" hrm/hrm.js
+          grep -q "hr_workspace_settings" "$HRM_ENTRYPOINT"
+          grep -q "advance_hr_payroll_period" "$HRM_ENTRYPOINT"
+          grep -q "KE-2026-Y4-NSSF-AHL-PENSIONABLE-BASE" "$HRM_ENTRYPOINT"
+          grep -q "Math.min(nssfPensionablePay,9000)" "$HRM_ENTRYPOINT"
           grep -q "add column if not exists category" supabase/migrations/043_job_categories.sql
           grep -q "nssf_pensionable_pay" supabase/migrations/044_payroll_nssf_pensionable_pay.sql
           grep -q "housing_levy_pensionable_pay" supabase/migrations/045_payroll_gross_salary_bases.sql
           ! grep -q "hello@nexora.co.ke" public-site/index.html
           grep -q "resetPasswordForEmail" portal.js
           grep -q "PASSWORD_RECOVERY" portal.js
-          grep -q "resetPasswordForEmail" hrm/hrm.js
-          grep -q "PASSWORD_RECOVERY" hrm/hrm.js
+          grep -q "resetPasswordForEmail" "$HRM_ENTRYPOINT"
+          grep -q "PASSWORD_RECOVERY" "$HRM_ENTRYPOINT"
           grep -q 'id="jobCategory"' public-site/jobs/index.html
           grep -q "category:String(f.get('category')||'general')" portal.js
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
