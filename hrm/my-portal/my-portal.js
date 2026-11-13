@@ -161,9 +161,34 @@ async function uploadEmployeeDocument(event){
 }
 function isEmploymentContract(d){return /contract|employment agreement/i.test(String(d.document_type||'')+' '+String(d.document_name||''))}
 function renderApprovedContracts(){const target=$('#approvedContractsTable');if(!target)return;const approved=employeeDocuments.filter(d=>isEmploymentContract(d)&&['approved','verified'].includes(String(d.verification_status||'').toLowerCase()));target.innerHTML=table(['Contract','Status','Available since','Copy'],approved.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Employment contract')+'</strong><br><small>'+esc(d.original_file_name||'Official contract copy')+'</small></td><td>'+pill('approved')+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">View contract</button><button type="button" class="btn primary" data-doc-download="'+esc(d.id)+'" data-force-download="true">Download copy</button></td></tr>'))}
+function renderEmployeeDocumentStats(){
+ const stats=$('#employeeDocumentStats'),alerts=$('#credentialExpiryAlerts');if(!stats||!alerts)return;
+ const today=new Date();today.setHours(0,0,0,0);
+ const dayDiff=date=>{if(!date)return null;const parsed=new Date(String(date).slice(0,10)+'T00:00:00');return Number.isNaN(parsed.getTime())?null:Math.round((parsed-today)/86400000)};
+ const dated=employeeDocuments.map(d=>({...d,daysToExpiry:dayDiff(d.expiry_date)}));
+ const expired=dated.filter(d=>d.daysToExpiry!==null&&d.daysToExpiry<0);
+ const expiring30=dated.filter(d=>d.daysToExpiry!==null&&d.daysToExpiry>=0&&d.daysToExpiry<=30);
+ const expiring90=dated.filter(d=>d.daysToExpiry!==null&&d.daysToExpiry>30&&d.daysToExpiry<=90);
+ const verified=dated.filter(d=>['approved','verified'].includes(String(d.verification_status||'').toLowerCase()));
+ const pending=dated.filter(d=>['pending','submitted','under_review','in_review'].includes(String(d.verification_status||'').toLowerCase()));
+ const missingExpiry=dated.filter(d=>!d.expiry_date);
+ const cards=[
+  {label:'Total documents',value:dated.length,note:'All uploaded records'},
+  {label:'Verified',value:verified.length,note:'Approved by HR'},
+  {label:'Awaiting review',value:pending.length,note:'Pending verification'},
+  {label:'Expired credentials',value:expired.length,note:'Require renewal',tone:expired.length?'alert':''},
+  {label:'Expiring in 30 days',value:expiring30.length,note:'Immediate attention',tone:expiring30.length?'warning':''},
+  {label:'Expiring in 90 days',value:expiring30.length+expiring90.length,note:'Next three months',tone:expiring30.length+expiring90.length?'warning':''}
+ ];
+ stats.innerHTML=cards.map(c=>'<div class="document-stat '+(c.tone||'')+'"><span class="stat-label">'+c.label+'</span><strong>'+c.value+'</strong><small>'+c.note+'</small></div>').join('');
+ const due=dated.filter(d=>d.daysToExpiry!==null&&d.daysToExpiry<=90).sort((a,b)=>a.daysToExpiry-b.daysToExpiry);
+ const missing=missingExpiry.length?'<div class="document-expiry-empty">'+missingExpiry.length+' document(s) have no expiry date recorded. Add an expiry date when applicable so reminders can be tracked.</div>':'';
+ const rows=due.map(d=>{const expiredNow=d.daysToExpiry<0,days=Math.abs(d.daysToExpiry),label=expiredNow?'Expired '+days+' day'+(days===1?'':'s')+' ago':d.daysToExpiry===0?'Expires today':'Expires in '+d.daysToExpiry+' day'+(d.daysToExpiry===1?'':'s');return '<div class="document-expiry-row"><div><strong>'+esc(d.document_name||d.original_file_name||'Credential')+'</strong><small>'+esc(String(d.document_type||'document').replace(/_/g,' '))+' · Expiry: '+esc(d.expiry_date)+'</small></div><div class="document-expiry-meta">'+pill(expiredNow?'expired':d.daysToExpiry<=30?'expiring_soon':'upcoming')+'<small>'+label+'</small></div></div>'}).join('');
+ alerts.innerHTML=due.length?'<div class="document-expiry-list">'+rows+'</div>'+missing: '<div class="document-expiry-empty">No expired or upcoming expiries are recorded within the next 90 days.</div>'+missing;
+}
 function renderEmployeeDocuments(){
  const target=$('#employeeDocumentsTable');if(!target)return;
- target.innerHTML=table(['Document','Type','Uploaded','Issue date','Expiry date','Verification','Action'],employeeDocuments.map(d=>'<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Document')+'</strong><br><small>'+esc(d.original_file_name||'')+'</small></td><td>'+esc(String(d.document_type||'other').replace(/_/g,' '))+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td>'+esc(d.issue_date||'—')+'</td><td>'+esc(d.expiry_date||'—')+'</td><td>'+pill(d.verification_status)+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">Open securely</button></td></tr>'));renderApprovedContracts();
+ target.innerHTML=table(['Document','Type','Uploaded','Issue date','Expiry date','Expiry status','Verification','Action'],employeeDocuments.map(d=>{const expiry=d.expiry_date?new Date(String(d.expiry_date).slice(0,10)+'T00:00:00'):null,today=new Date();today.setHours(0,0,0,0);const days=expiry&&!Number.isNaN(expiry.getTime())?Math.round((expiry-today)/86400000):null;const expiryStatus=days===null?'not_recorded':days<0?'expired':days<=30?'expiring_soon':days<=90?'upcoming':'valid';return '<tr><td><strong>'+esc(d.document_name||d.original_file_name||'Document')+'</strong><br><small>'+esc(d.original_file_name||'')+'</small></td><td>'+esc(String(d.document_type||'other').replace(/_/g,' '))+'</td><td>'+esc(d.created_at?new Date(d.created_at).toLocaleDateString('en-KE'):'—')+'</td><td>'+esc(d.issue_date||'—')+'</td><td>'+esc(d.expiry_date||'—')+'</td><td>'+pill(expiryStatus)+'</td><td>'+pill(d.verification_status)+'</td><td><button type="button" class="btn ghost" data-doc-download="'+esc(d.id)+'">Open securely</button></td></tr>'}));renderEmployeeDocumentStats();renderApprovedContracts();
 }
 function renderAnnouncements(){
  const target=$('#employeeAnnouncements');if(!target)return;
