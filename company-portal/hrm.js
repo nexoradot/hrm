@@ -678,8 +678,8 @@ function renderOverview(){
 
 function renderNotifications(){
  const host=$('#hrNotificationsList');if(!host)return;
- const unread=notifications.filter(n=>!n.read_at).length,badge=$('#hrNotificationBadge');
- if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0}
+ const unread=notifications.filter(n=>!n.read_at).length,badge=$('#hrNotificationBadge'),topBadge=$('#hrNotificationTopbarBadge');
+ if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0}if(topBadge){topBadge.textContent=unread>99?'99+':String(unread);topBadge.hidden=unread===0}
  const filter=$('#hrNotificationFilter');if(filter&&filter.value!==notificationFilter)filter.value=notificationFilter;
  const rows=notifications.filter(n=>notificationFilter!=='unread'||!n.read_at).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
  const count=$('#hrNotificationCount');if(count)count.textContent=unread+' unread · '+notifications.length+' total';
