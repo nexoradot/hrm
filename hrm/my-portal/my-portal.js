@@ -42,7 +42,34 @@ function renderLeaveBalanceNotice(){
   target.innerHTML='<strong>'+esc(type.replace(/_/g,' '))+' leave</strong><div>'+used+' approved days used · '+pending+' pending days.</div><div>Remaining entitlement for this leave type is not configured in the portal. Contact HR to confirm the applicable policy.</div>';
  }
 }
-function refreshLiveClock(){const d=new Date();const c=$('#liveClock'),date=$('#liveDate');if(c)c.textContent=d.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'});if(date)date.textContent=d.toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
+function updateTimeAwareGreeting(name){
+ const now=new Date(),hour=Number(new Intl.DateTimeFormat('en-KE',{hour:'2-digit',hourCycle:'h23',timeZone:'Africa/Nairobi'}).format(now));
+ const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+ const safeName=String(name||employee?.full_name||'there').trim().split(/\\s+/)[0]||'there';
+ const welcome=$('#welcome'),dashboardWelcome=$('#dashboardFirstName');
+ if(welcome)welcome.textContent=greeting+', '+safeName;
+ if(dashboardWelcome)dashboardWelcome.textContent=safeName;
+ const quotes=[
+  'Progress is built one thoughtful action at a time.',
+  'The quality of your work is shaped by the care you bring to it.',
+  'Every challenge is an opportunity to learn, improve and contribute.',
+  'Consistency turns good intentions into meaningful results.',
+  'A supportive team makes excellent work possible.',
+  'Bring purpose to today; small efforts can make a lasting difference.',
+  'Professional growth begins with curiosity and a willingness to improve.',
+  'Do your work with care, and let your results speak for you.',
+  'Great workplaces are built through respect, trust and shared effort.',
+  'Choose progress over perfection, and keep moving forward.',
+  'Your attitude, teamwork and integrity make a difference.',
+  'Make today useful: learn something, help someone, improve something.',
+  'Excellence is a habit strengthened by the choices we make each day.'
+ ];
+ const dayNumber=Math.floor(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())/86400000);
+ const quote=$('#dailyQuoteText'),quoteDate=$('#dailyQuoteDate');
+ if(quote)quote.textContent='“'+quotes[((dayNumber%quotes.length)+quotes.length)%quotes.length]+'”';
+ if(quoteDate)quoteDate.textContent='A little inspiration for '+now.toLocaleDateString('en-KE',{weekday:'long',day:'numeric',month:'long',timeZone:'Africa/Nairobi'});
+}
+function refreshLiveClock(){const d=new Date();const c=$('#liveClock'),date=$('#liveDate');if(c)c.textContent=d.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Nairobi'});if(date)date.textContent=d.toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric',timeZone:'Africa/Nairobi'});updateTimeAwareGreeting()}
 function renderDashboardSummary(){const docs=$('#documentMetric');if(docs)docs.textContent=employeeDocuments.length;const salary=$('#attendanceMetric');if(salary){const latest=payItems[0];salary.textContent=latest?money(latest.net_pay):'KES 0'}const metric=$('#statusMetric');if(metric){const now=new Date(),month=String(now.getMonth()+1).padStart(2,'0'),year=now.getFullYear();metric.textContent=attendance.filter(a=>String(a.work_date||'').startsWith(year+'-'+month)&&!['absent','leave'].includes(String(a.attendance_status||'').toLowerCase())).length+' / '+new Date(year,now.getMonth()+1,0).getDate()}const clockDate=new Date(),today=clockDate.getFullYear()+'-'+String(clockDate.getMonth()+1).padStart(2,'0')+'-'+String(clockDate.getDate()).padStart(2,'0'),record=attendance.find(a=>String(a.work_date||'').slice(0,10)===today);const clockIn=$('#clockInAction'),clockOut=$('#clockOutAction'),hasClockIn=!!record?.clock_in,hasClockOut=!!record?.clock_out;const setClockButton=(b,kind,done,blocked,label)=>{if(!b)return;b.disabled=done||blocked;b.classList.toggle('is-complete',done);b.classList.toggle('is-blocked',blocked&&!done);b.textContent=done?'✓ '+(kind==='in'?'Clocked in':'Clocked out'):(kind==='in'?'◎  Clock in':'⇥  Clock out')};setClockButton(clockIn,'in',hasClockIn,false);setClockButton(clockOut,'out',hasClockOut,!hasClockIn);document.querySelectorAll('[data-attendance-action="in"]').forEach(b=>setClockButton(b,'in',hasClockIn,false));document.querySelectorAll('[data-attendance-action="out"]').forEach(b=>setClockButton(b,'out',hasClockOut,!hasClockIn));const attendanceStatus=$('#locationStatus');if(attendanceStatus&&record){const fmt=t=>t?new Date('1970-01-01T'+String(t).slice(0,8)).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}):'';attendanceStatus.textContent='Today: '+(hasClockIn?'Clocked in at '+fmt(record.clock_in):'Not clocked in yet')+(hasClockOut?' · Clocked out at '+fmt(record.clock_out):hasClockIn?' · Remember to clock out at the end of your shift':'');}const label=$('#locationLabel');if(label&&!record)label.textContent='Your location will appear here after GPS lookup';const summary=$('#recentPayslips');if(summary)summary.innerHTML=payItems.length?payItems.slice(0,5).map(p=>{const period=periods.find(x=>x.id===p.payroll_period_id);return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #edf1f6"><span style="color:#1477e8">▤</span><span style="flex:1;font-size:11px">'+esc(period?.period_name||'Payroll period')+'</span><strong style="font-size:11px">'+esc(money(p.net_pay))+'</strong><button type="button" class="btn ghost" data-tab-jump="payslips" style="padding:6px 8px;font-size:10px">View</button></div>'}).join(''):'<div class="empty">No payslips available yet.</div>';const leave=$('#leaveBalanceSummary');if(leave){const b=annualLeaveBalance();const groups=[{key:'annual',label:'Annual leave',icon:'▤',match:/annual/},{key:'sick',label:'Sick leave',icon:'✚',match:/sick/},{key:'maternity',label:'Maternity leave',icon:'♡',match:/maternity/},{key:'other',label:'Other leave',icon:'✦',match:/(?!annual|sick|maternity).+/}];const approved=leaves.filter(x=>String(x.status||'').toLowerCase()==='approved');leave.innerHTML=groups.map(g=>{const used=approved.filter(x=>g.match.test(String(x.leave_type||'').toLowerCase())).reduce((n,x)=>n+Number(x.days_requested||0),0);const requested=leaves.filter(x=>g.match.test(String(x.leave_type||'').toLowerCase())&&String(x.status||'').toLowerCase()==='pending').reduce((n,x)=>n+Number(x.days_requested||0),0);const annualExtra=g.key==='annual'&&b.remaining!==null?'<small style="display:block;color:#087f8c;font-weight:800;margin-top:4px">'+b.remaining+' days remaining</small>':'';return '<div class="leave-balance-row"><span class="balance-icon">'+g.icon+'</span><div class="balance-main"><div>'+g.label+'</div><small style="color:#7b879e">'+used+' approved days used'+(requested?' · '+requested+' pending':'')+'</small>'+annualExtra+'<div class="balance-line"><i style="width:'+(used>0?100:0)+'%"></i></div></div><span class="balance-days">'+(g.key==='annual'&&b.remaining!==null?b.remaining:used)+' days</span></div>'}).join('')||'<div class="empty">No leave records yet.</div>'}renderLeaveBalanceNotice()}
 async function reverseGeocode(latitude,longitude){try{const response=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+encodeURIComponent(latitude)+'&lon='+encodeURIComponent(longitude)+'&zoom=18&addressdetails=1&accept-language=en',{headers:{'Accept':'application/json'}});if(!response.ok)throw new Error('Reverse geocoding unavailable');const data=await response.json(),a=data.address||{},parts=[a.building||a.amenity||a.shop||a.office||a.tourism,a.road||a.pedestrian||a.residential,a.neighbourhood||a.suburb||a.quarter,a.city||a.town||a.village||a.county,a.state,a.country].filter(Boolean);return [...new Set(parts)].join(', ')||data.display_name||'Location name unavailable (GPS coordinates recorded)'}catch(e){return 'Location name unavailable (GPS coordinates recorded)'}}
 async function recordLiveAttendance(requestedMode){
@@ -196,7 +223,7 @@ function configureIndustryCredentials(){
  if(hint)hint.textContent=cfg.hint+' Industry: '+(employee?.organization_industry||'Not set by Super Admin')+'.';
 }
 function render(){
- $('#welcome').textContent='Welcome, '+(employee.full_name||user.email||'employee');
+ updateTimeAwareGreeting(employee.full_name||user.email||'employee');
  renderProfilePhoto();
  $('#identityFullName').value=employee.full_name||'';
  $('#nationalIdNumber').value=employee.national_id_number||'';
@@ -207,7 +234,7 @@ function render(){
  $('#professionalRegistrationExpiry').value=employee.professional_registration_expiry||'';
  configureIndustryCredentials();
  $('#profileSummary').textContent=[employee.job_title,employee.work_location,employee.department_name].filter(Boolean).join(' · ')||'Your personal HR information in one secure place.';
- const firstName=String(employee.full_name||user.email||'there').trim().split(/\\s+/)[0];const first=$('#dashboardFirstName');if(first)first.textContent=firstName;
+ const firstName=String(employee.full_name||user.email||'there').trim().split(/\\s+/)[0];updateTimeAwareGreeting(firstName);
  const today=new Date(),dateLabel=$('#dashboardToday'),weekLabel=$('#dashboardWeek');if(dateLabel)dateLabel.textContent=today.toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});if(weekLabel)weekLabel.textContent='Week '+Math.ceil((((new Date(today.getFullYear(),0,1)-new Date(today.getFullYear(),0,1))/86400000)+today.getDay()+1)/7)+' · '+today.getFullYear();
  const summary=$('#dashboardEmploymentSummary');if(summary){const rows=[['Employee ID',employee.employee_number],['Department',employee.department_name],['Employment Type',employee.employment_type],['Job Title',employee.job_title],['Date Joined',employee.start_date?new Date(employee.start_date+'T00:00:00').toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'}):'—'],['Work Location',employee.work_location],['Status',employee.employment_status]];summary.innerHTML=rows.map(([k,v])=>'<div class="dashboard-employment-row"><span>'+esc(k)+'</span><strong>'+esc(v||'—')+'</strong></div>').join('')}
 
