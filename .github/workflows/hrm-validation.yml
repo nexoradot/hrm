@@ -68,7 +68,7 @@ jobs:
           }
           walk(root);
           const errors = [];
-          const attrPattern = /(?:^|\s)(?:src|href|action)\s*=\s*(["'])(.*?)\\1/gi;
+          const attrPattern = /(?:^|\s)(?:src|href|action)\s*=\s*(["'])(.*?)\1/gi;
           for (const file of htmlFiles) {
             const html = fs.readFileSync(file, 'utf8');
             for (const match of html.matchAll(attrPattern)) {
