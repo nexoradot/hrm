@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const source = fs.readFileSync(path.join(__dirname, '../company-portal/hrm.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../hrm/hrm.js'), 'utf8');
 const start = source.indexOf('function kenyaPayrollCalc(');
 const end = source.indexOf('\nasync function payrollAudit', start);
 assert.notEqual(start, -1, 'HRM payroll calculator must exist');
