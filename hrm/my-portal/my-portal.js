@@ -448,7 +448,8 @@ async function initEmployeeTheme(){
  apply(saved);
  button?.addEventListener('click',()=>{const next=root.dataset.theme==='dark'?'light':'dark';apply(next);try{localStorage.setItem('velnora-employee-theme',next)}catch(e){}});
 }
-function init(){
+async function init(){
+ initEmployeeTheme();
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
  db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'nexora-employee-portal-auth'}});
  $('#toggleEmployeePassword')?.addEventListener('click',()=>{const input=$('#employeeLoginPassword'),button=$('#toggleEmployeePassword');if(!input||!button)return;const reveal=input.type==='password';input.type=reveal?'text':'password';button.setAttribute('aria-label',reveal?'Hide password':'Show password');button.setAttribute('aria-pressed',String(reveal));const label=button.querySelector('span');if(label)label.textContent=reveal?'Hide':'Show';input.focus({preventScroll:true});});
