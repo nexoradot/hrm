@@ -189,9 +189,9 @@ function industryCredentialConfig(industry){
 }
 function configureIndustryCredentials(){
  const cfg=industryCredentialConfig(employee?.organization_industry),name=$('#professionalRegistrationName'),number=$('#professionalRegistrationNumber'),expiry=$('#professionalRegistrationExpiry'),hint=$('#industryCredentialHint');
- if(name){name.placeholder=cfg.name;name.previousElementSibling.textContent=cfg.name}
- if(number)number.previousElementSibling.textContent=cfg.number;
- if(expiry)expiry.previousElementSibling.textContent=cfg.expiry;
+ if(name){name.placeholder=cfg.name;$('#professionalRegistrationNameLabel').textContent=cfg.name}
+ if(number)$('#professionalRegistrationNumberLabel').textContent=cfg.number;
+ if(expiry)$('#professionalRegistrationExpiryLabel').textContent=cfg.expiry;
  if(hint)hint.textContent=cfg.hint+' Industry: '+(employee?.organization_industry||'Not set by Super Admin')+'.';
 }
 function render(){
