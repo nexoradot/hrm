@@ -92,18 +92,18 @@ jobs:
           set -euo pipefail
           grep -q "admin-user-admin" js/superadmin-account-management.js
           grep -q "organization_members" js/superadmin-account-management.js
-          grep -q "hr_workspace_settings" company-portal/hrm.js
-          grep -q "advance_hr_payroll_period" company-portal/hrm.js
-          grep -q "KE-2026-Y4-NSSF-AHL-PENSIONABLE-BASE" company-portal/hrm.js
-          grep -q "Math.min(nssfPensionablePay,9000)" company-portal/hrm.js
+          grep -q "hr_workspace_settings" hrm/hrm.js
+          grep -q "advance_hr_payroll_period" hrm/hrm.js
+          grep -q "KE-2026-Y4-NSSF-AHL-PENSIONABLE-BASE" hrm/hrm.js
+          grep -q "Math.min(nssfPensionablePay,9000)" hrm/hrm.js
           grep -q "add column if not exists category" supabase/migrations/043_job_categories.sql
           grep -q "nssf_pensionable_pay" supabase/migrations/044_payroll_nssf_pensionable_pay.sql
           grep -q "housing_levy_pensionable_pay" supabase/migrations/045_payroll_gross_salary_bases.sql
           ! grep -q "hello@nexora.co.ke" public-site/index.html
           grep -q "resetPasswordForEmail" portal.js
           grep -q "PASSWORD_RECOVERY" portal.js
-          grep -q "resetPasswordForEmail" company-portal/hrm.js
-          grep -q "PASSWORD_RECOVERY" company-portal/hrm.js
+          grep -q "resetPasswordForEmail" hrm/hrm.js
+          grep -q "PASSWORD_RECOVERY" hrm/hrm.js
           grep -q 'id="jobCategory"' public-site/jobs/index.html
           grep -q "category:String(f.get('category')||'general')" portal.js
           grep -q "create or replace function public.advance_hr_payroll_period" supabase/migrations/009_atomic_payroll_workflow.sql
