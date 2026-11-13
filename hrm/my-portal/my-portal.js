@@ -374,7 +374,7 @@ async function load(){
 }
  employee=p.data;
  const organizationResult=await db.from('organizations').select('industry').eq('id',employee.organization_id).maybeSingle();
- if(organizationResult.error)throw organizationResult.error;
+ if(organizationResult.error)console.warn('Could not load workspace industry; using generic credential labels:',organizationResult.error);
  employee.organization_industry=organizationResult.data?.industry||'';
  await loadProfilePhoto();
  const [d,l,a,r,pi,docs,news]=await Promise.all([
