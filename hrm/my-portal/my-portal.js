@@ -48,6 +48,7 @@ function updateTimeAwareGreeting(name){
  const safeName=String(name||employee?.full_name||'there').trim().split(/\s+/)[0]||'there';
  const welcome=$('#welcome'),dashboardWelcome=$('#dashboardFirstName');
  if(welcome)welcome.textContent=greeting+', '+safeName;
+ const greetingPrefix=$('#dashboardGreetingPrefix');if(greetingPrefix)greetingPrefix.textContent=greeting+',';
  if(dashboardWelcome)dashboardWelcome.textContent=safeName;
  const quotes=[
   'Progress is built one thoughtful action at a time.',
@@ -440,7 +441,14 @@ async function load(){
  if(ids.length){const pr=await db.from('hr_payroll_periods').select('id,period_name,period_start,period_end,payment_date').in('id',ids);if(pr.error)throw pr.error;periods=pr.data||[]}else periods=[];
  $('#authSection').hidden=true;$('#appSection').hidden=false;$('#logoutBtn').hidden=false;$('#notificationBell').hidden=false;render();renderEmployeeDocuments();renderApprovedContracts();renderAnnouncements();renderDashboardSummary();refreshLiveClock();bindEmployeeGoalForm();await loadEmployeeSelfService();await loadEmployeeNotifications();startEmployeeNotificationRealtime();restoreTabFromLocation();msg('');
 }
-async function init(){
+async function initEmployeeTheme(){
+ const root=document.documentElement,button=$('#employeeThemeToggle'),icon=$('#employeeThemeIcon'),label=$('#employeeThemeLabel');
+ let saved='light';try{saved=localStorage.getItem('velnora-employee-theme')||'light'}catch(e){}
+ const apply=theme=>{const dark=theme==='dark';root.dataset.theme=dark?'dark':'light';if(button){button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode')}if(icon)icon.textContent=dark?'☀':'☾';if(label)label.textContent=dark?'Light mode':'Dark mode';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=dark?'#0b1220':'#0d1830'};
+ apply(saved);
+ button?.addEventListener('click',()=>{const next=root.dataset.theme==='dark'?'light':'dark';apply(next);try{localStorage.setItem('velnora-employee-theme',next)}catch(e){}});
+}
+function init(){
  if(!window.supabase||!window.NEXORA_CONFIG){msg('Secure connection configuration is missing.',true);return}
  db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'nexora-employee-portal-auth'}});
  $('#toggleEmployeePassword')?.addEventListener('click',()=>{const input=$('#employeeLoginPassword'),button=$('#toggleEmployeePassword');if(!input||!button)return;const reveal=input.type==='password';input.type=reveal?'text':'password';button.setAttribute('aria-label',reveal?'Hide password':'Show password');button.setAttribute('aria-pressed',String(reveal));const label=button.querySelector('span');if(label)label.textContent=reveal?'Hide':'Show';input.focus({preventScroll:true});});
