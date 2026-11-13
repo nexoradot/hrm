@@ -180,6 +180,14 @@ function renderEmployeeCharts(){const ah=$('#employeeAttendanceChart'),lh=$('#em
 function render(){
  $('#welcome').textContent='Welcome, '+(employee.full_name||user.email||'employee');
  renderProfilePhoto();
+ $('#identityFullName').value=employee.full_name||'';
+ $('#nationalIdNumber').value=employee.national_id_number||'';
+ $('#kraPin').value=employee.kra_pin||'';
+ $('#nssfNumber').value=employee.nssf_number||'';
+ $('#tvetLicenceNumber').value=employee.tvet_licence_number||'';
+ $('#tvetLicenceExpiry').value=employee.tvet_licence_expiry||'';
+ $('#nursingLicenceNumber').value=employee.nursing_licence_number||'';
+ $('#nursingLicenceExpiry').value=employee.nursing_licence_expiry||'';
  $('#profileSummary').textContent=[employee.job_title,employee.work_location,employee.department_name].filter(Boolean).join(' · ')||'Your personal HR information in one secure place.';
  $('#statusMetric').textContent=(employee.employment_status||'—').replace(/_/g,' ');
  $('#leaveMetric').textContent=leaves.filter(x=>x.status==='pending').length;
@@ -370,14 +378,7 @@ async function init(){
  db=window.supabase.createClient(window.NEXORA_CONFIG.url,window.NEXORA_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'nexora-employee-portal-auth'}});
  $('#toggleEmployeePassword')?.addEventListener('click',()=>{const input=$('#employeeLoginPassword'),button=$('#toggleEmployeePassword');if(!input||!button)return;const reveal=input.type==='password';input.type=reveal?'text':'password';button.setAttribute('aria-label',reveal?'Hide password':'Show password');button.setAttribute('aria-pressed',String(reveal));const label=button.querySelector('span');if(label)label.textContent=reveal?'Hide':'Show';input.focus({preventScroll:true});});
  $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;if(!form.reportValidity())return;const f=new FormData(form),b=form.querySelector('button[type="submit"]'),originalLabel=b.innerHTML;b.disabled=true;b.setAttribute('aria-busy','true');b.innerHTML='<span><i class="login-spinner" aria-hidden="true"></i> Signing you in…</span><span aria-hidden="true">→</span>';msg('Signing in securely…');try{const email=String(f.get('email')||'').trim().toLowerCase(),password=String(f.get('password')||'');const r=await db.auth.signInWithPassword({email,password});if(r.error)throw r.error;user=r.data.user;await load()}catch(err){msg(err.message||'Sign in failed. Check your details and try again.',true)}finally{b.disabled=false;b.removeAttribute('aria-busy');b.innerHTML=originalLabel}});
- $('#identityFullName').value=employee.full_name||'';
- $('#nationalIdNumber').value=employee.national_id_number||'';
- $('#kraPin').value=employee.kra_pin||'';
- $('#nssfNumber').value=employee.nssf_number||'';
- $('#tvetLicenceNumber').value=employee.tvet_licence_number||'';
- $('#tvetLicenceExpiry').value=employee.tvet_licence_expiry||'';
- $('#nursingLicenceNumber').value=employee.nursing_licence_number||'';
- $('#nursingLicenceExpiry').value=employee.nursing_licence_expiry||'';
+ $('#identityDetailsForm')?.addEventListener('submit',async e=>{e.preventDefault();const b=$('#saveIdentityDetailsBtn');b.disabled=true;b.textContent='Saving securely…';try{const result=await db.rpc('employee_update_my_identity_details',{p_national_id_number:$('#nationalIdNumber').value.trim(),p_kra_pin:$('#kraPin').value.trim(),p_nssf_number:$('#nssfNumber').value.trim(),p_tvet_licence_number:$('#tvetLicenceNumber').value.trim(),p_tvet_licence_expiry:$('#tvetLicenceExpiry').value||null,p_nursing_licence_number:$('#nursingLicenceNumber').value.trim(),p_nursing_licence_expiry:$('#nursingLicenceExpiry').value||null});if(result.error)throw result.error;Object.assign(employee,{national_id_number:$('#nationalIdNumber').value.trim()||null,kra_pin:$('#kraPin').value.trim()||null,nssf_number:$('#nssfNumber').value.trim()||null,tvet_licence_number:$('#tvetLicenceNumber').value.trim()||null,tvet_licence_expiry:$('#tvetLicenceExpiry').value||null,nursing_licence_number:$('#nursingLicenceNumber').value.trim()||null,nursing_licence_expiry:$('#nursingLicenceExpiry').value||null});render();msg('Personal and licence details saved securely.')}catch(err){msg('Could not save personal details: '+(err.message||'Please contact HR.'),true)}finally{b.disabled=false;b.textContent='Save personal details'}});
  $('#identityDetailsForm')?.addEventListener('submit',async e=>{e.preventDefault();const b=$('#saveIdentityDetailsBtn');b.disabled=true;b.textContent='Saving securely…';try{const result=await db.rpc('employee_update_my_identity_details',{p_national_id_number:$('#nationalIdNumber').value.trim(),p_kra_pin:$('#kraPin').value.trim(),p_nssf_number:$('#nssfNumber').value.trim(),p_tvet_licence_number:$('#tvetLicenceNumber').value.trim(),p_tvet_licence_expiry:$('#tvetLicenceExpiry').value||null,p_nursing_licence_number:$('#nursingLicenceNumber').value.trim(),p_nursing_licence_expiry:$('#nursingLicenceExpiry').value||null});if(result.error)throw result.error;Object.assign(employee,{national_id_number:$('#nationalIdNumber').value.trim()||null,kra_pin:$('#kraPin').value.trim()||null,nssf_number:$('#nssfNumber').value.trim()||null,tvet_licence_number:$('#tvetLicenceNumber').value.trim()||null,tvet_licence_expiry:$('#tvetLicenceExpiry').value||null,nursing_licence_number:$('#nursingLicenceNumber').value.trim()||null,nursing_licence_expiry:$('#nursingLicenceExpiry').value||null});render();msg('Personal and licence details saved securely.')}catch(err){msg('Could not save personal details: '+(err.message||'Please contact HR.'),true)}finally{b.disabled=false;b.textContent='Save personal details'}});
  $('#employeeDocumentUploadForm')?.addEventListener('submit',uploadEmployeeDocument);
  $('#employeeExpenseForm')?.addEventListener('submit',submitEmployeeExpenseClaim);
