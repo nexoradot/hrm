@@ -255,6 +255,37 @@ body[data-portal="candidate"] .authwrap.auth-modern{box-shadow:0 26px 75px rgba(
 }
 </style>
 
+<style id="candidate-portal-content-guard">
+html.candidate-content-guard,html.candidate-content-guard body,
+html.candidate-content-guard body *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+html.candidate-content-guard input,html.candidate-content-guard textarea,
+html.candidate-content-guard [contenteditable="true"]{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+</style>
+<script id="candidate-portal-content-guard-script">
+(function(){
+ 'use strict';
+ const params=new URLSearchParams(window.location.search);
+ const debug=params.get('debug')==='true';
+ window.__VELNORA_CANDIDATE_DEBUG__=debug;
+ if(debug){document.documentElement.classList.remove('candidate-content-guard');return;}
+ document.documentElement.classList.add('candidate-content-guard');
+ const blockedKeys=e=>{
+  const key=String(e.key||'').toLowerCase();
+  const ctrl=e.ctrlKey||e.metaKey;
+  const blocked=(e.key==='F12')||
+   (ctrl&&e.shiftKey&&['i','j','c'].includes(key))||
+   (ctrl&&['u','s','p','c','x'].includes(key))||
+   (e.metaKey&&e.altKey&&['i','j'].includes(key));
+  if(blocked){e.preventDefault();e.stopPropagation();return false;}
+ };
+ document.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();return false},true);
+ document.addEventListener('copy',e=>{e.preventDefault();e.stopPropagation();return false},true);
+ document.addEventListener('cut',e=>{e.preventDefault();e.stopPropagation();return false},true);
+ document.addEventListener('dragstart',e=>{e.preventDefault();e.stopPropagation();return false},true);
+ document.addEventListener('selectstart',e=>{if(!e.target.closest('input,textarea,[contenteditable="true"]')){e.preventDefault();return false;}},true);
+ document.addEventListener('keydown',blockedKeys,true);
+})();
+</script>
 </head>
 <body data-portal="candidate">
 <header class="top"><div class="topinner">
