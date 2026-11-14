@@ -626,4 +626,57 @@ body:has(#appSection:not([hidden])){background:linear-gradient(135deg,#071b2c,#1
 </div>
 
 <script>(function(){const nav=document.getElementById('portalNav');if(!nav)return;const header=document.querySelector('.topbar');const toggle=document.createElement('button');toggle.type='button';toggle.className='mobile-portal-toggle';toggle.setAttribute('aria-label','Open employee navigation');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰';const actions=header.querySelector('.employee-top-actions');header.insertBefore(toggle,header.firstChild);const overlay=document.createElement('div');overlay.className='portal-nav-overlay';document.body.appendChild(overlay);function close(){nav.classList.remove('open');overlay.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open employee navigation');toggle.textContent='☰'}function open(){nav.classList.add('open');overlay.classList.add('open');toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close employee navigation');toggle.textContent='✕'}toggle.addEventListener('click',()=>nav.classList.contains('open')?close():open());overlay.addEventListener('click',close);nav.addEventListener('click',e=>{if(e.target.closest('button[data-tab]'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',()=>{if(window.innerWidth>680)close()})})();</script>
+<!-- VELNORA employee portal source-inspection deterrent; debug=true bypasses this guard. -->
+<script>
+(function () {
+  'use strict';
+  var params = new URLSearchParams(window.location.search);
+  var debugEnabled = params.get('debug') === 'true';
+  window.__VELNORA_EMPLOYEE_PORTAL_DEBUG__ = debugEnabled;
+  if (debugEnabled) return;
+
+  var editable = function (target) {
+    return !!(target && target.closest && target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'));
+  };
+  document.documentElement.classList.add('employee-content-guard');
+  ['contextmenu', 'copy', 'cut', 'dragstart'].forEach(function (eventName) {
+    document.addEventListener(eventName, function (event) {
+      if (!editable(event.target)) event.preventDefault();
+    }, true);
+  });
+  document.addEventListener('selectstart', function (event) {
+    if (!editable(event.target)) event.preventDefault();
+  }, true);
+  document.addEventListener('keydown', function (event) {
+    var key = String(event.key || '').toLowerCase();
+    var modifier = event.ctrlKey || event.metaKey;
+    var blocked = key === 'f12' ||
+      (modifier && ['u', 's', 'p', 'c', 'x'].indexOf(key) !== -1) ||
+      (modifier && event.shiftKey && ['i', 'j', 'c'].indexOf(key) !== -1) ||
+      (event.metaKey && event.altKey && ['i', 'j'].indexOf(key) !== -1);
+    if (blocked) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+})();
+</script>
+<style>
+html.employee-content-guard, html.employee-content-guard body,
+html.employee-content-guard body * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+html.employee-content-guard input,
+html.employee-content-guard textarea,
+html.employee-content-guard select,
+html.employee-content-guard [contenteditable="true"],
+html.employee-content-guard [role="textbox"] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
+</style>
+
 </body></html>
