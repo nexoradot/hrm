@@ -47,6 +47,7 @@
     var token = auth.replace(/^Bearer\s+/i,'');
     var isAuth = requestUrl.indexOf('/auth/v1/') !== -1;
     var isRest = requestUrl.indexOf('/rest/v1/') !== -1;
+    var isFunction = requestUrl.indexOf('/functions/v1/') !== -1;
     var isAudit = requestUrl.indexOf('/rest/v1/audit_events') !== -1;
     var response = await nativeFetch(input, init);
     try {
@@ -59,9 +60,13 @@
         } else if (response.ok && /logout/i.test(requestUrl)) {
           log(token, {category:'authentication',action:'Signed out',path:'/auth/v1/logout',method:'POST',status:response.status});
         }
-      } else if (isRest && !isAudit && ['POST','PATCH','PUT','DELETE'].indexOf(method) !== -1 && response.ok) {
+      } else if (isRest && !isAudit && ['GET','POST','PATCH','PUT','DELETE'].indexOf(method) !== -1 && response.ok) {
         var table = requestUrl.split('/rest/v1/')[1].split(/[?/#]/)[0];
-        log(token, {category:'data_change',action:method+' '+table,entity:table,path:'/rest/v1/'+table,method:method,status:response.status});
+        var write = method !== 'GET';
+        log(token, {category:write?'data_change':'data_access',action:(write?method+' ':'Viewed ')+table,entity:table,path:'/rest/v1/'+table,method:method,status:response.status});
+      } else if (isFunction && response.ok) {
+        var fn = requestUrl.split('/functions/v1/')[1].split(/[?/#]/)[0];
+        log(token, {category:'workflow',action:'Invoked '+fn,entity:fn,path:'/functions/v1/'+fn,method:method,status:response.status});
       }
     } catch (_) {}
     return response;
