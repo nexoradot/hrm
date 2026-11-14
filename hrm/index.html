@@ -915,6 +915,49 @@ tbody tr:hover{background:#faf9ff}
 .auth-input-label{display:block;color:#53637a;font-size:9px;font-weight:850;letter-spacing:1.15px;margin:0 0 8px}.auth-input-shell{display:flex;align-items:center;gap:10px;min-height:54px;padding:0 13px;border:1px solid #dce4ef;border-radius:13px;background:#ffffffd9;transition:border-color .2s,box-shadow .2s}.auth-input-shell:focus-within{border-color:#36b9c3;box-shadow:0 0 0 4px #36b9c31f;background:#fff}.auth-input-icon{flex:0 0 18px;color:#8292a8;font-size:17px;text-align:center}.auth-input-shell input{width:100%;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:13px 0!important;color:#17243b;font-size:13px}.auth-input-hint{margin:8px 0 23px;color:#8a97aa;font-size:10px}.auth-main-button{display:flex;align-items:center;justify-content:center;gap:12px;min-height:53px;border-radius:13px!important;background:linear-gradient(110deg,#087f8c,#159eaa)!important;box-shadow:0 10px 22px #087f8c33!important;font-size:13px}.auth-main-button span{font-size:18px;transition:transform .2s}.auth-main-button:hover span{transform:translateX(4px)}.auth-glass-card .auth-note{font-size:11px;margin:14px 0 0;color:#8290a4}.auth-glass-card .auth-link{font-size:11px;text-decoration:none;color:#087f8c}.auth-account-chip{display:flex;align-items:center;gap:9px;margin:-13px 0 23px;padding:11px 12px;border:1px solid #e4eaf2;border-radius:11px;background:#f6f9fc;color:#6f7f95;font-size:11px}.auth-account-chip strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:#30425e;font-size:11px}.auth-account-chip button,.auth-back-link{border:0;background:transparent;color:#078895;font-size:10px;font-weight:800;cursor:pointer}.auth-forgot-row{text-align:right;margin:10px 0 17px!important}.auth-back-link{display:block;margin:17px auto 0;padding:5px}.auth-footer{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:25px;color:#718096;font-size:10px}.auth-footer span{color:#159a9d}.auth-access-note{text-align:center;line-height:1.6;max-width:330px;margin:12px auto 0!important;font-size:9px!important}
 @media(max-width:480px){.auth-wrap{padding:18px 13px}.auth-glass-card{padding:25px 21px;border-radius:22px}.auth-brand-row{margin-bottom:29px}.auth-secure-pill{font-size:7px;padding:6px 7px}.auth-glass-card h1{font-size:29px}}@media(prefers-reduced-motion:reduce){.auth-glass-card,.auth-step{animation:none!important}}
 </style>
+<!-- VELNORA HR workspace source-inspection deterrent; debug=true bypasses this guard. -->
+<script>
+(function () {
+  'use strict';
+  var debugEnabled = new URLSearchParams(window.location.search).get('debug') === 'true';
+  window.__VELNORA_HR_DEBUG__ = debugEnabled;
+  if (debugEnabled) return;
+  var editable = function (target) {
+    return !!(target && target.closest && target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'));
+  };
+  document.documentElement.classList.add('hr-content-guard');
+  ['contextmenu', 'copy', 'cut', 'dragstart'].forEach(function (eventName) {
+    document.addEventListener(eventName, function (event) {
+      if (!editable(event.target)) event.preventDefault();
+    }, true);
+  });
+  document.addEventListener('selectstart', function (event) {
+    if (!editable(event.target)) event.preventDefault();
+  }, true);
+  document.addEventListener('keydown', function (event) {
+    var key = String(event.key || '').toLowerCase();
+    var modifier = event.ctrlKey || event.metaKey;
+    var blocked = key === 'f12' ||
+      (modifier && ['u', 's', 'p', 'c', 'x'].indexOf(key) !== -1) ||
+      (modifier && event.shiftKey && ['i', 'j', 'c'].indexOf(key) !== -1) ||
+      (event.metaKey && event.altKey && ['i', 'j'].indexOf(key) !== -1);
+    if (blocked) { event.preventDefault(); event.stopPropagation(); }
+  }, true);
+})();
+</script>
+<style>
+html.hr-content-guard, html.hr-content-guard body, html.hr-content-guard body * {
+  -webkit-user-select:none !important; user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+html.hr-content-guard input, html.hr-content-guard textarea,
+html.hr-content-guard select, html.hr-content-guard [contenteditable="true"],
+html.hr-content-guard [role="textbox"] {
+  -webkit-user-select:text !important; user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+</style>
+
 </head>
 <body>
 <div id="authScreen" class="auth-wrap">
