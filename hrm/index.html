@@ -934,6 +934,15 @@ tbody tr:hover{background:#faf9ff}
   document.addEventListener('selectstart', function (event) {
     if (!editable(event.target)) event.preventDefault();
   }, true);
+  document.addEventListener('selectionchange', function () {
+    var selection = window.getSelection && window.getSelection();
+    if (!selection || !selection.rangeCount || !selection.toString()) return;
+    var anchor = selection.anchorNode && (selection.anchorNode.nodeType === 1 ? selection.anchorNode : selection.anchorNode.parentElement);
+    if (!editable(anchor)) selection.removeAllRanges();
+  });
+  document.addEventListener('touchstart', function (event) {
+    if (!editable(event.target)) event.target.style.webkitTouchCallout = 'none';
+  }, { passive: true, capture: true });
   document.addEventListener('keydown', function (event) {
     var key = String(event.key || '').toLowerCase();
     var modifier = event.ctrlKey || event.metaKey;
